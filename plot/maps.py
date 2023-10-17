@@ -1,20 +1,4 @@
 
-def EU3_plot_init(rotnpole_lat: float = 39.25, rotnpole_lon: float = -162.0, semmj_axis: int = 6370000, 
-                    semmn_axis: int = 6370000, lon_extents: list = [351.1, 60.55], lat_extents: list = [23.92, 66.1]):
-
-    import numpy as np
-    from cartopy import crs
-
-    rp                          = crs.RotatedPole(pole_longitude = rotnpole_lon,
-                                    pole_latitude = rotnpole_lat,
-                                    globe = crs.Globe(semimajor_axis = semmj_axis,
-                                    semiminor_axis = semmn_axis))
-    
-    pc                          = crs.PlateCarree()
-    xs, ys, _                   = rp.transform_points(pc, np.array(lon_extents), np.array(lat_extents)).T
-    
-    return rp, pc, xs, ys
-
 
 def EU3_plot_lines(ax, pc, xs, ys, 
                     lw_grid: float = 0.5, lw_coast: float = 0.5, color_grid: str = 'grey', 

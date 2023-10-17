@@ -15,7 +15,7 @@ def horizontal(fx: float = 6.7, fy: float = 3.35, dpi: int = 300, projection = N
     return fig, [ax1, ax2]
 
 
-def horizontal_cmap(fx: float = 6.7, fy: float =3.35, dpi: int = 300, projection = None, frame: bool = False):
+def horizontal_right_cax(fx: float = 6.7, fy: float =3.35, dpi: int = 300, projection = None, frame: bool = False):
 
     import matplotlib.pyplot as plt
     from matplotlib.gridspec import GridSpec
@@ -34,5 +34,34 @@ def horizontal_cmap(fx: float = 6.7, fy: float =3.35, dpi: int = 300, projection
     ax2                             = fig.add_subplot(gs[0, 1], projection = projection, frameon = frame)
 
     cax                             = fig.add_subplot(gs[0, 2], frameon = frame)
+
+    return fig, [ax1, ax2], cax
+
+
+def horizontal_top_cax(fx: float = 6.7, fy: float = 3.4, dpi: int = 300, projection = None,
+                       frame: bool = False, annotation: bool = True, hspace = 0.1,
+                       x_an: float = 0.05, y_an: float = 1.05):
+
+    import matplotlib.pyplot as plt
+    from matplotlib.gridspec import GridSpec
+    from my_.plot.init_ax import init_annotation_ax
+
+    nrows                           = 2
+    ncols                           = 2
+    w1, w2                          = 1, 14
+
+    fig                             = plt.figure(figsize=(fx,fy), dpi= dpi)
+
+    gs                              = GridSpec(figure = fig, 
+                                                ncols = ncols, nrows = nrows, 
+                                                height_ratios = [w1, w2],
+                                                hspace = hspace)
+
+    ax1                             = fig.add_subplot(gs[1, 0], projection = projection, frameon = frame)
+    ax2                             = fig.add_subplot(gs[1, 1], projection = projection, frameon = frame)
+
+    cax                             = fig.add_subplot(gs[0, :], frameon = frame)
+
+    if annotation: init_annotation_ax([ax1, ax2], x = x_an, y = y_an)
 
     return fig, [ax1, ax2], cax

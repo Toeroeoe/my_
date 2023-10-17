@@ -22,20 +22,18 @@ def marker_legend(ax, dict_labels_markers, marker_color = 'grey', marker_size = 
 
 def color_legend(ax, dict_labels_colors, cmap, linewidth: float = 5, fs_labels: float = 10,
                 anchor = (0.5, 0), markerfirst = True, handletextpad: float = 0.35,
-                columnspacing: float = 0.9, loc = 'lower center', handlelength: float = 1.0):
+                columnspacing: float = 0.9, loc = 'lower center', handlelength: float = 1.0,
+                nrows: int = 2):
 
     from matplotlib.lines import Line2D
     
     ax.set_yticks([])
     ax.set_xticks([])
 
-    
-
     handles                     = [Line2D([0], [0], color = cmap[dict_labels_colors[ll]],
                                 linewidth = linewidth, label = ll) for ll in dict_labels_colors]
     
-
-    ncol                        = int(1 + (len(handles) / 2))
+    ncol                        = int(1 + (len(handles) / nrows))
 
     labels                      = list(dict_labels_colors.keys())
 

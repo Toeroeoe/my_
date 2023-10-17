@@ -144,12 +144,12 @@ def select_multi_index(df, levels: list, keys: list, axis = 1):
 
 
 
-def nona_level(df,  level: str, axis: int = 1):
+def nona_level(df,  level: str, axis: int = 1, how = 'any'):
 
     import pandas as pd
 
     df_level_groups     = df.groupby(axis = axis, level = level)
 
-    df_nona             = df_level_groups.apply(pd.DataFrame.dropna)
+    df_nona             = df_level_groups.apply(pd.DataFrame.dropna, how = how)
 
     return df_nona

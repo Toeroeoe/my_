@@ -150,6 +150,12 @@ def aggregate_layer(df):
     return df_agg
 
     
+def create_dirs(dirs):
 
+    from pathlib import Path
+
+    for dir in dirs:
+        
+        Path(dir).mkdir(parents = True, exist_ok = True)
 
 

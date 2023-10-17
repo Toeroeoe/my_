@@ -11,7 +11,7 @@ def square(fx: float = 6.7, fy: float = 6.7, dpi: int = 300, projection = None, 
     return fig, ax
 
 
-def square_cmap(fx: float = 6.7, fy: float = 6.7, dpi: int = 300, projection = None, frame: bool = False):
+def square_right_cax(fx: float = 6.7, fy: float = 6.7, dpi: int = 300, projection = None, frame: bool = False):
 
     import matplotlib.pyplot as plt
     from matplotlib.gridspec import GridSpec

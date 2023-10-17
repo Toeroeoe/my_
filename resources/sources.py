@@ -68,6 +68,7 @@ static = {
                         'path': '/p/scratch/cjibg31/jibg3105/CESMDataRoot/InputData/lnd/clm2/surfdata_map/',
                         'file': 'surfdata_CLM5EU3_v4_pos.nc',
                         'static_vars': ['PCT_NATVEG', 'PCT_CROP', 'PCT_LAKE', 'PCT_WETLAND', 'PCT_NAT_PFT', 'PCT_CFT'],
+                        
                         'abbr_PFT': {
                             0: 'Bare Ground',
                             1: 'NET Temperate',
@@ -87,6 +88,7 @@ static = {
                             15: 'UCrop UIrr',
                             16: 'UCrop Irr',
                         },
+                        
                         'names_PFT': {
                             0: 'Bare Ground',
                             1: 'Needleleaf evergreen tree - temperate',
@@ -106,6 +108,13 @@ static = {
                             15: 'C3 Unmanaged Rainfed Crop',
                             16: 'C3 Unmanaged Irrigated Crop',
                         },
+                        
+                        'sel_agg_layer_PFT': {
+                            'ENF': [1, 2],
+                            'DBF': [6, 7, 8],
+                            'GRA': [12, 13, 14],
+                            'CRO': [15, 16],
+                        },
 
                     },
 
@@ -124,7 +133,7 @@ variables = {
     
             'CLM5-EU3': {
                         'grid': 'EU3',
-                        'path': '/p/scratch/cjibg31/jibg3105/Data/CLM5EU3/006/join_8d/',
+                        'path': '/p/scratch/cjibg31/jibg3105/data/CLM5EU3/006/join_8d/',
                         'time_step': '8D',
                         'leap_day': False,
                         'freq_files': 'yearly',
@@ -159,7 +168,7 @@ variables = {
             
             'CLM5-EU3-pft': {
                         'grid': 'EU3',
-                        'path': '/p/scratch/cjibg31/jibg3105/Data/CLM5EU3/006/join_8d/pft/unlim_float/',
+                        'path': '/p/scratch/cjibg31/jibg3105/data/CLM5EU3/006/join_8d/pft/unlim_float/',
                         'time_step':'8D',
                         'leap_day':False,
                         'freq_files':'yearly',
@@ -208,7 +217,7 @@ variables = {
             
             'GLASS-EU3': {
                         'grid': 'EU3',
-                        'path': '/p/scratch/cjibg31/jibg3105/Data/EDWUE/EDWUE_Data/AVHRR_bilinear/',
+                        'path': '/p/scratch/cjibg31/jibg3105/data/EDWUE/',
                         'time_step': '8D',
                         'leap_day': True,
                         'freq_files':'yearly',
@@ -241,7 +250,7 @@ variables = {
             
             'ERA5L-EU3': {
                         'grid': 'EU3',
-                        'path': '/p/scratch/cjibg31/jibg3105/Data/EDWUE/EDWUE_Data/AVHRR_bilinear/',
+                        'path': '/p/scratch/cjibg31/jibg3105/data/EDWUE/',
                         'time_step': '8D',
                         'leap_day': True,
                         'freq_files':'yearly',
@@ -269,7 +278,7 @@ variables = {
             
             'GLEAM-EU3': {
                         'grid': 'EU3',
-                        'path': '/p/scratch/cjibg31/jibg3105/Data/EDWUE/EDWUE_Data/AVHRR_bilinear/',
+                        'path': '/p/scratch/cjibg31/jibg3105/data/EDWUE/',
                         'time_step': '8D',
                         'leap_day': True,
                         'freq_files': 'yearly',
@@ -305,7 +314,7 @@ variables = {
 
             'ICOS-WARMWINTER2020': {
                         'processing': 'ONEFLUX',
-                        'path': '/p/scratch/cjibg31/jibg3105/Data/EDWUE/ICOS/WARMWINTER2020',
+                        'path': '/p/scratch/cjibg31/jibg3105/data/ICOS/WARMWINTER2020',
                         'leap_day': False,
                         
                         'date_format': {

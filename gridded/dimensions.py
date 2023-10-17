@@ -12,6 +12,25 @@ def stack(array_list: list, axis: int = 0):
 
     return stacked_array
 
+def select(array, indices, axis):
+
+    """
+    Select values from array
+    along axis dimension
+    """
+
+    import numpy as np
+
+    new_shape           = [1] * array.ndim
+
+    new_shape[axis]     = -1
+
+    indices_dim         = np.reshape(indices, new_shape)
+
+    array_selected      = np.take_along_axis(array, indices_dim, axis = axis)
+
+    return array_selected
+
 
 def select_by_other(array, array_sel, method: str, axis_select: int, axis_shrink: int):
 

@@ -1,26 +1,22 @@
 
 
-def func(array, method):
+def stat(array, method):
 
     import numpy as np
 
-    if method == 'kurtosis':
+    import my_.math.stats as stats
 
-        from scipy.stats import kurtosis
+    func                = getattr(stats, method)
 
-        func_method     = kurtosis
-    
-    elif method == 'skew':
-
-        from scipy.stats import skew
-
-        func_method     = skew
-
-    else:
-
-        func_method     = getattr(np, method)
-
-    array_mean          = np.apply_over_axes(func_method, array, axes = (-1, -2))
+    array_mean          = func(array, axis = (-1, -2))
 
     return array_mean
 
+
+def mask(array, mask, true_value):
+
+    import numpy as np
+
+    array_masked        = np.where(mask == true_value, array, np.nan)
+
+    return array_masked

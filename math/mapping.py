@@ -18,3 +18,4 @@ def relative_difference(array1, array2, percent = False):
     if percent == True: return relative_difference * 100
 
     return relative_difference
+
