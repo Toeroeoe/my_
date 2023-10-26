@@ -39,7 +39,7 @@ def yearly_or_monthly_files(freq_files, path, y0, y1):
     return files
 
 
-def save_df(df, name, format):
+def save_df(df, name: str, format: str = 'csv'):
 
         if format == 'csv':
             
@@ -78,7 +78,7 @@ def read_resample_save(case_name: str, files: list, origin: str, suffixes: list 
     from my_.series.group import layer_level_to_int
 
     
-    file_out                    = f'out/{file_format}/Resampled_{origin}_{case_name}.{file_format}'
+    file_out                    = f'out/{case_name}/{file_format}/Resampled_{origin}.{file_format}'
 
     list_dfs                    = []
 

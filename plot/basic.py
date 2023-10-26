@@ -46,16 +46,17 @@ def bar(ax, xs, ys, color, width: float = 0.8, alpha: float = 0.8):
     return artist
 
 
-def plot(ax, xs, ys, colors, style: str = '-', lw: float = 1, alpha: float = 0.8):
+def plot(ax, xs, ys, colors, style: str = '-', lw: float = 1.0, alpha: float = 0.8,
+        markersize: float = 1.0, marker: str = '', zorder = 5):
 
     if isinstance(colors, list): ax.set_prop_cycle('color', colors)
 
-    artist = ax.plot(xs, ys, ls = style, lw = lw, alpha = alpha)
+    artist = ax.plot(xs, ys, ls = style, lw = lw, marker = marker, markersize = markersize, alpha = alpha, zorder = zorder)
 
     return artist
 
 
-def fill(ax, xs, y1s, y2s, colors, alpha: float = 0.4, zorder: int = 0):
+def fill(ax, xs, y1s, y2s, colors, alpha: float = 0.4, zorder: int = 2):
 
     if (y1s.ndim == 2):
 

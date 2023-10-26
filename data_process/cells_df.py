@@ -21,8 +21,8 @@ def src_var_cells_df(name_case: str, sources = [], variables = [], file_format: 
 
     for src in sources:
         
-        file_out                = f'out/{file_format}/Extracted_{name_case}_{src}.{file_format}'
-        file_out_info           = f'out/csv/Cells_{name_case}_{src}.csv'
+        file_out                = f'out/{name_case}/{file_format}/Extracted_{src}.{file_format}'
+        file_out_info           = f'out/{name_case}/csv/Cells_{src}.csv'
 
         if glob(file_out): print(f'Output file for {name_case} - {src} is already available.\n'); continue
         
@@ -122,7 +122,7 @@ def cell_static_info(name_case: str, sources = [], path_stations: str = 'user_in
     
     for src in sources:
 
-        file_out                = f'out/csv/Static_data_{name_case}_{src}.csv'
+        file_out                = f'out/{name_case}/csv/Static_data_{src}.csv'
 
         if glob(file_out): print(f'Static data output file for {src} is already available.\n'); continue
 

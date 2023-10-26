@@ -23,7 +23,7 @@ def marker_legend(ax, dict_labels_markers, marker_color = 'grey', marker_size = 
 def color_legend(ax, dict_labels_colors, cmap, linewidth: float = 5, fs_labels: float = 10,
                 anchor = (0.5, 0), markerfirst = True, handletextpad: float = 0.35,
                 columnspacing: float = 0.9, loc = 'lower center', handlelength: float = 1.0,
-                nrows: int = 2):
+                nrows: int = 1):
 
     from matplotlib.lines import Line2D
     

@@ -74,7 +74,7 @@ def single_src_var_lc_station_layer_index(src, var, lc, station, n_layers):
     return index
 
 
-def add_level_to_multi_columns(df, level: int, name_level: str, level_values):
+def add_level_to_multi_columns(df, level: int, name_level: str, level_values, sort = False):
 
     import pandas as pd
 
@@ -99,9 +99,9 @@ def add_level_to_multi_columns(df, level: int, name_level: str, level_values):
     df_new              = df.copy()
     df_new.columns      = new_index
 
-    df_new_sorted       = df_new.sort_index(axis = 1)
+    if sort: df_new == df_new.sort_index(axis = 1)
 
-    return df_new_sorted
+    return df_new
 
 
 def layer_level_to_int(df):
@@ -143,12 +143,11 @@ def select_multi_index(df, levels: list, keys: list, axis = 1):
     return df_sel
 
 
-
 def nona_level(df,  level: str, axis: int = 1, how = 'any'):
 
     import pandas as pd
 
-    df_level_groups     = df.groupby(axis = axis, level = level)
+    df_level_groups     = df.groupby(sort = False, axis = axis, level = level)
 
     df_nona             = df_level_groups.apply(pd.DataFrame.dropna, how = how)
 

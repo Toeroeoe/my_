@@ -20,16 +20,16 @@ def init_xy(ax, xs, ys, axhv_color: str = 'k', axhv_ls: str = '--', axhv_lw: flo
 
     ax.axhline(0, color = axhv_color, 
                 ls = axhv_ls, lw = axhv_lw, 
-                alpha = axhv_alpha, dashes = axhv_dashes, zorder = 0)
+                alpha = axhv_alpha, dashes = axhv_dashes, zorder = 1)
     
     ax.axvline(0, color = axhv_color, 
                 ls = axhv_ls, lw = axhv_lw, 
-                alpha = axhv_alpha, dashes = axhv_dashes, zorder = 0)
+                alpha = axhv_alpha, dashes = axhv_dashes, zorder = 1)
 
     ax.plot([-1.1, 1.1], [-1.1, 1.1], 
             transform = ax.transAxes, color = diag_color, 
             ls = diag_ls, lw = diag_lw, 
-            alpha = diag_alpha, dashes = diag_dashes, zorder = 0)
+            alpha = diag_alpha, dashes = diag_dashes, zorder = 1)
     
     props = dict(facecolor='white', edgecolor='none', alpha=0.85)
 
@@ -89,12 +89,47 @@ def EU3_plot_init(rotnpole_lat: float = 39.25, rotnpole_lon: float = -162.0, sem
     return rp, pc, xs, ys
 
 
-def init_doy(ax, xs, ys, axhv_color: str = 'k', axhv_ls: str = '--', axhv_lw: float = 0.7, axhv_alpha: float = 0.8, axhv_dashes: tuple = (4, 4),
+def init_ts(ax, xs, ys, axhv_color: str = 'k', axhv_ls: str = '--', axhv_lw: float = 0.7, axhv_alpha: float = 0.8, axhv_dashes: tuple = (4, 4),
        title: str = '', xlabel: str = '', ylabel: str = '', y_title: float = 1.1, fs_title: int = 14, fs_label: int = 12, fs_ticks = 10,
        ax_tag = '', ax_tag_x: float = 0.5, ax_tag_y: float = 1.0):
     
     from my_.plot.style import nospines
     from my_.plot.limits import axgrid, numeric_ticks, free_lims
+
+    import matplotlib.pyplot as plt
+
+    axgrid(ax)
+    nospines(ax)
+
+    plt.suptitle(title, fontsize = fs_title, y = y_title)
+    
+    ax.set_ylabel(ylabel, fontsize = fs_label)
+    ax.set_xlabel(xlabel, fontsize = fs_label)
+    
+    ax.tick_params(axis='both', which='major', pad=10)
+
+    ax.axhline(0, color = axhv_color, 
+                ls = axhv_ls, lw = axhv_lw, 
+                alpha = axhv_alpha, dashes = axhv_dashes, zorder = 1)
+    
+    ax.axvline(0, color = axhv_color, 
+                ls = axhv_ls, lw = axhv_lw, 
+                alpha = axhv_alpha, dashes = axhv_dashes, zorder = 1)
+    
+    props = dict(facecolor='white', edgecolor='none', alpha=0.85)
+
+    ax.text(ax_tag_x, ax_tag_y, ax_tag, fontsize = fs_label, transform = ax.transAxes, va = 'bottom', ha = 'center', bbox = props)
+
+    numeric_ticks(ax, fs_ticks = fs_ticks)
+    free_lims(ax, xs, ys)
+
+
+def init_ts_2(ax, xs, ys, axhv_color: str = 'k', axhv_ls: str = '--', axhv_lw: float = 0.7, axhv_alpha: float = 0.8, axhv_dashes: tuple = (4, 4),
+       title: str = '', xlabel: str = '', ylabel: str = '', y_title: float = 1.1, fs_title: int = 14, fs_label: int = 12, fs_ticks = 10,
+       ax_tag = '', ax_tag_x: float = 0.5, ax_tag_y: float = 1.0):
+    
+    from my_.plot.style import nospines
+    from my_.plot.limits import axgrid, numeric_ticks, free_date_lim, free_numeric_lim
 
     import matplotlib.pyplot as plt
 
@@ -121,7 +156,9 @@ def init_doy(ax, xs, ys, axhv_color: str = 'k', axhv_ls: str = '--', axhv_lw: fl
     ax.text(ax_tag_x, ax_tag_y, ax_tag, fontsize = fs_label, transform = ax.transAxes, va = 'bottom', ha = 'center', bbox = props)
 
     numeric_ticks(ax, fs_ticks = fs_ticks)
-    free_lims(ax, xs, ys)
+    free_date_lim(ax, xs)
+    free_numeric_lim(ax, ys)
+
 
 
 def init_dist(ax, xs, ys, axhv_color: str = 'k', axhv_ls: str = '--', axhv_lw: float = 0.7, axhv_alpha: float = 0.8, axhv_dashes: tuple = (4, 4),

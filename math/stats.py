@@ -43,19 +43,21 @@ def rmse(obs, sim, decimals=2):
     """
     
     import numpy as np
+    import pandas as pd
     
-    # The error between observations and model
+    from my_.series.convert import tab_to_array
+
+    obs                             = tab_to_array(obs)
+    sim                             = tab_to_array(sim)
+    
     error                           = obs - sim
 
-    if all(np.isnan(error)): return np.nan
-    
-    # Squared error
+    if np.all(np.isnan(error)): return np.nan
+
     squared_error                   = error**2
 
-    # Mean of the suqred error
     mean_squared_error              = np.nanmean(squared_error)
 
-    # Root of the mean of the quared error
     rmse                            = mean_squared_error**0.5
 
     rmse_rounded                    = np.around(rmse, decimals)
@@ -80,23 +82,51 @@ def gauss_kde_pdf(data, n = 100):
     return pd.DataFrame({'xs': xs, 'ys': ys})
 
 
-def percent_bias(obs, sim, decimals: int = 2):
+def pbias(obs, sim, decimals: int = 2):
 
-    import pandas as pd
     import numpy as np
 
-    if isinstance(obs, pd.DataFrame): obs = obs.values
+    from my_.series.convert import tab_to_array
 
-    error                           = obs - sim
+    obs                             = tab_to_array(obs)
+    sim                             = tab_to_array(sim)
 
-    sum_error                       = np.nansum(error)
+    bias                            = sim - obs
 
-    sum_obs                         = np.nansum(obs)
+    if np.all(np.isnan(bias)): return np.nan
 
-    rel_error                       = sum_error / sum_obs
+    sum_bias                        = np.nansum(bias)
 
-    percent_bias                    = rel_error * 100
+    sum_obs                         = np.nansum(np.abs(obs))
+
+    rel_bias                        = sum_bias / sum_obs
+    
+    percent_bias                    = rel_bias * 100
 
     percent_bias_rounded            = np.around(percent_bias, decimals)
 
     return percent_bias_rounded
+
+
+def r(obs, sim, decimals: int = 2):
+
+    import numpy as np
+    from scipy.stats.stats import pearsonr 
+
+    from my_.series.convert import tab_to_array
+
+    obs                             = tab_to_array(obs)
+    sim                             = tab_to_array(sim)
+
+    mask                            = ~np.isnan(obs) & ~np.isnan(sim)
+    
+    if np.count_nonzero(mask) <= 5: return np.nan
+
+    obs_masked                      = obs[mask]
+    sim_masked                      = sim[mask]
+
+    r, p                            = pearsonr(obs_masked, sim_masked)
+
+    r_rounded, p_rounded            = np.around(r, decimals), np.around(p, decimals)
+
+    return r_rounded

@@ -99,7 +99,7 @@ def single_EU3_mesh_cat_cbar(array, lat, lon,
 
     ax.add_feature(cfeature.OCEAN, edgecolor='face', facecolor='white', zorder = 2)
 
-    cmap_n                      = np.max(array) + 1
+    cmap_n                      = np.max(array) + 1 # "maybe better": length of unique values. But not sure
 
     cmap_c                      = colormap(cmap, cmap_n)
 
@@ -257,17 +257,17 @@ def bar_rmse_landcover(df, variable, sources_insitu, sources_grids, sel_landcove
 def doy_dist_landcover(df, variable, sources_insitu, sources_grids, sel_landcover,
                        colors: dict = {}, doy_init_args = {}, dist_init_args = {},
                        doy_args = {}, dist_args = {}, doy_fill_args = {},
-                       color_legend_args = {}, do_fill = True):
+                       color_legend_args = {}, do_fill = True, do_line_bounds = False):
 
 
     from my_.series.group import select_multi_index, nona_level
     from my_.series.aggregate import column_wise
 
-    from my_.math.stats import gauss_kde_pdf, percent_bias
+    from my_.math.stats import gauss_kde_pdf, pbias
     from my_.resources.sources import query_variables
 
     from my_.figures.four_by_two import vertical_top_cax
-    from my_.plot.init_ax import init_doy, init_dist
+    from my_.plot.init_ax import init_ts, init_dist
     from my_.plot.legend import color_legend
     from my_.plot.basic import plot, fill 
     from my_.files.handy import save_df 
@@ -291,8 +291,8 @@ def doy_dist_landcover(df, variable, sources_insitu, sources_grids, sel_landcove
 
     df_doy_lc_mean              = df_doy_lc.mean()
 
-    df_doy_lc_mean_pbias        = column_wise(df_doy_lc_mean, ffunc = percent_bias)
-    save_df(df_doy_lc_mean_pbias, f'out/csv/doy_lc_mean_pbias.csv', format = 'csv')
+    #df_doy_lc_mean_pbias        = column_wise(df_doy_lc_mean, ffunc = pbias)
+    #save_df(df_doy_lc_mean_pbias, f'out/csv/doy_lc_mean_pbias.csv', format = 'csv')
 
     df_doy_lc_std               = df_doy_lc.std()
 
@@ -330,17 +330,23 @@ def doy_dist_landcover(df, variable, sources_insitu, sources_grids, sel_landcove
         lower                   = ys_doy - err_doy
         upper                   = ys_doy + err_doy
 
-        init_doy(axs[ilc, 0], xs_doy, df_doy_lc_mean, ylabel = var_label, ax_tag = lc, **doy_init_args)
+        init_ts(axs[ilc, 0], xs_doy, df_doy_lc_mean, ylabel = var_label, ax_tag = lc, **doy_init_args)
         init_dist(axs[ilc, 1], all_xs, all_ys, xlabel = var_label, ax_tag = lc, **dist_init_args)
 
         plot(axs[ilc, 0], xs_doy, ys_doy, colors = colorsc, **doy_args)
         if do_fill : fill(axs[ilc, 0], xs_doy, lower, upper, colors = colorsc, **doy_fill_args)
+
+        if do_line_bounds:
+            plot(axs[ilc, 0], xs_doy, lower, colors = colorsc, style = '-.', alpha = 0.6, lw = 1.0, zorder = 6)
+            plot(axs[ilc, 0], xs_doy, upper, colors = colorsc, style = '-.', alpha = 0.6, lw = 1.0, zorder = 6)
         plot(axs[ilc, 1], xs_dist, ys_dist, colors = colorsc, **dist_args)
         
     return fig
 
 
 def pie_landcover(df_static, selected_landcover, colors = {}, color_legend_args = {}):
+
+    print('Plot network land cover pie plots\n')
 
     from my_.series.aggregate import concat
     from my_.resources.sources import query_static
@@ -402,17 +408,15 @@ def pie_landcover(df_static, selected_landcover, colors = {}, color_legend_args 
 def doy_landcover(df, variable, sources_insitu, sources_grids, sel_landcover,
                        colors: dict = {}, doy_init_args = {},
                        doy_args = {}, doy_fill_args = {},
-                       color_legend_args = {}, do_fill = True):
+                       color_legend_args = {}, do_fill = False):
     
-
+    print('Plot network land cover DOY plots\n')
 
     from my_.series.group import select_multi_index, nona_level
-
-    from my_.math.stats import gauss_kde_pdf
     from my_.resources.sources import query_variables
 
     from my_.figures.two_by_two import square_top_cax
-    from my_.plot.init_ax import init_doy, init_dist
+    from my_.plot.init_ax import init_ts
     from my_.plot.legend import color_legend
     from my_.plot.basic import plot, fill 
 
@@ -458,9 +462,54 @@ def doy_landcover(df, variable, sources_insitu, sources_grids, sel_landcover,
         lower                   = ys_doy - err_doy
         upper                   = ys_doy + err_doy
 
-        init_doy(axs[ilc], xs_doy, df_doy_lc_std, ylabel = var_label, ax_tag = lc, **doy_init_args)
+        init_ts(axs[ilc], xs_doy, df_doy_lc_std, ylabel = var_label, ax_tag = lc, **doy_init_args)
         plot(axs[ilc], xs_doy, ys_doy, colors = colorsc, **doy_args)
 
         if do_fill: fill(axs[ilc], xs_doy, lower, upper, colors = colorsc, **doy_fill_args)
 
     return fig
+
+
+def plot_ts(df, variable, station, colors: dict = {}, color_legend_args: dict = {},
+            fig_args: dict = {}, ts_init_args: dict = {}, plot_args: dict = {}):
+
+    print(f'Plot station time-series: {station}, {variable}\n')
+
+    from my_.series.group import select_multi_index, nona_level
+    from my_.figures.single import square_top_cax
+    from my_.plot.init_ax import init_ts_2
+    from my_.plot.basic import plot
+    from my_.plot.legend import color_legend
+    from my_.resources.sources import query_variables
+
+    import colorcet as cc
+    import numpy as np
+
+    df_nona                     = nona_level(df, ['Variable', 'Station'])
+
+    df_s                        = select_multi_index(df_nona, ['Variable', 'Station'],
+                                                      keys = [variable, station])
+    
+    sources                     = df_s.columns.unique(level = 'Source')
+    
+    cmapc                       = cc.glasbey_hv[:]
+    colors                      = {k: v for k,v in colors.items() if k in sources}
+    colorsc                     = [cmapc[colors[d]] for d in list(sources)]
+
+    fig, ax, axl                = square_top_cax(**fig_args)
+
+    var_units                   = query_variables(sources[0], 'var_units')[variable]
+
+    xs                          = df_s.index
+    ys                          = df_s
+
+    if np.all(np.isnan(ys)): return fig
+    
+    color_legend(axl, colors, cmapc, **color_legend_args)
+
+    init_ts_2(ax, df_s.dropna(how = 'all').index, df_s.dropna(how = 'all'),
+            title = f'{station} {variable} [{var_units}]', **ts_init_args)
+
+    plot(ax, xs, ys, colors = colorsc, **plot_args)
+
+    return  fig

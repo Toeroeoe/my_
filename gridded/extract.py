@@ -43,8 +43,6 @@ def grid_to_cell_df(array, list_points, shape, column, lat_point, lon_point, ind
 
     from my_.series.convert import cell_to_df
 
-    from my_.gridded.spatial import spatial_moments
-
 
     coords_point                = (lat_point, lon_point)
 

@@ -13,7 +13,7 @@ def src_var_insitu_df(name_case: str, sources = [], variables = [],
 
     for src in sources:
         
-        file_out                = f'out/{file_format}/Insitu_{name_case}_{src}.{file_format}'
+        file_out                = f'out/{name_case}/{file_format}/Insitu_{src}.{file_format}'
 
         if glob(file_out): print(f'Output file for {name_case} - {src} is already available.\n'); continue
         
@@ -25,7 +25,7 @@ def src_var_insitu_df(name_case: str, sources = [], variables = [],
 
         if processing == 'ONEFLUX':
 
-            oneflux(df_stations, src, variables, qc_value = 0.8,
+            oneflux(name_case, df_stations, src, variables, qc_values = {'D': 0.8, 'H': 1.0},
                     file_out = file_out, file_format = file_format,
                     year_start = year_start, year_end = year_end)
 
@@ -33,22 +33,23 @@ def src_var_insitu_df(name_case: str, sources = [], variables = [],
 
         
     
-def oneflux(df_stations, src: str, variables = [], resample_method = 'mean', 
-            qc_flag: bool = True, qc_value: float = 0.8, 
-            file_out: str = 'out/csv/Insitu.csv', file_format: str = 'csv',
+def oneflux(name, df_stations, src: str, variables = [], resample_method = 'mean', 
+            qc_flag: bool = True, qc_values: dict = {'D': 0.8, 'H': 1.0},
+            file_format: str = 'csv', file_out: str = 'oneflux_out.csv',
             year_start: int = 1995, year_end: int = 2018):
 
     from my_.misc.list_dict_key import keys_same_value, translate_dict_values, filter_dict_keys
     from my_.resources.sources import query_variables, available_variables
     from my_.files.csv import open_csv 
     from my_.files.handy import save_df
-    from my_.series.time import index, FLX_to_datetime, lowest_frequency, index_to_datetime
-    from my_.series.group import src_var_lc_station_index, multi_columns
+    from my_.series.time import index, lowest_frequency, index_to_datetime
+    from my_.series.group import  multi_columns
     from my_.series.interpolate import resample, reindex
-    from my_.series.aggregate import mask, concat
+    from my_.series.aggregate import mask_ge, mask_le, concat
     from my_.resources.units import transform_df
-
     
+    
+
     path                        = query_variables(src, 'path')
     var_names                   = query_variables(src, 'var_names')
     time_steps                  = query_variables(src, 'var_time_step')
@@ -64,6 +65,7 @@ def oneflux(df_stations, src: str, variables = [], resample_method = 'mean',
 
     filtered_ts                 = filter_dict_keys(time_steps, vars_avail)
     grouped_ts                  = keys_same_value(filtered_ts)
+
     grouped_ts_src              = translate_dict_values(idict = grouped_ts, idict_translate = var_names)
     grouped_ts_qc               = translate_dict_values(idict = grouped_ts, idict_translate = qcs)
 
@@ -94,9 +96,17 @@ def oneflux(df_stations, src: str, variables = [], resample_method = 'mean',
             
             if qc_flag:
 
+                qc_value        = qc_values[ts]
+                    
                 df_sel_qc       = ts_df_date[grouped_ts_qc[ts]]
 
-                df_sel          = mask(df_sel, df_sel_qc, qc_value)
+                if ts == 'H':
+
+                    df_sel      = mask_le(df_sel, df_sel_qc, qc_value)
+                
+                if ts == 'D':
+
+                    df_sel      = mask_ge(df_sel, df_sel_qc, qc_value)
 
             df_sel_resampled    = resample(df_sel, lowest_freq_ts, resample_method)
 

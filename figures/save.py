@@ -8,5 +8,8 @@ def save_png(fig, name_file: str, bbox_inches: str = 'tight', dpi: int = 300):
 
 
 def save_pdf(pdf, fig):
+    
+    import matplotlib.pyplot as plt
 
     pdf.savefig(fig)
+    plt.close()

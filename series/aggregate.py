@@ -51,7 +51,7 @@ def add_missing_column_levels(dfs):
 
             
 
-def mask(df, masker, value, skip_mask_NA = True):
+def mask_ge(df, masker, value, skip_mask_NA = True):
 
     import pandas as pd
 
@@ -65,6 +65,20 @@ def mask(df, masker, value, skip_mask_NA = True):
 
     return df_masked
 
+
+def mask_le(df, masker, value, skip_mask_NA = True):
+
+    import pandas as pd
+
+    if skip_mask_NA:
+
+        df_masked           = df.where(masker.values <= value, axis = 0)
+    
+    elif not skip_mask_NA:
+
+        df_masked           = df.where(((masker.values <= value) | (masker.values == pd.NA)), axis = 0)
+
+    return df_masked
 
 
 def apply(df, method):
@@ -102,6 +116,53 @@ def column_wise(df, ffunc):
     return df_out
 
 
-def single_column_wise(df, column: str, ffunc):
+def single_column_wise(df, level: str, key: str, ffunc, ffunc_args: dict = {}):
 
-    print('haha')
+    import pandas as pd
+    
+    from my_.series.group import select_multi_index
+
+    columns                 = df.columns
+
+    keys                    = columns.get_level_values(level)
+
+    index                   = columns.droplevel(level).unique()
+
+    df_out                  = pd.DataFrame(columns = index,  index = keys)
+
+    independent             = select_multi_index(df, levels = level, keys = key)
+
+    for icol, col in enumerate(df):
+
+        dependent           = df[col]
+        ix                  = keys[icol]
+        
+        df_out.loc[ix, index] = ffunc(independent, dependent, **ffunc_args)
+
+    return df_out
+
+def single_level_wise(df, level: str, key: str, ffunc, ffunc_args: dict = {}):
+
+    import pandas as pd
+    
+    from my_.series.group import select_multi_index
+    
+    columns                 = df.columns
+
+    keys                    = columns.get_level_values(level).unique()
+
+
+    df_out                  = pd.DataFrame(columns = [ffunc.__name__],  index = keys)
+
+    independent             = select_multi_index(df, levels = level, keys = key).to_numpy().flatten()
+
+    for value in df.columns.get_level_values(level).unique():
+
+        dependent           = select_multi_index(df, levels = level, keys = value).to_numpy().flatten()
+        
+        df_out.loc[value, ffunc.__name__] = ffunc(independent, dependent, **ffunc_args)
+
+    
+    return df_out
+
+        

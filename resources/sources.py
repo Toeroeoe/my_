@@ -140,27 +140,45 @@ variables = {
                         
                         'var_names': {
                             'GPP': 'GPP',
+                            'NEE': 'NEE',
+                            'ER': 'ER',
                             'ET': 'QFLX_EVAP_TOT',
+                            'ET-corr': 'QFLX_EVAP_TOT',
                         },
 
                         'var_units': {
                             'GPP': r'$\mathdefault{g\;C\;day^{-1}}$',
+                            'NEE': r'$\mathdefault{g\;C\;day^{-1}}$',
+                            'ER': r'$\mathdefault{g\;C\;day^{-1}}$',
                             'ET': r'$\mathdefault{mm\;day^{-1}}$',
+                            'ET-corr': r'$\mathdefault{mm\;day^{-1}}$',
+
                         },
                         
                         'var_unit_transform_methods': {
                             'GPP': 'linear',
+                            'NEE': 'linear',
+                            'ER': 'linear',
                             'ET': 'linear',
+                            'ET-corr': 'linear',
+
                         },
                         
                         'var_unit_transform_m': {
                             'GPP': sec_per_day,
+                            'NEE': sec_per_day,
+                            'ER': sec_per_day,
                             'ET': sec_per_day,
+                            'ET-corr': sec_per_day,
+
                         },
 
                         'var_unit_transform_b': {
                             'GPP': 0,
+                            'NEE': 0,
+                            'ER': 0,
                             'ET': 0,
+                            'ET-corr': 0,
                         },
 
                     },
@@ -176,11 +194,13 @@ variables = {
                         'var_names': {
                             'GPP': 'GPP',
                             'ET': 'ET',
+                            'ET-corr': 'ET'
                         },
 
                         'var_layer': {
                             'GPP': 'PFT',
                             'ET': 'PFT',
+                            'ET-corr': 'PFT',
                         },
 
                         'method_layer_agg': {
@@ -190,21 +210,25 @@ variables = {
                         'var_units': {
                             'GPP': r'$\mathdefault{g\;C\;day^{-1}}$',
                             'ET': r'$\mathdefault{mm\;day^{-1}}$',
+                            'ET-corr': r'$\mathdefault{mm\;day^{-1}}$',
                         },
 
                         'var_unit_transform_methods': {
                             'GPP': 'linear',
                             'ET': 'linear',
+                            'ET-corr': 'linear',
                         },
                         
                         'var_unit_transform_m': {
                             'GPP': 1,
                             'ET': 1,
+                            'ET-corr': 1,
                         },
 
                         'var_unit_transform_b': {
                             'GPP': 0,
                             'ET': 0,
+                            'ET-corr': 0,
                         },
 
                         'sel_agg_layer_PFT': {
@@ -306,10 +330,45 @@ variables = {
             
             'COSMOREA6-EU3': {
                         'grid': 'EU3',
-                        'path': '',
+                        'path': '/p/scratch/cjibg31/jibg3105/data/COSMOREA6/8daily/',
                         'time_step': '8D',
                         'leap_day': True,
-                        'freq_files': 'monthly',
+                        'freq_files': 'yearly',
+
+                        'var_names': {
+                            'Temp': 'TBOT',
+                            'Precip': 'PRECTmms',
+                            'SWdown': 'FSDS',
+                            'RH': 'RH',
+                        },
+
+                        'var_units': {
+                            'Temp': r'$\mathdefault{\degree\;C}$',
+                            'Precip': r'$\mathdefault{mm\;day^{-1}}$',
+                            'RH': r'$\mathdefault{\%}$',
+                            'SWdown': r'$\mathdefault{W\;m^{-2}}$'
+                        },
+
+                        'var_unit_transform_methods': {
+                            'Temp': 'linear',
+                            'Precip': 'linear',
+                            'RH': 'linear',
+                            'SWdown': 'linear',
+                        },
+                        
+                        'var_unit_transform_m': {
+                            'Temp': 1,
+                            'Precip': sec_per_day,
+                            'RH': 1,
+                            'SWdown': 1,
+                        },
+
+                        'var_unit_transform_b': {
+                            'Temp': -273.15,
+                            'Precip': 0,
+                            'RH': 0,
+                            'SWdown': 0,
+                        },
                     },
 
             'ICOS-WARMWINTER2020': {
@@ -324,6 +383,8 @@ variables = {
                         
                         'var_names': {
                             'GPP': 'GPP_NT_VUT_REF',
+                            'NEE': 'NEE_VUT_REF',
+                            'ER': 'RECO_NT_VUT_REF',
                             'ET': 'LE_F_MDS',
                             'ET-corr': 'LE_CORR',
                             'Temp': 'TA_F_MDS',
@@ -334,11 +395,20 @@ variables = {
 
                         'var_units': {
                             'GPP': r'$\mathdefault{g\;C\;day^{-1}}$',
+                            'NEE': r'$\mathdefault{g\;C\;day^{-1}}$',
+                            'ER': r'$\mathdefault{g\;C\;day^{-1}}$',
                             'ET': r'$\mathdefault{mm\;day^{-1}}$',
+                            'ET-corr': r'$\mathdefault{mm\;day^{-1}}$',
+                            'Temp': r'$\mathdefault{\degree\;C}$',
+                            'Precip': r'$\mathdefault{mm\;day^{-1}}$',
+                            'RH': r'$\mathdefault{\%}$',
+                            'SWdown': r'$\mathdefault{W\;m^{-2}}$'
                         },
 
                         'var_time_step': {
                             'GPP': 'D',
+                            'NEE': 'D',
+                            'ER': 'D',
                             'ET': 'D',
                             'ET-corr': 'D',
                             'Temp': 'D',
@@ -358,6 +428,8 @@ variables = {
 
                         'var_QC': {
                             'GPP': 'NEE_VUT_REF_QC',
+                            'NEE': 'NEE_VUT_REF_QC',
+                            'ER': 'NEE_VUT_REF_QC',
                             'ET': 'LE_F_MDS_QC',
                             'ET-corr': 'LE_F_MDS_QC',
                             'Temp': 'TA_F_MDS_QC',
@@ -368,6 +440,8 @@ variables = {
 
                         'var_unit_transform_methods': {
                             'GPP': 'linear',
+                            'NEE': 'linear',
+                            'ER': 'linear',
                             'ET': 'linear',
                             'ET-corr': 'linear',
                             'Temp': 'linear',
@@ -378,6 +452,8 @@ variables = {
                         
                         'var_unit_transform_m': {
                             'GPP': 1,
+                            'NEE': 1,
+                            'ER': 1,
                             'ET': 0.035,
                             'ET-corr': 0.035,
                             'Temp': 1,
@@ -388,6 +464,8 @@ variables = {
 
                         'var_unit_transform_b': {
                             'GPP': 0,
+                            'NEE': 0,
+                            'ER': 0,
                             'ET': 0,
                             'ET-corr': 0,
                             'Temp': 0,
