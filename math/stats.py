@@ -43,20 +43,23 @@ def rmse(obs, sim, decimals=2):
     """
     
     import numpy as np
-    import pandas as pd
     
     from my_.series.convert import tab_to_array
 
     obs                             = tab_to_array(obs)
     sim                             = tab_to_array(sim)
     
-    error                           = obs - sim
+    error                           = sim - obs
 
     if np.all(np.isnan(error)): return np.nan
 
     squared_error                   = error**2
 
-    mean_squared_error              = np.nanmean(squared_error)
+    sum_squared_error               = np.nansum(squared_error)
+
+    n                               = np.count_nonzero(~np.isnan(error))
+
+    mean_squared_error              = sum_squared_error / n
 
     rmse                            = mean_squared_error**0.5
 
@@ -97,7 +100,7 @@ def pbias(obs, sim, decimals: int = 2):
 
     sum_bias                        = np.nansum(bias)
 
-    sum_obs                         = np.nansum(np.abs(obs))
+    sum_obs                         = np.nansum(obs)
 
     rel_bias                        = sum_bias / sum_obs
     

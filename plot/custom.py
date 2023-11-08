@@ -170,7 +170,7 @@ def xy_landcover_moments(df, variable, sources_insitu: list = [], sources_grids:
         df_i_lc_agg             = df_i_lc.agg(agg_moment)
         df_d_lc_agg             = df_d_lc.agg(agg_moment)
 
-        title_fig               = f'{variable} moments'
+        title_fig               = ''
 
         xlabel                  = f'Observation [{mom_units[iax]}]'
         ylabel                  = f'Model [{mom_units[iax]}]'
@@ -254,7 +254,7 @@ def bar_rmse_landcover(df, variable, sources_insitu, sources_grids, sel_landcove
     return fig
 
 
-def doy_dist_landcover(df, variable, sources_insitu, sources_grids, sel_landcover,
+def doy_dist_landcover(name, df, variable, sources_insitu, sources_grids, sel_landcover,
                        colors: dict = {}, doy_init_args = {}, dist_init_args = {},
                        doy_args = {}, dist_args = {}, doy_fill_args = {},
                        color_legend_args = {}, do_fill = True, do_line_bounds = False):
@@ -263,7 +263,7 @@ def doy_dist_landcover(df, variable, sources_insitu, sources_grids, sel_landcove
     from my_.series.group import select_multi_index, nona_level
     from my_.series.aggregate import column_wise
 
-    from my_.math.stats import gauss_kde_pdf, pbias
+    from my_.math.stats import gauss_kde_pdf, pbias, rmse
     from my_.resources.sources import query_variables
 
     from my_.figures.four_by_two import vertical_top_cax
@@ -291,8 +291,10 @@ def doy_dist_landcover(df, variable, sources_insitu, sources_grids, sel_landcove
 
     df_doy_lc_mean              = df_doy_lc.mean()
 
-    #df_doy_lc_mean_pbias        = column_wise(df_doy_lc_mean, ffunc = pbias)
-    #save_df(df_doy_lc_mean_pbias, f'out/csv/doy_lc_mean_pbias.csv', format = 'csv')
+    df_doy_lc_mean_rmse        = column_wise(df_doy_lc_mean, ffunc = rmse)
+    df_doy_lc_mean_pbias        = column_wise(df_doy_lc_mean, ffunc = pbias)
+    save_df(df_doy_lc_mean_rmse, f'out/{name}/csv/doy_lc_mean_rmse_{variable}.csv', format = 'csv')
+    save_df(df_doy_lc_mean_pbias, f'out/{name}/csv/doy_lc_mean_pbias_{variable}.csv', format = 'csv')
 
     df_doy_lc_std               = df_doy_lc.std()
 

@@ -122,7 +122,7 @@ def oneflux(name, df_stations, src: str, variables = [], resample_method = 'mean
 
             list_dfs.append(df_sel_transformed)
 
-    df_oneflux                  = concat(list_dfs)
+    df_oneflux                  = concat(list_dfs, sort = False)
 
     save_df(df_oneflux, file_out, file_format)
 

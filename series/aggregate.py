@@ -1,6 +1,6 @@
 
 
-def concat(dfs: list = [], join: str = 'outer', axis: int = 1, sort: bool = True):
+def concat(dfs: list = [], join: str = 'outer', axis: int = 1, sort: bool = False):
 
     import pandas as pd
 
@@ -141,16 +141,17 @@ def single_column_wise(df, level: str, key: str, ffunc, ffunc_args: dict = {}):
 
     return df_out
 
+
 def single_level_wise(df, level: str, key: str, ffunc, ffunc_args: dict = {}):
 
     import pandas as pd
+    import numpy as np
     
     from my_.series.group import select_multi_index
     
     columns                 = df.columns
 
     keys                    = columns.get_level_values(level).unique()
-
 
     df_out                  = pd.DataFrame(columns = [ffunc.__name__],  index = keys)
 
@@ -159,9 +160,14 @@ def single_level_wise(df, level: str, key: str, ffunc, ffunc_args: dict = {}):
     for value in df.columns.get_level_values(level).unique():
 
         dependent           = select_multi_index(df, levels = level, keys = value).to_numpy().flatten()
+
+        #for icol, col in enumerate(dependent):
+
+            #print(independent.iloc[:,icol], dependent[col])
+            
+            #results.append(ffunc(independent.iloc[:,icol], dependent[col], **ffunc_args))
         
         df_out.loc[value, ffunc.__name__] = ffunc(independent, dependent, **ffunc_args)
-
     
     return df_out
 

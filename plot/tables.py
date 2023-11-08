@@ -1,5 +1,5 @@
 
-def single_site_model_benchmarks(df, variable: str, obs: str, df_static, sel_landcover):
+def single_site_model_benchmarks(name, df, variable: str, obs: str, df_static, sel_landcover):
 
     print('Calculate model benchmarks based on single sites and observations\n')
 
@@ -35,20 +35,20 @@ def single_site_model_benchmarks(df, variable: str, obs: str, df_static, sel_lan
     df_pbias_sort               = df_pbias.reindex(new_cols, axis = 1).T
     df_r_sort                   = df_r.reindex(new_cols, axis = 1).T
 
-    save_df(df_rmse_sort, f'out/csv/stations_rmse_{variable}.csv')
-    save_df(df_pbias_sort, f'out/csv/stations_pbias_{variable}.csv')
-    save_df(df_r_sort, f'out/csv/stations_r_{variable}.csv')
-    save_df(df_count, f'out/csv/stations_count_{variable}.csv')
-    save_df(df_lc_count, f'out/csv/landcover_count_{variable}.csv')
+    save_df(df_rmse_sort, f'out/{name}/csv/stations_rmse_{variable}.csv')
+    save_df(df_pbias_sort, f'out/{name}/csv/stations_pbias_{variable}.csv')
+    save_df(df_r_sort, f'out/{name}/csv/stations_r_{variable}.csv')
+    save_df(df_count, f'out/{name}/csv/stations_count_{variable}.csv')
+    save_df(df_lc_count, f'out/{name}/csv/landcover_count_{variable}.csv')
     
 
 
-def landcover_model_benchmarks(df, variable: str, obs: str, df_static, sel_landcover):
+def landcover_model_benchmarks(name, df, variable: str, obs: str, df_static, sel_landcover):
 
     print('Calculate model benchmarks based on landcover and observations\n')
     
     from my_.series.group import select_multi_index, nona_level
-    from my_.series.aggregate import single_level_wise
+    from my_.series.aggregate import single_level_wise, single_column_wise
     from my_.math.stats import rmse, pbias, r
     from my_.files.handy import save_df
 
@@ -58,13 +58,15 @@ def landcover_model_benchmarks(df, variable: str, obs: str, df_static, sel_landc
                                                       keys = [variable, sel_landcover])
     
     df_groups                   = df_n.groupby(axis = 1, level = ['Landcover'])
+
     df_groups_rmse              = df_groups.apply(single_level_wise, level = 'Source', key = obs, ffunc = rmse)
     df_groups_pbias             = df_groups.apply(single_level_wise, level = 'Source', key = obs, ffunc = pbias)
     df_groups_r                 = df_groups.apply(single_level_wise, level = 'Source', key = obs, ffunc = r)
 
+
     df_out                      = df_groups_pbias.join(df_groups_rmse).T.swaplevel(axis = 0)
 
-    save_df(df_out, f'out/csv/landcover_rmse_pbias_{variable}.csv')
+    save_df(df_out, f'out/{name}/csv/landcover_rmse_pbias_{variable}.csv')
 
 
     

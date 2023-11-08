@@ -53,11 +53,11 @@ def src_var_cells_df(name_case: str, sources = [], variables = [], file_format: 
 
         print('Load data...\n')
         data                    = open_netcdf(files)
-        arrays_list             = netcdf_variables_to_array(data, variables = vars_src)
+        arrays_list             = netcdf_variables_to_array(data, variables = vars_src, dtype = 'float32')
 
         data_geo                = open_netcdf(f'{path_grid}/{file_grid}')
         
-        [lat2d, lon2d]          = netcdf_variables_to_array(data_geo, variables = [grid_lat, grid_lon])
+        [lat2d, lon2d]          = netcdf_variables_to_array(data_geo, variables = [grid_lat, grid_lon], dtype ='float32')
 
         list_points             = grid_to_points(lat2d, lon2d)
 
@@ -95,7 +95,7 @@ def src_var_cells_df(name_case: str, sources = [], variables = [], file_format: 
             df_cells_info.loc[i_station,['lat_cell', 'lon_cell']] = coords
             df_cells_info.loc[i_station,['i_lat_cell', 'i_lon_cell']] = idxs
         
-        df_out                  = concat(list_ts)
+        df_out                  = concat(list_ts, sort = False)
 
         save_df(df_cells_info, file_out_info, 'csv')
         save_df(df_out, file_out, file_format)
