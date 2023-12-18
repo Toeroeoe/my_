@@ -171,4 +171,11 @@ def single_level_wise(df, level: str, key: str, ffunc, ffunc_args: dict = {}):
     
     return df_out
 
-        
+
+def count_nonzero(df):
+
+    import numpy as np
+
+    df_np                   = df.to_numpy()
+
+    return np.count_nonzero(~np.isnan(df_np))/4

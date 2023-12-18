@@ -1,6 +1,6 @@
 
 
-def marker_legend(ax, dict_labels_markers, marker_color = 'grey', marker_size = 10,
+def marker_legend(ax, dict_labels_markers, marker_color = 'grey', marker_size = 10, labelcolor = 'k',
                   anchor = (0.5, 0), markerfirst = True, fs_labels = 10, handletextpad: float = 0.2,
                   columnspacing: float = 0.9, loc = 'lower center', handlelength: float = 1.2):
 
@@ -15,7 +15,7 @@ def marker_legend(ax, dict_labels_markers, marker_color = 'grey', marker_size = 
     
     labels                      = list(dict_labels_markers.keys())
 
-    ax.legend(handles, labels, fontsize = fs_labels, ncol = len(handles), frameon = False, 
+    ax.legend(handles, labels, fontsize = fs_labels, ncol = len(handles), frameon = False, labelcolor = labelcolor,
             loc = loc, bbox_to_anchor = anchor, handletextpad = handletextpad, columnspacing = columnspacing,
             handlelength = handlelength, bbox_transform = ax.transAxes, markerfirst = markerfirst)
     

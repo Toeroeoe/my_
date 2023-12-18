@@ -48,9 +48,11 @@ def landcover_model_benchmarks(name, df, variable: str, obs: str, df_static, sel
     print('Calculate model benchmarks based on landcover and observations\n')
     
     from my_.series.group import select_multi_index, nona_level
-    from my_.series.aggregate import single_level_wise, single_column_wise
+    from my_.series.aggregate import single_level_wise, count_nonzero, concat
     from my_.math.stats import rmse, pbias, r
     from my_.files.handy import save_df
+
+    import pandas as pd
 
     df_nona                     = nona_level(df, ['Variable', 'Station'])
 
@@ -63,8 +65,12 @@ def landcover_model_benchmarks(name, df, variable: str, obs: str, df_static, sel
     df_groups_pbias             = df_groups.apply(single_level_wise, level = 'Source', key = obs, ffunc = pbias)
     df_groups_r                 = df_groups.apply(single_level_wise, level = 'Source', key = obs, ffunc = r)
 
+    df_groups_count             = pd.DataFrame({'count': df_groups.apply(count_nonzero)})
 
     df_out                      = df_groups_pbias.join(df_groups_rmse).T.swaplevel(axis = 0)
+
+    
+    save_df(df_groups_count, f'out/{name}/csv/landcover_count_{variable}.csv')
 
     save_df(df_out, f'out/{name}/csv/landcover_rmse_pbias_{variable}.csv')
 

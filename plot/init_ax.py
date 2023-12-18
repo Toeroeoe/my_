@@ -1,7 +1,7 @@
 def init_xy(ax, xs, ys, axhv_color: str = 'k', axhv_ls: str = '--', axhv_lw: float = 0.7, axhv_alpha: float = 0.8, axhv_dashes: tuple = (4, 4),
        diag_color: str = 'k', diag_ls: str = '--', diag_lw: float = 0.7, diag_alpha: float = 0.8, diag_dashes = (4,4),
        title: str = '', xlabel: str = '', ylabel: str = '', y_title: float = 1.1, fs_title: int = 14, fs_label: int = 12, fs_ticks = 10,
-       ax_tag = '', ax_tag_x: float = 0.5, ax_tag_y: float = 1.0):
+       ax_tag = None, ax_tag_x: float = 0.5, ax_tag_y: float = 1.0):
     
     from my_.plot.limits import axgrid, common_free_lims, numeric_ticks
     from my_.plot.style import nospines
@@ -33,7 +33,9 @@ def init_xy(ax, xs, ys, axhv_color: str = 'k', axhv_ls: str = '--', axhv_lw: flo
     
     props = dict(facecolor='white', edgecolor='none', alpha=0.85)
 
-    ax.text(ax_tag_x, ax_tag_y, ax_tag, fontsize = fs_label, transform = ax.transAxes, va = 'bottom', ha = 'center', bbox = props)
+    if ax_tag is not None:
+
+        ax.text(ax_tag_x, ax_tag_y, ax_tag, fontsize = fs_label, transform = ax.transAxes, va = 'bottom', ha = 'center', bbox = props)
     
     ax.axis('square')
     

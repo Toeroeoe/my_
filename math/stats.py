@@ -44,7 +44,7 @@ def rmse(obs, sim, decimals=2):
     
     import numpy as np
     
-    from my_.series.convert import tab_to_array
+    from my_series.convert import tab_to_array
 
     obs                             = tab_to_array(obs)
     sim                             = tab_to_array(sim)
@@ -89,7 +89,7 @@ def pbias(obs, sim, decimals: int = 2):
 
     import numpy as np
 
-    from my_.series.convert import tab_to_array
+    from my_series.convert import tab_to_array
 
     obs                             = tab_to_array(obs)
     sim                             = tab_to_array(sim)

@@ -1,8 +1,8 @@
 
 
-def axgrid(ax, ls: str = '--', which: str = 'major', visible: bool = True, alpha: float = 0.5):
+def axgrid(ax, color: str = 'dimgray', ls: str = '--', which: str = 'major', visible: bool = True, alpha: float = 0.4):
 
-    ax.grid(which = which, visible = visible, ls = ls, alpha = alpha, zorder = 0)
+    ax.grid(which = which, color = color, visible = visible, ls = ls, alpha = alpha, zorder = 0)
 
 
 def common_free_lims(ax, xs, ys, rel_b: float = 0.1):

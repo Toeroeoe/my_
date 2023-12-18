@@ -4,8 +4,6 @@ def style_1(font_dir: str = 'my_/plot/fonts/'):
 
     import matplotlib as mpl
     import matplotlib.font_manager as fm
-    import colorcet as cc
-
     
     font_files = fm.findSystemFonts(fontpaths = font_dir)
     
@@ -19,6 +17,24 @@ def style_1(font_dir: str = 'my_/plot/fonts/'):
     mpl.rcParams['xtick.color']     = text_color
     mpl.rcParams['ytick.color']     = text_color
 
+
+def style_1_white(font_dir: str = 'my_/plot/fonts/'):
+
+    import matplotlib as mpl
+    import matplotlib.font_manager as fm
+    
+    font_files = fm.findSystemFonts(fontpaths = font_dir)
+    
+    for font_file in font_files:
+        fm.fontManager.addfont(font_file)
+    
+    prop = fm.FontProperties(fname=font_dir+'/Montserrat-Medium.otf')
+
+    mpl.rcParams['font.family']     = prop.get_name()
+    text_color                      = 'white'
+    mpl.rcParams['xtick.color']     = text_color
+    mpl.rcParams['ytick.color']     = text_color
+    mpl.rcParams['axes.labelcolor'] = text_color
 
 def nospines(ax):
 

@@ -120,8 +120,8 @@ static = {
 
             'hydroclim-EU3': {
                         'grid': 'EU3',
-                        'path': '/p/scratch/cjibg31/jibg3105/CESMDataRoot/InputData/share/domains/',
-                        'file': 'domain.lnd.CLM5EU3_v4.nc',
+                        'path': '/p/scratch/cjibg31/jibg3105/data/COSMOREA6/CLIM_CLASS/',
+                        'file': 'CLIM_CLASS.nc',
                         'static_vars': ['PRECTmms_COSMOREA6'],
                         'dummy_ax': False,
                     },

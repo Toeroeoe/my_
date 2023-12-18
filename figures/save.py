@@ -1,9 +1,9 @@
 
 
 
-def save_png(fig, name_file: str, bbox_inches: str = 'tight', dpi: int = 300):
+def save_png(fig, name_file: str, bbox_inches: str = 'tight', dpi: int = 300, transparent: bool = False):
     
-    fig.savefig(name_file, bbox_inches = bbox_inches, dpi = dpi)
+    fig.savefig(name_file, bbox_inches = bbox_inches, dpi = dpi, transparent = transparent)
 
 
 

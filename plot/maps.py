@@ -36,14 +36,16 @@ def EU3_plot_lines(ax, pc, xs, ys,
 
 def map_point_locations(ax, lats = [], lons = [], 
                         size_marker: list = [], marker: str = 'x', color: list = [], 
-                        projection = None, zorder: int = 5, alpha: float = 0.8):
+                        projection = None, zorder: int = 5, alpha: float = 0.8,
+                        alpha_land = 1.0, alpha_ocean = 0.3, land_color = 'dimgrey', ocean_color = None):
 
     import cartopy.feature as cfeature
     from my_.plot.basic import scatter
 
-    ax.add_feature(cfeature.LAND, zorder = 0)
-    ax.add_feature(cfeature.OCEAN, zorder = 0)
+    ax.add_feature(cfeature.LAND, color = land_color, alpha = alpha_land, zorder = 0)
+    ax.add_feature(cfeature.OCEAN, color= ocean_color, alpha = alpha_ocean, zorder = 0)
 
     artist = scatter(ax, lons, lats, sizes_marker = size_marker, marker = marker, colors_marker = color,
             projection = projection, alpha = alpha, zorder = zorder)
 
+    return artist

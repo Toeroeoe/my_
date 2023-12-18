@@ -1,4 +1,52 @@
+def map_EU3_point_locations_lc_hclim(lats, lons, landcover, hydroclimate, rotnpole_lat: float, rotnpole_lon: float, semmj_axis: int, semmn_axis: int,
+                        lon_extents: list, lat_extents: list, lw_grid: float = 0.5, lw_coast: float = 0.5,  color_grid: str = 'gray',
+                        ls_grid: str = '--', xticks: list = [], yticks: list = [], fs_label: float = 10, size_marker: float = 4.0, 
+                        marker: str = 'x', color_marker: str = 'firebrick', alpha: float = 0.85, zorder: int = 5, title: str = ''):
 
+    from my_.figures.single import square_right_cax
+    from my_.plot.style import style_1
+    from my_.plot.maps import EU3_plot_lines, map_point_locations
+    from my_.plot.init_ax import EU3_plot_init
+    from my_.plot.colors import colormap, colorbar
+    from user_in.options_analyses import selected_landcover, markers
+    
+    import matplotlib.pyplot as plt
+    import matplotlib as mpl
+
+    print('Plot locations map...\n')
+
+    style_1()
+    
+    rp, pc, xs, ys              = EU3_plot_init(rotnpole_lat, rotnpole_lon, semmj_axis, semmn_axis, lon_extents, lat_extents)
+
+    figure, ax, cax             = square_right_cax(projection = rp, fy = 5.0)
+
+    ax.set_title(title)
+    
+    sizes                       = [size_marker] * len(lats)
+
+    cmap                        = plt.get_cmap('BrBG', 6)
+
+    EU3_plot_lines(ax, pc, xs, ys, lw_grid, lw_coast, color_grid, ls_grid, xticks, yticks, fs_label)
+
+    for lc in landcover.unique():
+        
+        if lc not in selected_landcover: continue
+
+        lat_lc                  = lats.where(landcover == lc)
+        lon_lc                  = lons.where(landcover == lc)
+        hclim_lc                = hydroclimate.where(landcover == lc)
+
+        colors                  = [cmap(hc/6) for hc in hclim_lc]
+
+        map_point_locations(ax, lat_lc, lon_lc, sizes, marker = markers[lc], color = colors, projection = pc, alpha = alpha, zorder = zorder)
+
+        a = mpl.cm.ScalarMappable(norm = mpl.colors.Normalize(vmin=0, vmax=5), cmap = cmap) 
+        ticks = ['Very arid', 'Arid', 'Semi arid', 'Semi humid', 'Humid', 'Very humid']
+
+    colorbar(cax, a, '', pad = 10, extend = 'neither', fs_label = 12, tick_labels = ticks)
+
+    return figure
 
 def map_EU3_point_locations(lats, lons, rotnpole_lat: float, rotnpole_lon: float, semmj_axis: int, semmn_axis: int,
                         lon_extents: list, lat_extents: list, lw_grid: float = 0.5, lw_coast: float = 0.5,  color_grid: str = 'gray',
@@ -25,6 +73,8 @@ def map_EU3_point_locations(lats, lons, rotnpole_lat: float, rotnpole_lon: float
     EU3_plot_lines(ax, pc, xs, ys, lw_grid, lw_coast, color_grid, ls_grid, xticks, yticks, fs_label)
 
     map_point_locations(ax, lats, lons, sizes, marker = marker, color = color_marker, projection = pc, alpha = alpha, zorder = zorder)
+
+    
 
     return figure
 
@@ -176,7 +226,7 @@ def xy_landcover_moments(df, variable, sources_insitu: list = [], sources_grids:
         ylabel                  = f'Model [{mom_units[iax]}]'
 
         init_xy(ax, df_i_lc_agg, df_d_lc_agg, title = title_fig, 
-                xlabel = xlabel, ylabel = ylabel, ax_tag = agg_moment,
+                xlabel = xlabel, ylabel = ylabel, ax_tag = None,
                 **xy_init_args)
 
         for lc in df_i.columns.unique(level = 'Landcover'):

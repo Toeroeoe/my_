@@ -15,7 +15,7 @@ def colorbar(cax, artist, ylabel: str = '', pad: int = 10, extend = 'neither', f
 
         positions           = np.linspace(0.5, (len_tick_labels - 1) - 0.5, len_tick_labels)
         
-        cbar.ax.set_yticks(positions, tick_labels)
+        cbar.ax.set_yticks(positions, tick_labels, fontsize = fs_label)
 
 
 def colormap(cmap: str = 'viridis', cmap_n = 1000):
@@ -26,3 +26,15 @@ def colormap(cmap: str = 'viridis', cmap_n = 1000):
     cmap_c                  = plt.cm.get_cmap(cmap, cmap_n)
 
     return cmap_c
+
+
+def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
+  
+    import matplotlib.colors as colors
+    import numpy as np
+  
+    new_cmap = colors.LinearSegmentedColormap.from_list(
+        'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval, b=maxval),
+        cmap(np.linspace(minval, maxval, n)))
+    
+    return new_cmap   

@@ -24,13 +24,14 @@ def square_right_cax(fx: float = 6.7, fy: float = 6.7, dpi: int = 300, projectio
     
     nrows                           = 1
     ncols                           = 2
-    w1, w2                          = 14, 1
+    w1, w2                          = 10, 1
 
-    fig                             = plt.figure(figsize=(fx, fy), dpi = dpi)
+    fig                             = plt.figure(figsize=(fx, fy), dpi = dpi, constrained_layout = True)
 
     gs                              = GridSpec(figure = fig, 
                                                 ncols = ncols, nrows = nrows, 
-                                                width_ratios = [w1, w2], wspace = 0.3)
+                                                width_ratios = [w1, w2],
+                                                wspace = 0.1)
 
     ax                              = fig.add_subplot(gs[0,0], projection = projection, frameon = frame)
     cax                             = fig.add_subplot(gs[0,1], frameon = frame)
