@@ -11,13 +11,13 @@ def transform(values, source: str, variable: str):
     given by variable parameter dictionary
     """
 
-    from my_.resources.sources import query_unit_transform
+    from my_resources.sources import query_unit_transform
     
     ux_method                   = query_unit_transform(source, variable, 'methods')
 
     if ux_method == 'linear':
 
-        from my_.math.mapping import linear
+        from my_math.mapping import linear
 
         m                       = query_unit_transform(source, variable, 'm')
         b                       = query_unit_transform(source, variable, 'b')
@@ -29,7 +29,7 @@ def transform(values, source: str, variable: str):
 
 def transform_df(df, source: str, variables: list):
     
-    from my_.resources.sources import query_unit_transform
+    from my_resources.sources import query_unit_transform
 
     df_out                      = df.copy()
     
@@ -41,7 +41,7 @@ def transform_df(df, source: str, variables: list):
 
         if ux_method == 'linear':
 
-            from my_.math.mapping import linear
+            from my_math.mapping import linear
 
             m                       = query_unit_transform(source, variable, 'm')
             b                       = query_unit_transform(source, variable, 'b')
