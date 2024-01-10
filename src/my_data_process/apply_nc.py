@@ -14,12 +14,12 @@ def src_var_apply_nc(name: str = '', sources: list = [], variables: list = [],
 
     import xarray as xr
 
-    from my_.files.netcdf import open_netcdf
-    from my_.files.handy import check_file_exists
-    from my_.resources.sources import query_variables
-    from my_.resources.units import transform
-    from my_.files.netcdf import netcdf_variable_to_array
-    from my_.gridded.aggregate import select_o_apply_d
+    from my_files.netcdf import open_netcdf
+    from my_files.handy import check_file_exists
+    from my_resources.sources import query_variables
+    from my_resources.units import transform
+    from my_files.netcdf import netcdf_variable_to_array
+    from my_gridded.aggregate import select_o_apply_d
 
 
     file_out                    = f"out/nc/{name}_*{'+'.join(sources)}*_{'+'.join(variables)}_{method_agg_time}.nc"

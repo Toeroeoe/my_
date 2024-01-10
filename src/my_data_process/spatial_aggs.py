@@ -5,12 +5,12 @@ def landcover_spatial_moments(name_case: str, sources = [], variables = [], year
 
     print(f'\nIterate over gridded source data:\n{*sources,}\n')
 
-    from my_.resources.sources import query_variables, available_variables
-    from my_.files.handy import yearly_or_monthly_files, save_df
-    from my_.files.netcdf import open_netcdf, netcdf_variables_to_array
-    from my_.resources.units import transform
-    from my_.gridded.dimensions import select
-    from my_.math.stats import mean, variance
+    from my_resources.sources import query_variables, available_variables
+    from my_files.handy import yearly_or_monthly_files, save_df
+    from my_files.netcdf import open_netcdf, netcdf_variables_to_array
+    from my_resources.units import transform
+    from my_gridded.dimensions import select
+    from my_math.stats import mean, variance
     from user_in.options_analyses import selected_landcover
 
 

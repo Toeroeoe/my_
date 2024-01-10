@@ -52,7 +52,7 @@ def grid_to_cell_df(array, list_points, shape, column, lat_point, lon_point, ind
     time is dim 0
     """
 
-    from my_.series.convert import cell_to_df
+    from my_series.convert import cell_to_df
 
 
     coords_point                = (lat_point, lon_point)

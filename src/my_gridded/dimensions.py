@@ -45,7 +45,7 @@ def select_by_other(array, array_sel, method: str, axis_select: int, axis_shrink
     """
 
     import numpy as np
-    from my_.gridded.aggregate import apply
+    from my_gridded.aggregate import apply
 
     indices             = apply(array_sel, axis_select, method)
 
@@ -71,7 +71,7 @@ def select_by_self(array, method, axis):
     """
 
     import numpy as np
-    from my_.gridded.aggregate import apply
+    from my_gridded.aggregate import apply
 
     indices             = apply(array, axis, method)
 
@@ -106,7 +106,7 @@ def select_apply_4d(array, sel_func = select_by_other, sel_func_args = {}, apply
     and then we apply 
     """
 
-    from my_.gridded.aggregate import apply
+    from my_gridded.aggregate import apply
 
     if array.ndim == 4:
          

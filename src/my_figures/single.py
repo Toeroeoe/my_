@@ -3,7 +3,7 @@
 def square(fx: float = 6.7, fy: float = 6.7, dpi: int = 300, projection = None, frame: bool = False):
 
     import matplotlib.pyplot as plt
-    from my_.plot.style import style_1
+    from my_plot.style import style_1
 
     style_1()
 

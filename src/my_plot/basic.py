@@ -28,8 +28,8 @@ def xy(ax, xs, ys, marker, sizes_marker = 50, colors_marker = [], projection = N
        diag_color: str = 'k', diag_ls: str = '--', diag_lw: float = 0.7, diag_alpha: float = 0.8, diag_dashes = (4,4),
        xlabel: str = '', ylabel: str = '', fs_label: int = 9):
 
-    from my_.plot.basic import scatter
-    from my_.plot.init_ax import init_xy
+    from my_plot.basic import scatter
+    from my_plot.init_ax import init_xy
     
     init_xy(ax, xs, ys, axhv_color, axhv_ls, axhv_lw, axhv_alpha, axhv_dashes,
        diag_color, diag_ls, diag_lw, diag_alpha, diag_dashes, xlabel, ylabel, fs_label)
