@@ -1,0 +1,6 @@
+{
+    "python.defaultInterpreterPath": "/p/scratch/cjibg31/jibg3105/projects/venvs/2024_01/venv/bin/python_vs",
+    "python.analysis.extraPaths": [
+        "/p/scratch/cjibg31/jibg3105/projects/venvs/2024_01/venv/lib/python3.11/site-packages/"
+    ]
+}

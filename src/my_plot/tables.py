@@ -5,10 +5,10 @@ def single_site_model_benchmarks(name, df, variable: str, obs: str, df_static, s
 
     import pandas as pd
     
-    from my_.series.group import select_multi_index, nona_level
-    from my_.series.aggregate import single_column_wise
-    from my_.math.stats import rmse, pbias, r
-    from my_.files.handy import save_df
+    from my_series.group import select_multi_index, nona_level
+    from my_series.aggregate import single_column_wise
+    from my_math.stats import rmse, pbias, r
+    from my_files.handy import save_df
 
     df_nona                     = nona_level(df, ['Variable', 'Station'])
 
@@ -47,10 +47,10 @@ def landcover_model_benchmarks(name, df, variable: str, obs: str, df_static, sel
 
     print('Calculate model benchmarks based on landcover and observations\n')
     
-    from my_.series.group import select_multi_index, nona_level
-    from my_.series.aggregate import single_level_wise, count_nonzero, concat
-    from my_.math.stats import rmse, pbias, r
-    from my_.files.handy import save_df
+    from my_series.group import select_multi_index, nona_level
+    from my_series.aggregate import single_level_wise, count_nonzero, concat
+    from my_math.stats import rmse, pbias, r
+    from my_files.handy import save_df
 
     import pandas as pd
 

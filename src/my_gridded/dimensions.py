@@ -12,6 +12,7 @@ def stack(array_list: list, axis: int = 0):
 
     return stacked_array
 
+
 def select(array, indices, axis):
 
     """

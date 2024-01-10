@@ -94,31 +94,19 @@ def pbias(obs, sim, decimals: int = 2):
     obs                             = tab_to_array(obs)
     sim                             = tab_to_array(sim)
 
-    #pbiases                         = []
-    #
-    #for i in obs:
-#
-    #    bias                        = sim[i] - obs[i]
-#
-    #    absobs                      = np.abs(obs[i])
-#
-    #    pbiases.append(bias/absobs)
-
     bias                            = sim - obs
 
     if np.all(np.isnan(bias)): return np.nan
 
-    sum_bias                        = np.nansum(bias)
+    sum_bias                        = np.nansum(np.abs(bias))
 
-    sum_obs                         = np.nansum(obs)
+    sum_obs                         = np.nansum(np.abs(obs))
 
     rel_bias                        = sum_bias / sum_obs
     
     percent_bias                    = rel_bias * 100
 
-    #percent_bias                    = np.mean(pbiases)
     percent_bias_rounded            = np.around(percent_bias, decimals)
-        
 
     return percent_bias_rounded
 
@@ -126,9 +114,9 @@ def pbias(obs, sim, decimals: int = 2):
 def r(obs, sim, decimals: int = 2):
 
     import numpy as np
-    from scipy.stats.stats import pearsonr 
+    from scipy.stats.stats import pearsonr
 
-    from my_.series.convert import tab_to_array
+    from my_series.convert import tab_to_array
 
     obs                             = tab_to_array(obs)
     sim                             = tab_to_array(sim)

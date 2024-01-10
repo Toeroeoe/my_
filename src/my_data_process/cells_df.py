@@ -8,16 +8,16 @@ def src_var_cells_df(name_case: str, sources = [], variables = [], file_format: 
     from glob import glob
     from itertools import product
 
-    from my_.resources.sources import query_variables, query_grids, available_variables
-    from my_.files.handy import yearly_or_monthly_files, save_df
-    from my_.files.netcdf import open_netcdf, netcdf_variables_to_array
-    from my_.files.csv import open_csv
-    from my_.gridded.dimensions import grid_to_points
-    from my_.series.aggregate import concat
-    from my_.series.group import single_src_var_X_index
+    from my_resources.sources import query_variables, query_grids, available_variables
+    from my_files.handy import yearly_or_monthly_files, save_df
+    from my_files.netcdf import open_netcdf, netcdf_variables_to_array
+    from my_files.csv import open_csv
+    from my_gridded.dimensions import grid_to_points
+    from my_series.aggregate import concat
+    from my_series.group import single_src_var_X_index
     from my_series.time import index
-    from my_.resources.units import transform
-    from my_.gridded.extract import grid_to_cell_df
+    from my_resources.units import transform
+    from my_gridded.extract import grid_to_cell_df
 
     for src in sources:
         
@@ -113,12 +113,12 @@ def cell_static_info(name_case: str, sources = [], path_stations: str = 'user_in
     from glob import glob
     from itertools import product
     
-    from my_.resources.sources import query_static, query_grids
-    from my_.gridded.dimensions import grid_to_points
-    from my_.files.netcdf import open_netcdf, netcdf_variables_to_array
-    from my_.files.csv import open_csv
-    from my_.gridded.extract import closest_cell, cell
-    from my_.files.handy import save_df
+    from my_resources.sources import query_static, query_grids
+    from my_gridded.dimensions import grid_to_points
+    from my_files.netcdf import open_netcdf, netcdf_variables_to_array
+    from my_files.csv import open_csv
+    from my_gridded.extract import closest_cell, cell
+    from my_files.handy import save_df
     
     for src in sources:
 

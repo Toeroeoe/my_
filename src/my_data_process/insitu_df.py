@@ -9,7 +9,7 @@ def src_var_insitu_df(name_case: str, sources = [], variables = [],
     from glob import glob
     import pandas as pd
 
-    from my_.resources.sources import query_variables
+    from my_resources.sources import query_variables
 
     for src in sources:
         
@@ -38,15 +38,15 @@ def oneflux(name, df_stations, src: str, variables = [], resample_method = 'mean
             file_format: str = 'csv', file_out: str = 'oneflux_out.csv',
             year_start: int = 1995, year_end: int = 2018):
 
-    from my_.misc.list_dict_key import keys_same_value, translate_dict_values, filter_dict_keys
-    from my_.resources.sources import query_variables, available_variables
-    from my_.files.csv import open_csv 
-    from my_.files.handy import save_df
-    from my_.series.time import index, lowest_frequency, index_to_datetime
-    from my_.series.group import  multi_columns
-    from my_.series.interpolate import resample, reindex
-    from my_.series.aggregate import mask_ge, mask_le, concat
-    from my_.resources.units import transform_df
+    from my_misc.list_dict_key import keys_same_value, translate_dict_values, filter_dict_keys
+    from my_resources.sources import query_variables, available_variables
+    from my_files.csv import open_csv 
+    from my_files.handy import save_df
+    from my_series.time import index, lowest_frequency, index_to_datetime
+    from my_series.group import  multi_columns
+    from my_series.interpolate import resample, reindex
+    from my_series.aggregate import mask_ge, mask_le, concat
+    from my_resources.units import transform_df
     
     
 

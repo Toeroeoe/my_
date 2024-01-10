@@ -23,8 +23,8 @@ def select_o_apply_d(array, array_sel_4d = None, method_sel = 'argmax',
                      axis_sel: int = 0, axis_sel_shrink: int = 0, 
                      method_agg_4d: str = 'mean', method_agg_time: str ='mean'):
     
-    from my_.gridded.aggregate import apply
-    from my_.gridded.dimensions import select_by_other, select_apply_4d
+    from my_gridded.aggregate import apply
+    from my_gridded.dimensions import select_by_other, select_apply_4d
 
     var_array_3d                = select_apply_4d(array, sel_func = select_by_other,
                                                     sel_func_args = {'array_sel': array_sel_4d,

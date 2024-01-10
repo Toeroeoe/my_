@@ -52,8 +52,8 @@ def save_df(df, name: str, format: str = 'csv'):
 
 def open_csv_or_parquet(file: str, csv_args = {'index_col': 0}, parquet_args = {}):
 
-    from my_.files.csv import open_csv
-    from my_.files.parquet import open_parquet
+    from my_files.csv import open_csv
+    from my_files.parquet import open_parquet
 
     ending                      = file.split('.')[-1]
     
@@ -70,12 +70,10 @@ def read_resample_save(case_name: str, files: list, origin: str, suffixes: list 
                         join: str = 'outer', offset_str: str = 'D', interp_method: str = 'mean'):
 
     from glob import glob
-    from my_.series.interpolate import resample_yearly
-    from my_.series.aggregate import concat
-
-    from my_.resources.sources import variables
-
-    from my_.series.group import layer_level_to_int
+    from my_series.interpolate import resample_yearly
+    from my_series.aggregate import concat
+    from my_resources.sources import variables
+    from my_series.group import layer_level_to_int
 
     
     file_out                    = f'out/{case_name}/{file_format}/Resampled_{origin}.{file_format}'
@@ -120,9 +118,9 @@ def read_resample_save(case_name: str, files: list, origin: str, suffixes: list 
 
 def aggregate_layer(df):
 
-    from my_.resources.sources import query_variables
+    from my_resources.sources import query_variables
 
-    from my_.series.group import select_multi_index
+    from my_series.group import select_multi_index
 
     from user_in.options_analyses import selected_landcover
 

@@ -1,5 +1,5 @@
 
-def count_nonnan(array):
+def count_valid(array):
 
     import numpy as np
 

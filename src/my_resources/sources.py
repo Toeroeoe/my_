@@ -47,7 +47,7 @@ def query_unit_transform(src, variable, option):
     return unit_transform_option
 
 
-from my_.resources.units import sec_per_day
+from my_resources.units import sec_per_day
 
 
 grids = {

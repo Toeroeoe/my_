@@ -5,6 +5,16 @@ Stations information in csv file
 The out put time series can be in parquet or csv
 """
 
+def closest_cells(coords_points, coords_cells, shape):
+
+    import numpy as np
+
+    cells = [closest_cell(coords_points[i], coords_cells, shape)[0] for i in range(len(coords_points))]
+
+    return np.array(cells)
+
+
+
 def closest_cell(coords_point, coords_cells, shape):
     
     """
@@ -12,6 +22,7 @@ def closest_cell(coords_point, coords_cells, shape):
     Given a point in 2d coordinates,
     and a list of points find the node.
     """
+
 
     import numpy as np
 
@@ -78,7 +89,12 @@ def cell(array, y: int, x: int, y_dim: int = -2, x_dim: int = -1):
     
     return cell
         
-        
+
+def cells(array, ys, xs, y_dim: int = -2, x_dim: int = -1):
+
+    cells                       = [cell(array, ys[i], xs[i]) for i in range(len(ys))]
+
+    return cells
 
 
 

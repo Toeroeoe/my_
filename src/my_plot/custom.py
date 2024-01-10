@@ -3,11 +3,11 @@ def map_EU3_point_locations_lc_hclim(lats, lons, landcover, hydroclimate, rotnpo
                         ls_grid: str = '--', xticks: list = [], yticks: list = [], fs_label: float = 10, size_marker: float = 4.0, 
                         marker: str = 'x', color_marker: str = 'firebrick', alpha: float = 0.85, zorder: int = 5, title: str = ''):
 
-    from my_.figures.single import square_right_cax
-    from my_.plot.style import style_1
-    from my_.plot.maps import EU3_plot_lines, map_point_locations
-    from my_.plot.init_ax import EU3_plot_init
-    from my_.plot.colors import colormap, colorbar
+    from my_figures.single import square_right_cax
+    from my_plot.style import style_1
+    from my_plot.maps import EU3_plot_lines, map_point_locations
+    from my_plot.init_ax import EU3_plot_init
+    from my_plot.colors import colormap, colorbar
     from user_in.options_analyses import selected_landcover, markers
     
     import matplotlib.pyplot as plt
@@ -48,15 +48,58 @@ def map_EU3_point_locations_lc_hclim(lats, lons, landcover, hydroclimate, rotnpo
 
     return figure
 
+
+def map_EU3_point_locations_hclim(lats, lons, hydroclimate, rotnpole_lat: float, rotnpole_lon: float, semmj_axis: int, semmn_axis: int,
+                        lon_extents: list, lat_extents: list, lw_grid: float = 0.5, lw_coast: float = 0.5,  color_grid: str = 'gray',
+                        ls_grid: str = '--', xticks: list = [], yticks: list = [], fs_label: float = 10, size_marker: float = 45, 
+                        marker: str = 'o', alpha: float = 0.85, zorder: int = 5, title: str = ''):
+
+    from my_figures.single import square_right_cax
+    from my_plot.style import style_1
+    from my_plot.maps import EU3_plot_lines, map_point_locations
+    from my_plot.init_ax import EU3_plot_init
+    from my_plot.colors import colorbar
+    
+    import matplotlib.pyplot as plt
+    import matplotlib as mpl
+
+    print('Plot locations map...\n')
+
+    style_1()
+    
+    rp, pc, xs, ys              = EU3_plot_init(rotnpole_lat, rotnpole_lon, semmj_axis, semmn_axis, lon_extents, lat_extents)
+
+    figure, ax, cax             = square_right_cax(projection = rp, fy = 5.0)
+
+    ax.set_title(title)
+    
+    sizes                       = [size_marker] * len(lats)
+
+    cmap                        = plt.get_cmap('BrBG', 6)
+
+    EU3_plot_lines(ax, pc, xs, ys, lw_grid, lw_coast, color_grid, ls_grid, xticks, yticks, fs_label)
+    
+    colors                  = [cmap(hc/6) for hc in hydroclimate]
+
+    map_point_locations(ax, lats, lons, sizes, marker = marker, color = colors, projection = pc, alpha = alpha, zorder = zorder)
+
+    a = mpl.cm.ScalarMappable(norm = mpl.colors.Normalize(vmin=0, vmax=5), cmap = cmap) 
+    ticks = ['Very arid', 'Arid', 'Semi arid', 'Semi humid', 'Humid', 'Very humid']
+
+    colorbar(cax, a, '', pad = 10, extend = 'neither', fs_label = 12, tick_labels = ticks)
+
+    return figure
+
+
 def map_EU3_point_locations(lats, lons, rotnpole_lat: float, rotnpole_lon: float, semmj_axis: int, semmn_axis: int,
                         lon_extents: list, lat_extents: list, lw_grid: float = 0.5, lw_coast: float = 0.5,  color_grid: str = 'gray',
                         ls_grid: str = '--', xticks: list = [], yticks: list = [], fs_label: float = 10, size_marker: float = 4.0, 
                         marker: str = 'x', color_marker: str = 'firebrick', alpha: float = 0.7, zorder: int = 5, title: str = ''):
 
-    from my_.figures.single import square
-    from my_.plot.style import style_1
-    from my_.plot.maps import EU3_plot_lines, map_point_locations
-    from my_.plot.init_ax import EU3_plot_init
+    from my_figures.single import square
+    from my_plot.style import style_1
+    from my_plot.maps import EU3_plot_lines, map_point_locations
+    from my_plot.init_ax import EU3_plot_init
 
     print('Plot locations map...\n')
 
@@ -89,12 +132,12 @@ def double_EU3_mesh_div_cbar(arrays, lat, lon,
                             fs_title: float = 12, fs_subtitle: float = 10, fs_cbar_label: float = 10):
     
 
-    from my_.plot.style import style_1
-    from my_.figures.double import horizontal_cax
-    from my_.plot.basic import colormesh
-    from my_.plot.maps import EU3_plot_lines
-    from my_.plot.init_ax import EU3_plot_init
-    from my_.plot.colors import colormap, colorbar
+    from my_plot.style import style_1
+    from my_figures.double import horizontal_cax
+    from my_plot.basic import colormesh
+    from my_plot.maps import EU3_plot_lines
+    from my_plot.init_ax import EU3_plot_init
+    from my_plot.colors import colormap, colorbar
 
     style_1()
 
@@ -256,14 +299,14 @@ def xy_landcover_moments(df, variable, sources_insitu: list = [], sources_grids:
                         xy_init_args = {}, xy_args = {}, marker_legend_args = {}, color_legend_args = {},
                         moments = ['mean', 'var', 'skew', 'kurtosis']):
 
-    from my_.figures.two_by_two import square_two_top_cax
-    from my_.series.group import select_multi_index, nona_level
-    from my_.plot.init_ax import init_xy
-    from my_.plot.basic import scatter
-    from my_.plot.legend import marker_legend, color_legend
-    from my_.series.convert import tile_df_to_list
+    from my_figures.two_by_two import square_two_top_cax
+    from my_series.group import select_multi_index, nona_level
+    from my_plot.init_ax import init_xy
+    from my_plot.basic import scatter
+    from my_plot.legend import marker_legend, color_legend
+    from my_series.convert import tile_df_to_list
 
-    from my_.resources.sources import query_variables
+    from my_resources.sources import query_variables
 
     import colorcet as cc
 
@@ -287,7 +330,7 @@ def xy_landcover_moments(df, variable, sources_insitu: list = [], sources_grids:
 
     var_units                   = query_variables(i_sources[0], 'var_units')[variable]
 
-    mom_units                   = [var_units, var_units, '-', '-']
+    mom_units                   = [var_units, f"[{var_units}]²", '-', '-']
 
     if len(i_sources) > 1: raise NotImplementedError
 
@@ -333,15 +376,15 @@ def bar_rmse_landcover(df, variable, sources_insitu, sources_grids, sel_landcove
                        colors: dict = {}, bar_init_args = {}, bar_args = {},
                        color_legend_args = {}):
 
-    from my_.series.group import select_multi_index, nona_level
-    from my_.series.aggregate import column_wise
-    from my_.math.stats import rmse, mean
-    from my_.resources.sources import query_variables
+    from my_series.group import select_multi_index, nona_level
+    from my_series.aggregate import column_wise
+    from my_math.stats import rmse, mean
+    from my_resources.sources import query_variables
 
-    from my_.figures.two_by_two import square_top_cax
-    from my_.plot.basic import bar
-    from my_.plot.init_ax import init_bar
-    from my_.plot.legend import color_legend
+    from my_figures.two_by_two import square_top_cax
+    from my_plot.basic import bar
+    from my_plot.init_ax import init_bar
+    from my_plot.legend import color_legend
 
     import numpy as np
     import colorcet as cc
@@ -395,17 +438,17 @@ def doy_dist_landcover(name, df, variable, sources_insitu, sources_grids, sel_la
                        color_legend_args = {}, do_fill = True, do_line_bounds = False):
 
 
-    from my_.series.group import select_multi_index, nona_level
-    from my_.series.aggregate import column_wise
+    from my_series.group import select_multi_index, nona_level
+    from my_series.aggregate import column_wise
 
-    from my_.math.stats import gauss_kde_pdf, pbias, rmse
-    from my_.resources.sources import query_variables
+    from my_math.stats import gauss_kde_pdf, pbias, rmse
+    from my_resources.sources import query_variables
 
-    from my_.figures.four_by_two import vertical_top_cax
-    from my_.plot.init_ax import init_ts, init_dist
-    from my_.plot.legend import color_legend
-    from my_.plot.basic import plot, fill 
-    from my_.files.handy import save_df 
+    from my_figures.four_by_two import vertical_top_cax
+    from my_plot.init_ax import init_ts, init_dist
+    from my_plot.legend import color_legend
+    from my_plot.basic import plot, fill 
+    from my_files.handy import save_df 
 
     import colorcet as cc
 
@@ -485,14 +528,14 @@ def pie_landcover(df_static, selected_landcover, colors = {}, color_legend_args 
 
     print('Plot network land cover pie plots\n')
 
-    from my_.series.aggregate import concat
-    from my_.resources.sources import query_static
+    from my_series.aggregate import concat
+    from my_resources.sources import query_static
 
-    from my_.figures.double import horizontal_top_cax
-    from my_.plot.basic import pie
-    from my_.plot.legend import color_legend
+    from my_figures.double import horizontal_top_cax
+    from my_plot.basic import pie
+    from my_plot.legend import color_legend
 
-    from my_.plot.init_ax import init_pie
+    from my_plot.init_ax import init_pie
 
     import matplotlib.pyplot as plt
 
@@ -543,19 +586,20 @@ def pie_landcover(df_static, selected_landcover, colors = {}, color_legend_args 
 
 
 def doy_landcover(df, variable, sources_insitu, sources_grids, sel_landcover,
+                       stat: str = 'mean', stat_err: str = 'std',
                        colors: dict = {}, doy_init_args = {},
                        doy_args = {}, doy_fill_args = {},
                        color_legend_args = {}, do_fill = False):
     
     print('Plot network land cover DOY plots\n')
 
-    from my_.series.group import select_multi_index, nona_level
-    from my_.resources.sources import query_variables
+    from my_series.group import select_multi_index, nona_level
+    from my_resources.sources import query_variables
 
-    from my_.figures.two_by_two import square_top_cax
-    from my_.plot.init_ax import init_ts
-    from my_.plot.legend import color_legend
-    from my_.plot.basic import plot, fill 
+    from my_figures.two_by_two import square_top_cax
+    from my_plot.init_ax import init_ts
+    from my_plot.legend import color_legend
+    from my_plot.basic import plot, fill 
 
     import colorcet as cc
 
@@ -572,11 +616,11 @@ def doy_landcover(df, variable, sources_insitu, sources_grids, sel_landcover,
 
     df_doy_lc                   = df_doy.groupby(axis = 1, level = ['Source', 'Landcover'])
 
-    df_doy_lc_mean              = df_doy_lc.mean()
+    df_doy_lc_agg               = df_doy_lc.agg(stat)
 
-    df_doy_lc_std               = df_doy_lc.std()
+    df_doy_lc_agg_err           = df_doy_lc.agg(stat_err)
 
-    fig, axs, axl               = square_top_cax()
+    fig, axs, axl               = square_top_cax(fx = 8)
 
     var_units                   = query_variables(sources[0], 'var_units')[variable]
 
@@ -588,18 +632,18 @@ def doy_landcover(df, variable, sources_insitu, sources_grids, sel_landcover,
 
     for ilc, lc in enumerate(sel_landcover):
 
-        xs_doy                  = df_doy_lc_mean.index
+        xs_doy                  = df_doy_lc_agg.index
 
-        ys_doy                  = select_multi_index(df_doy_lc_std, levels = ['Landcover'], keys = [lc])
+        ys_doy                  = select_multi_index(df_doy_lc_agg, levels = ['Landcover'], keys = [lc])
         
-        err_doy                 = select_multi_index(df_doy_lc_std, levels = ['Landcover'], keys = [lc])
+        err_doy                 = select_multi_index(df_doy_lc_agg_err, levels = ['Landcover'], keys = [lc])
 
         var_label               = f'{variable} [{var_units}]'
 
         lower                   = ys_doy - err_doy
         upper                   = ys_doy + err_doy
 
-        init_ts(axs[ilc], xs_doy, df_doy_lc_std, ylabel = var_label, ax_tag = lc, **doy_init_args)
+        init_ts(axs[ilc], xs_doy, df_doy_lc_agg, ylabel = var_label, ax_tag = lc, **doy_init_args)
         plot(axs[ilc], xs_doy, ys_doy, colors = colorsc, **doy_args)
 
         if do_fill: fill(axs[ilc], xs_doy, lower, upper, colors = colorsc, **doy_fill_args)
@@ -612,12 +656,12 @@ def plot_ts(df, variable, station, colors: dict = {}, color_legend_args: dict = 
 
     print(f'Plot station time-series: {station}, {variable}\n')
 
-    from my_.series.group import select_multi_index, nona_level
-    from my_.figures.single import square_top_cax
-    from my_.plot.init_ax import init_ts_2
-    from my_.plot.basic import plot
-    from my_.plot.legend import color_legend
-    from my_.resources.sources import query_variables
+    from my_series.group import select_multi_index, nona_level
+    from my_figures.single import square_top_cax
+    from my_plot.init_ax import init_ts_2
+    from my_plot.basic import plot
+    from my_plot.legend import color_legend
+    from my_resources.sources import query_variables
 
     import colorcet as cc
     import numpy as np

@@ -19,7 +19,7 @@ def concat(dfs: list = [], join: str = 'outer', axis: int = 1, sort: bool = Fals
 
 def add_missing_column_levels(dfs):
 
-    from my_.series.group import add_level_to_multi_columns
+    from my_series.group import add_level_to_multi_columns
     
     nlevels                 = [df.columns.nlevels for df in dfs]
 
@@ -120,7 +120,7 @@ def single_column_wise(df, level: str, key: str, ffunc, ffunc_args: dict = {}):
 
     import pandas as pd
     
-    from my_.series.group import select_multi_index
+    from my_series.group import select_multi_index
 
     columns                 = df.columns
 
@@ -147,7 +147,7 @@ def single_level_wise(df, level: str, key: str, ffunc, ffunc_args: dict = {}):
     import pandas as pd
     import numpy as np
     
-    from my_.series.group import select_multi_index
+    from my_series.group import select_multi_index
     
     columns                 = df.columns
 
