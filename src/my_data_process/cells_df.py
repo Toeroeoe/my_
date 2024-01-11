@@ -21,8 +21,8 @@ def src_var_cells_df(name_case: str, sources = [], variables = [], file_format: 
 
     for src in sources:
         
-        file_out                = f'out/{name_case}/{file_format}/Extracted_{src}.{file_format}'
-        file_out_info           = f'out/{name_case}/csv/Cells_{src}.csv'
+        file_out                = f'Extracted_{src}.{file_format}'
+        file_out_info           = f'Cells_{src}.csv'
 
         if glob(file_out): print(f'Output file for {name_case} - {src} is already available.\n'); continue
         
