@@ -10,10 +10,15 @@ def src_var_insitu_df(name_case: str, sources = [], variables = [],
     import pandas as pd
 
     from my_resources.sources import query_variables
+    from my_files.handy import create_dirs
 
     for src in sources:
+
+        dir_out                 = f'out/{name_case}/{file_format}/'
         
-        file_out                = f'out/{name_case}/{file_format}/Insitu_{src}.{file_format}'
+        create_dirs([dir_out])
+        
+        file_out                = f'{dir_out}/Insitu_{src}.{file_format}'
 
         if glob(file_out): print(f'Output file for {name_case} - {src} is already available.\n'); continue
         
@@ -25,18 +30,24 @@ def src_var_insitu_df(name_case: str, sources = [], variables = [],
 
         if processing == 'ONEFLUX':
 
-            oneflux(name_case, df_stations, src, variables, qc_values = {'D': 0.8, 'H': 1.0},
+            oneflux(name_case, df_stations, src, variables, qc_values = {'M': 0.8, 'D': 0.8, 'H': 1.0},
                     file_out = file_out, file_format = file_format,
                     year_start = year_start, year_end = year_end)
-
-
+        
+        if processing == 'ICOS-ETC-L2':
+            
+            oneflux(name_case, df_stations, src, variables, qc_values = {'M': 0.8, 'D': 0.8, 'H': 1.0},
+                    file_out = file_out, file_format = file_format,
+                    year_start = year_start, year_end = year_end,
+                    dir_prefix = 'ICOSETC', file_prefix = 'ICOSETC_')
 
         
     
 def oneflux(name, df_stations, src: str, variables = [], resample_method = 'mean', 
-            qc_flag: bool = True, qc_values: dict = {'D': 0.8, 'H': 1.0},
+            qc_flag: bool = True, qc_values: dict = {'M': 0.8, 'D': 0.8, 'H': 1.0},
             file_format: str = 'csv', file_out: str = 'oneflux_out.csv',
-            year_start: int = 1995, year_end: int = 2018):
+            year_start: int = 1995, year_end: int = 2018,
+            dir_prefix = 'FLX', file_prefix = 'FLX_*_FULLSET_'):
 
     from my_misc.list_dict_key import keys_same_value, translate_dict_values, filter_dict_keys
     from my_resources.sources import query_variables, available_variables
@@ -47,8 +58,8 @@ def oneflux(name, df_stations, src: str, variables = [], resample_method = 'mean
     from my_series.interpolate import resample, reindex
     from my_series.aggregate import mask_ge, mask_le, concat
     from my_resources.units import transform_df
-    
-    
+
+    from pathlib import Path
 
     path                        = query_variables(src, 'path')
     var_names                   = query_variables(src, 'var_names')
@@ -86,7 +97,7 @@ def oneflux(name, df_stations, src: str, variables = [], resample_method = 'mean
 
         for ts in list_ts:
         
-            file                = f'{path}/FLX_{name_FLX}*/FLX_*_FULLSET_{ts}*'
+            file                = f'{path}/{dir_prefix}*{name_FLX}*/{file_prefix}*{ts}{ts}*.csv'
         
             ts_df               = open_csv(file, args = csv_open_args)
 
@@ -104,7 +115,7 @@ def oneflux(name, df_stations, src: str, variables = [], resample_method = 'mean
 
                     df_sel      = mask_le(df_sel, df_sel_qc, qc_value)
                 
-                if ts == 'D':
+                if ((ts == 'D') or (ts == 'M')):
 
                     df_sel      = mask_ge(df_sel, df_sel_qc, qc_value)
 

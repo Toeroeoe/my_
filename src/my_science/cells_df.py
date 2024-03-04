@@ -7,9 +7,10 @@ def src_var_cells_df(name_case: str, sources = [], variables = [], file_format: 
 
     from glob import glob
     from itertools import product
+    from pathlib import Path
 
     from my_resources.sources import query_variables, query_grids, available_variables
-    from my_files.handy import yearly_or_monthly_files, save_df
+    from my_files.handy import yearly_or_monthly_files, save_df, create_dirs
     from my_files.netcdf import open_netcdf, netcdf_variables_to_array
     from my_files.csv import open_csv
     from my_gridded.dimensions import grid_to_points
@@ -21,8 +22,13 @@ def src_var_cells_df(name_case: str, sources = [], variables = [], file_format: 
 
     for src in sources:
         
-        file_out                = f'Extracted_{src}.{file_format}'
-        file_out_info           = f'Cells_{src}.csv'
+        dir_out                 = f'out/{name_case}/{file_format}/'
+        dir_csv                 = f'out/{name_case}/csv/'
+
+        create_dirs([dir_out, dir_csv])
+        
+        file_out                = f'{dir_out}/Extracted_{src}.{file_format}'
+        file_out_info           = f'{dir_csv}/Cells_{src}.csv'
 
         if glob(file_out): print(f'Output file for {name_case} - {src} is already available.\n'); continue
         
@@ -49,6 +55,8 @@ def src_var_cells_df(name_case: str, sources = [], variables = [], file_format: 
 
         vars_avail, vars_src    = available_variables(src, variables)
 
+        if not vars_src: print(f'Variable(s) not available for {src}. Continue...\n'); continue
+
         files                   = yearly_or_monthly_files(freq_files, path, year_start, year_end)
 
         print('Load data...\n')
@@ -66,6 +74,7 @@ def src_var_cells_df(name_case: str, sources = [], variables = [], file_format: 
         iterations              = product(range(len(names_stations)), range(len(vars_avail)))
 
         print('Iterate stations and variables...\n')
+
         list_ts                 = []
 
         for i_station, i_var in iterations:

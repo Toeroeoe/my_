@@ -18,10 +18,10 @@ def resample_yearly(df, offset_str: str = 'D', method: str = 'mean'):
 
     method_pd                   = getattr(pd.DataFrame, method)
 
-    df_y_groups                 = df.groupby(df.index.year, group_keys=False)
+    df_y_groups                 = df.groupby(df.index.year, group_keys = False)
     df_y_resampler              = df_y_groups.resample(offset_str)
 
-    df_resampled                = df_y_resampler.agg(method_pd, skipna=False)
+    df_resampled                = df_y_resampler.agg(method_pd, skipna = False)
 
     return df_resampled
 

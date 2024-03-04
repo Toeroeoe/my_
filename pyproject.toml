@@ -11,5 +11,5 @@ dependencies = [
 ]
 
 [tool.setuptools]
-packages = ["my_resources", "my_files", "my_plot", "my_math", "my_series", "my_data_process", "my_gridded", "my_misc"]
+packages = ["my_resources", "my_files", "my_plot", "my_math", "my_series", "my_gridded", "my_misc", "my_science"]
 package-dir = {"" = "src"}

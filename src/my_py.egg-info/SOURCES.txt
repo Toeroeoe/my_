@@ -1,10 +1,5 @@
 README.md
 pyproject.toml
-src/my_data_process/__init__.py
-src/my_data_process/apply_nc.py
-src/my_data_process/cells_df.py
-src/my_data_process/insitu_df.py
-src/my_data_process/spatial_aggs.py
 src/my_files/__init__.py
 src/my_files/csv.py
 src/my_files/handy.py
@@ -12,9 +7,9 @@ src/my_files/netcdf.py
 src/my_files/parquet.py
 src/my_gridded/__init__.py
 src/my_gridded/aggregate.py
+src/my_gridded/count.py
 src/my_gridded/dimensions.py
 src/my_gridded/extract.py
-src/my_gridded/info.py
 src/my_gridded/spatial.py
 src/my_math/__init__.py
 src/my_math/arithmetic.py
@@ -44,6 +39,12 @@ src/my_resources/__init__.py
 src/my_resources/landcover_pft.py
 src/my_resources/sources.py
 src/my_resources/units.py
+src/my_science/anomalies.py
+src/my_science/apply_nc.py
+src/my_science/cells_df.py
+src/my_science/insitu_df.py
+src/my_science/parallel.py
+src/my_science/spatial_aggs.py
 src/my_series/__init__.py
 src/my_series/aggregate.py
 src/my_series/convert.py

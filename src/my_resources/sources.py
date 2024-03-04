@@ -137,6 +137,7 @@ variables = {
                         'time_step': '8D',
                         'leap_day': False,
                         'freq_files': 'yearly',
+                        'name_label': r'$\mathdefault{CLM5_{grid}}$',
                         
                         'var_names': {
                             'GPP': 'GPP',
@@ -190,6 +191,7 @@ variables = {
                         'time_step':'8D',
                         'leap_day':False,
                         'freq_files':'yearly',
+                        'name_label': r'$\mathdefault{CLM5_{PFT}}$',
                         
                         'var_names': {
                             'GPP': 'GPP',
@@ -245,6 +247,7 @@ variables = {
                         'time_step': '8D',
                         'leap_day': True,
                         'freq_files':'yearly',
+                        'name_label': r'$\mathdefault{GLASS}$',
                         
                         'var_names': {
                             'GPP': 'GPP_GLASS',
@@ -278,6 +281,7 @@ variables = {
                         'time_step': '8D',
                         'leap_day': True,
                         'freq_files':'yearly',
+                        'name_label': r'$\mathdefault{ERA5L}$',
                         
                         'var_names': {
                             'ET': 'ET_ERA5L',
@@ -306,6 +310,7 @@ variables = {
                         'time_step': '8D',
                         'leap_day': True,
                         'freq_files': 'yearly',
+                        'name_label': r'$\mathdefault{GLEAM}$',
                         
                         'var_names': {
                             'ET': 'ET_GLEAM',
@@ -334,6 +339,7 @@ variables = {
                         'time_step': '8D',
                         'leap_day': True,
                         'freq_files': 'yearly',
+                        'name_label': r'$\mathdefault{COSMOREA6}$',
 
                         'var_names': {
                             'Temp': 'TBOT',
@@ -375,10 +381,12 @@ variables = {
                         'processing': 'ONEFLUX',
                         'path': '/p/scratch/cjibg31/jibg3105/data/ICOS/WARMWINTER2020',
                         'leap_day': False,
+                        'name_label': r'$\mathdefault{ICOS}$',
                         
                         'date_format': {
                             'H': '%Y%m%d%H%M',
                             'D': '%Y%m%d',
+                            'M': '%Y%m',
                         },
                         
                         'var_names': {
@@ -409,7 +417,7 @@ variables = {
                             'GPP': 'D',
                             'NEE': 'D',
                             'ER': 'D',
-                            'ET': 'D',
+                            'ET': 'M',
                             'ET-corr': 'D',
                             'Temp': 'D',
                             'Precip': 'D',
@@ -420,11 +428,6 @@ variables = {
                         'csv_open_args': {
                             'na_values': ['-9999'], 'index_col': 0
                             },
-
-                        'date_format': {
-                            'H': '%Y%m%d%H%M',
-                            'D': '%Y%m%d'
-                        },
 
                         'var_QC': {
                             'GPP': 'NEE_VUT_REF_QC',

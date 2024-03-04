@@ -46,12 +46,25 @@ def bar(ax, xs, ys, color, width: float = 0.8, alpha: float = 0.8):
     return artist
 
 
-def plot(ax, xs, ys, colors, style: str = '-', lw: float = 1.0, alpha: float = 0.8,
+def hist(ax, array, bins = 'auto', density = True,  histtype = 'stepfilled', color= 'dimgray', alpha: float = 0.8, zorder: int = 3):
+
+    artist = ax.hist(array, bins = bins, density = density, histtype = histtype, color = color, alpha = alpha, zorder = zorder)
+
+    return artist
+
+
+def plot(ax, xs, ys, colors = 'k', style: str = '-', lw: float = 1.0, alpha: float = 0.8,
         markersize: float = 1.0, marker: str = '', zorder = 5):
 
-    if isinstance(colors, list): ax.set_prop_cycle('color', colors)
+    if isinstance(colors, list): 
+        
+        ax.set_prop_cycle('color', colors)
 
-    artist = ax.plot(xs, ys, ls = style, lw = lw, marker = marker, markersize = markersize, alpha = alpha, zorder = zorder)
+        artist = ax.plot(xs, ys, ls = style, lw = lw, marker = marker, markersize = markersize, alpha = alpha, zorder = zorder)
+    
+    else:
+        
+        artist = ax.plot(xs, ys, c = colors, ls = style, lw = lw, marker = marker, markersize = markersize, alpha = alpha, zorder = zorder)
 
     return artist
 
@@ -70,3 +83,18 @@ def fill(ax, xs, y1s, y2s, colors, alpha: float = 0.4, zorder: int = 2):
 def pie(ax, shares, colors):
 
     ax.pie(shares, colors = colors)
+
+
+def error(ax, xs, ys, x_err = None, y_err = None, 
+          ecolors = None, elinewidth = None, capsize = 0.0, capthick = None,
+          alpha = 0.8, zorder = 5):
+
+    for i in range(len(ecolors)):
+
+        artist = ax.errorbar(xs[i], ys[i], xerr = x_err, yerr = y_err[i], 
+                ecolor = ecolors[i],
+                elinewidth = elinewidth,
+                capsize = capsize, capthick = capthick,
+                linestyle='', alpha = alpha, zorder = zorder)
+    
+    return artist

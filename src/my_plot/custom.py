@@ -297,18 +297,21 @@ def single_EU3_mesh_cont_cbar(array, lat, lon,
 def xy_landcover_moments(df, variable, sources_insitu: list = [], sources_grids: list = [], 
                         sel_landcover: list = [], markers: dict = {}, colors: dict = {},
                         xy_init_args = {}, xy_args = {}, marker_legend_args = {}, color_legend_args = {},
-                        moments = ['mean', 'var', 'skew', 'kurtosis']):
+                        moments = ['mean', 'variance', 'skewness', 'kurtosis']):
 
     from my_figures.two_by_two import square_two_top_cax
     from my_series.group import select_multi_index, nona_level
     from my_plot.init_ax import init_xy
-    from my_plot.basic import scatter
+    from my_plot.basic import scatter, error
     from my_plot.legend import marker_legend, color_legend
     from my_series.convert import tile_df_to_list
 
     from my_resources.sources import query_variables
 
+    from my_math import stats
+
     import colorcet as cc
+    import numpy as np
 
     print('Plot land cover aggregated xy plots...\n')
 
@@ -320,54 +323,70 @@ def xy_landcover_moments(df, variable, sources_insitu: list = [], sources_grids:
     df_d                        = select_multi_index(df_nona, ['Source', 'Variable', 'Landcover'],
                                                       keys = [sources_grids, variable, sel_landcover])
     
-    df_i_lc                     = df_i.groupby(axis = 1, level = ['Source', 'Landcover']).mean()
-    df_d_lc                     = df_d.groupby(axis = 1, level = ['Source', 'Landcover']).mean()
+    df_i_lc                     = df_i.groupby(axis = 1, level = ['Source', 'Landcover'])#.mean()
+    df_d_lc                     = df_d.groupby(axis = 1, level = ['Source', 'Landcover'])#.mean()
 
-    i_sources                   = df_i_lc.columns.unique(level = 'Source')
-    d_sources                   = df_d_lc.columns.unique(level = 'Source')
+    i_sources                   = df_i_lc.obj.columns.unique(level = 'Source')
+    d_sources                   = df_d_lc.obj.columns.unique(level = 'Source')
 
     cmapc                       = cc.glasbey_hv[:]
 
     var_units                   = query_variables(i_sources[0], 'var_units')[variable]
 
-    mom_units                   = [var_units, f"[{var_units}]²", '-', '-']
+    mom_units                   = [f'[{var_units}]', f'[{var_units}]²', '[-]', '[-]']
 
     if len(i_sources) > 1: raise NotImplementedError
 
     fig, axs, axs_l             = square_two_top_cax()
 
-    colors                      = {k: v for k,v in colors.items() if k in d_sources}
+    labels_sources              = {s: query_variables(s, 'name_label') for s in d_sources}
+
+    colors                      = {labels_sources[k]: v for k,v in colors.items() if k in d_sources}
 
     marker_legend(axs_l[0], markers, **marker_legend_args)
-    color_legend(axs_l[1], colors, cmapc, **color_legend_args)
+    color_legend(axs_l[1], colors, cmapc, nrows = np.ceil(len(d_sources) / 3), **color_legend_args)
 
     for iax, ax in enumerate(axs):
 
         agg_moment              = moments[iax]
+
+        agg_method              = getattr(stats, agg_moment)
+        err_method              = getattr(stats, f'std_error_{agg_moment}')
         
-        df_i_lc_agg             = df_i_lc.agg(agg_moment)
-        df_d_lc_agg             = df_d_lc.agg(agg_moment)
+        #df_i_lc_agg             = df_i_lc.agg(agg_moment)
+        #df_d_lc_agg             = df_d_lc.agg(agg_moment)
+
+        df_i_lc_agg             = df_i_lc.apply(agg_method)
+        df_d_lc_agg             = df_d_lc.apply(agg_method)
+
+        df_i_lc_agg_err         = df_i_lc.apply(err_method)
+        df_d_lc_agg_err         = df_d_lc.apply(err_method)
 
         title_fig               = ''
 
-        xlabel                  = f'Observation [{mom_units[iax]}]'
-        ylabel                  = f'Model [{mom_units[iax]}]'
+        xlabel                  = f'Observation {mom_units[iax]}'
+        ylabel                  = f'Model {mom_units[iax]}'
 
         init_xy(ax, df_i_lc_agg, df_d_lc_agg, title = title_fig, 
-                xlabel = xlabel, ylabel = ylabel, ax_tag = None,
+                xlabel = xlabel, ylabel = ylabel, ax_tag = agg_moment,
                 **xy_init_args)
 
         for lc in df_i.columns.unique(level = 'Landcover'):
 
-            colorsc                 = [cmapc[colors[d]] for d in d_sources]
+            colorsc                 = [cmapc[colors[d]] for d in colors.keys()]
 
             ys                      = select_multi_index(df_d_lc_agg, 'Landcover', lc, axis = 0)
 
             xs                      = select_multi_index(df_i_lc_agg, 'Landcover', lc, axis = 0)
+
+            x_err                   = select_multi_index(df_i_lc_agg_err, 'Landcover', lc, axis = 0)
+
+            y_err                   = select_multi_index(df_d_lc_agg_err, 'Landcover', lc, axis = 0)
             
             xs_tile                 = tile_df_to_list(xs, len(d_sources))
 
-            scatter(ax, xs_tile, ys, markers[lc], colors_marker = colorsc, **xy_args)  
+            scatter(ax, xs_tile, ys, markers[lc], colors_marker = colorsc, **xy_args)
+            error(ax, xs_tile, ys, x_err = x_err, y_err = y_err, ecolors = colorsc, elinewidth = 2)
     
     return fig
 
@@ -378,11 +397,11 @@ def bar_rmse_landcover(df, variable, sources_insitu, sources_grids, sel_landcove
 
     from my_series.group import select_multi_index, nona_level
     from my_series.aggregate import column_wise
-    from my_math.stats import rmse, mean
+    from my_math.stats import rmse, mean, std_deviation
     from my_resources.sources import query_variables
 
     from my_figures.two_by_two import square_top_cax
-    from my_plot.basic import bar
+    from my_plot.basic import bar, error
     from my_plot.init_ax import init_bar
     from my_plot.legend import color_legend
 
@@ -400,24 +419,28 @@ def bar_rmse_landcover(df, variable, sources_insitu, sources_grids, sel_landcove
     
     df_lc_rmse                  = df_s.groupby(axis = 1, level = ['Source', 'Landcover']).apply(column_wise, ffunc = rmse)
 
-    df_lc_rmse_mean             = df_lc_rmse.groupby(axis = 1, level = ['Source', 'Landcover']).apply(mean, axes = (0, 1))
+    df_lc_rmse_mean             = df_lc_rmse.groupby(axis = 1, level = ['Source', 'Landcover']).apply(mean, axis = (0, 1))
+    df_lc_rmse_std             = df_lc_rmse.groupby(axis = 1, level = ['Source', 'Landcover']).apply(std_deviation, axis = (0, 1))
 
     sources                     = df_lc_rmse_mean.index.unique(level = 'Source')
 
     var_units                   = query_variables(sources[0], 'var_units')[variable]
+    labels_sources              = {s: query_variables(s, 'name_label') for s in sources}
     
     fig, axs, axs_l             = square_top_cax()
 
     cmapc                       = cc.glasbey_hv[:]
 
-    colors                      = {k: v for k,v in colors.items() if k in sources}
-    colorsc                     = [cmapc[colors[d]] for d in list(sources)]
+    colors                      = {labels_sources[k]: v for k,v in colors.items() if k in sources}
+    colorsc                     = [cmapc[colors[d]] for d in colors.keys()]
 
     color_legend(axs_l, colors, cmapc, **color_legend_args)
 
     xs                          = np.arange(len(sources))
 
     ys                          = df_lc_rmse_mean
+
+    y_err                       = df_lc_rmse_std
     
     for iax, ax in enumerate(axs):
 
@@ -425,9 +448,16 @@ def bar_rmse_landcover(df, variable, sources_insitu, sources_grids, sel_landcove
 
         ys_lc                   = select_multi_index(ys, levels = ['Landcover'], keys = [lc], axis = 0)
 
-        init_bar(ax, xs, ys, ax_tag = lc, ylabel = f'RMSD [{var_units}]', **bar_init_args)
+        y_err_lc                = select_multi_index(y_err, levels = ['Landcover'], keys = [lc], axis = 0)
+
+        ecolors                 = ['gray'] * len(ys_lc)
+
+        init_bar(ax, xs, ys + y_err, ax_tag = lc, ylabel = f'RMSD [{var_units}]', **bar_init_args)
 
         bar(ax, xs, ys_lc, color = colorsc, **bar_args)
+        
+        error(ax, xs, ys_lc, y_err = y_err_lc, ecolors = ecolors, 
+              capsize = 4, alpha = 0.8, zorder = 6)
     
     return fig
 
@@ -469,7 +499,7 @@ def doy_dist_landcover(name, df, variable, sources_insitu, sources_grids, sel_la
 
     df_doy_lc_mean              = df_doy_lc.mean()
 
-    df_doy_lc_mean_rmse        = column_wise(df_doy_lc_mean, ffunc = rmse)
+    df_doy_lc_mean_rmse         = column_wise(df_doy_lc_mean, ffunc = rmse)
     df_doy_lc_mean_pbias        = column_wise(df_doy_lc_mean, ffunc = pbias)
     save_df(df_doy_lc_mean_rmse, f'out/{name}/csv/doy_lc_mean_rmse_{variable}.csv', format = 'csv')
     save_df(df_doy_lc_mean_pbias, f'out/{name}/csv/doy_lc_mean_pbias_{variable}.csv', format = 'csv')
@@ -486,10 +516,11 @@ def doy_dist_landcover(name, df, variable, sources_insitu, sources_grids, sel_la
     fig, axs, axs_l             = vertical_top_cax(fy = 8)
 
     var_units                   = query_variables(sources[0], 'var_units')[variable]
+    labels_sources              = {s: query_variables(s, 'name_label') for s in sources}
 
     cmapc                       = cc.glasbey_hv[:]
-    colors                      = {k: v for k,v in colors.items() if k in sources}
-    colorsc                     = [cmapc[colors[d]] for d in list(sources)]
+    colors                      = {labels_sources[k]: v for k,v in colors.items() if k in sources}
+    colorsc                     = [cmapc[colors[d]] for d in colors.keys()]
 
     color_legend(axs_l, colors, cmapc, **color_legend_args)
 
@@ -623,10 +654,11 @@ def doy_landcover(df, variable, sources_insitu, sources_grids, sel_landcover,
     fig, axs, axl               = square_top_cax(fx = 8)
 
     var_units                   = query_variables(sources[0], 'var_units')[variable]
+    labels_sources              = {s: query_variables(s, 'name_label') for s in sources}
 
     cmapc                       = cc.glasbey_hv[:]
-    colors                      = {k: v for k,v in colors.items() if k in sources}
-    colorsc                     = [cmapc[colors[d]] for d in list(sources)]
+    colors                      = {labels_sources[k]: v for k,v in colors.items() if k in sources}
+    colorsc                     = [cmapc[colors[d]] for d in colors.keys()]
 
     color_legend(axl, colors, cmapc, **color_legend_args)
 
