@@ -1,15 +1,18 @@
 
 
-def index(y0: int, y1: int, t_res: str, leapday=True):
+import pandas as pd
+
+def index(y0: int, 
+          y1: int, 
+          t_res: str, 
+          leapday: bool = True) -> pd.Series:
 
     """
     Create time index from beginning of year 0
     to end of year 0;
     To use for pandas time series;
     """
-
-    import pandas as pd
-
+    
     end_time                    = str(24 - int(t_res[:-1])) if t_res [-1] == 'H' else '23:59:00'
 
     y0_time                     = f'{y0}-01-01 00:00:00'

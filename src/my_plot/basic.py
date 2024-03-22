@@ -80,9 +80,9 @@ def fill(ax, xs, y1s, y2s, colors, alpha: float = 0.4, zorder: int = 2):
     return artist
 
 
-def pie(ax, shares, colors):
+def pie(ax, shares, colors, **kwargs):
 
-    ax.pie(shares, colors = colors)
+    ax.pie(shares, colors = colors, **kwargs)
 
 
 def error(ax, xs, ys, x_err = None, y_err = None, 

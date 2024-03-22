@@ -1,3 +1,9 @@
+
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+
 def init_xy(ax, xs, ys, axhv_color: str = 'k', axhv_ls: str = '--', axhv_lw: float = 0.7, axhv_alpha: float = 0.8, axhv_dashes: tuple = (4, 4),
        diag_color: str = 'k', diag_ls: str = '--', diag_lw: float = 0.7, diag_alpha: float = 0.8, diag_dashes = (4,4),
        title: str = '', xlabel: str = '', ylabel: str = '', y_title: float = 1.1, fs_title: int = 14, fs_label: int = 12, fs_ticks = 10,
@@ -163,14 +169,27 @@ def init_ts_2(ax, xs, ys, axhv_color: str = 'k', axhv_ls: str = '--', axhv_lw: f
 
 
 
-def init_dist(ax, xs, ys, axhv_color: str = 'k', axhv_ls: str = '--', axhv_lw: float = 0.7, axhv_alpha: float = 0.8, axhv_dashes: tuple = (4, 4),
-       title: str = '', xlabel: str = '', ylabel: str = '', y_title: float = 1.1, fs_title: int = 14, fs_label: int = 12, fs_ticks = 10,
-       ax_tag = '', ax_tag_x: float = 0.5, ax_tag_y: float = 1.0):
+def init_dist(ax: plt.axes,
+                xs: np.ndarray | pd.Series | pd.DataFrame,
+                ys: np.ndarray | pd.Series | pd.DataFrame,
+                axhv_color: str = 'k',
+                axhv_ls: str = '--', 
+                axhv_lw: float = 0.7, 
+                axhv_alpha: float = 0.8, 
+                axhv_dashes: tuple = (4, 4),
+                title: str = '', 
+                xlabel: str = '', 
+                ylabel: str = '', 
+                y_title: float = 1.1, 
+                fs_title: float = 14.0, 
+                fs_label: float = 12.0, 
+                fs_ticks: float = 10.0,
+                ax_tag: str = '', 
+                ax_tag_x: float = 0.5, 
+                ax_tag_y: float = 1.0) -> None:
     
     from my_plot.style import nospines
     from my_plot.limits import axgrid, numeric_ticks, free_lims
-
-    import matplotlib.pyplot as plt
 
     axgrid(ax)
     nospines(ax)
@@ -212,7 +231,7 @@ def init_annotation_ax(axs, x : float = 0.05, y : float = 1.05, fs = 12):
                 transform = ax.transAxes,va = 'bottom', ha = 'center')
 
 
-def init_pie(ax, fs_label = 12, ax_tag = '', ax_tag_x: float = 0.5, ax_tag_y: float = 0.95):
+def init_pie(ax, fs_label = 10, ax_tag = '', ax_tag_x: float = 0.5, ax_tag_y: float = 0.95):
     
     props = dict(facecolor='white', edgecolor='none', alpha=0.85)
 

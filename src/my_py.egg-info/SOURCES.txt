@@ -1,5 +1,6 @@
 README.md
 pyproject.toml
+src/my_data/deims.py
 src/my_files/__init__.py
 src/my_files/csv.py
 src/my_files/handy.py
@@ -45,6 +46,7 @@ src/my_science/cells_df.py
 src/my_science/insitu_df.py
 src/my_science/parallel.py
 src/my_science/spatial_aggs.py
+src/my_science/test.py
 src/my_series/__init__.py
 src/my_series/aggregate.py
 src/my_series/convert.py

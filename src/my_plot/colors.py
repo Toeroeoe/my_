@@ -1,21 +1,41 @@
 
+import matplotlib.pyplot as plt
 
-def colorbar(cax, artist, ylabel: str = '', pad: int = 10, extend = 'neither', fs_label: float = 10, tick_labels = []):
+def colorbar(cax: plt.Axes, 
+             artist: plt.Artist, 
+             ylabel: str = '',
+             pad: int = 10, 
+             extend = 'neither', 
+             fs_label: float = 10, 
+             tick_labels: list = [],
+             orientation: str = 'vertical',
+             rotation: float = 270):
 
-    import matplotlib.pyplot as plt
     import numpy as np
     
-    cbar = plt.colorbar(artist, cax = cax, extend = extend)
+    cbar = plt.colorbar(artist, cax = cax, extend = extend, orientation = orientation)
+    
+    if orientation == 'vertical':
 
-    cbar.ax.set_ylabel(ylabel, labelpad = pad, rotation = 270, fontsize = fs_label)
+        cbar.ax.set_ylabel(ylabel, labelpad = pad, rotation = rotation, fontsize = fs_label)
+    
+    elif orientation == 'horizontal': 
+
+        cbar.ax.set_xlabel(ylabel, labelpad = pad, rotation = rotation, fontsize = fs_label)
 
     len_tick_labels         = len(tick_labels)
 
     if len_tick_labels > 0:
 
         positions           = np.linspace(0.5, (len_tick_labels - 1) - 0.5, len_tick_labels)
+
+        if orientation == 'vertical':
         
-        cbar.ax.set_yticks(positions, tick_labels, fontsize = fs_label)
+            cbar.ax.set_yticks(positions, tick_labels, fontsize = fs_label)
+
+        if orientation == 'horizontal':
+
+            cbar.ax.set_xticks(positions, tick_labels, fontsize = fs_label)
 
 
 def colormap(cmap: str = 'viridis', cmap_n = 1000):

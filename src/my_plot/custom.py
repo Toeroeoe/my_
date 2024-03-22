@@ -1,13 +1,20 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+
 def map_EU3_point_locations_lc_hclim(lats, lons, landcover, hydroclimate, rotnpole_lat: float, rotnpole_lon: float, semmj_axis: int, semmn_axis: int,
                         lon_extents: list, lat_extents: list, lw_grid: float = 0.5, lw_coast: float = 0.5,  color_grid: str = 'gray',
                         ls_grid: str = '--', xticks: list = [], yticks: list = [], fs_label: float = 10, size_marker: float = 4.0, 
-                        marker: str = 'x', color_marker: str = 'firebrick', alpha: float = 0.85, zorder: int = 5, title: str = ''):
+                        marker: str = 'x', color_marker: str = 'firebrick', alpha: float = 0.85, zorder: int = 5, title: str = '',
+                        marker_legend_args: dict = {}):
 
-    from my_figures.single import square_right_cax
+    from my_figures.single import square_top_right_cax
     from my_plot.style import style_1
     from my_plot.maps import EU3_plot_lines, map_point_locations
     from my_plot.init_ax import EU3_plot_init
-    from my_plot.colors import colormap, colorbar
+    from my_plot.colors import colorbar
+    from my_plot.legend import marker_legend
     from user_in.options_analyses import selected_landcover, markers
     
     import matplotlib.pyplot as plt
@@ -19,7 +26,7 @@ def map_EU3_point_locations_lc_hclim(lats, lons, landcover, hydroclimate, rotnpo
     
     rp, pc, xs, ys              = EU3_plot_init(rotnpole_lat, rotnpole_lon, semmj_axis, semmn_axis, lon_extents, lat_extents)
 
-    figure, ax, cax             = square_right_cax(projection = rp, fy = 5.0)
+    figure, ax, caxt, caxr      = square_top_right_cax(projection = rp, fy = 5.0)
 
     ax.set_title(title)
     
@@ -44,7 +51,8 @@ def map_EU3_point_locations_lc_hclim(lats, lons, landcover, hydroclimate, rotnpo
         a = mpl.cm.ScalarMappable(norm = mpl.colors.Normalize(vmin=0, vmax=5), cmap = cmap) 
         ticks = ['Very arid', 'Arid', 'Semi arid', 'Semi humid', 'Humid', 'Very humid']
 
-    colorbar(cax, a, '', pad = 10, extend = 'neither', fs_label = 12, tick_labels = ticks)
+    colorbar(caxr, a, '', pad = 10, extend = 'neither', fs_label = 12, tick_labels = ticks)
+    marker_legend(caxt, markers, **marker_legend_args)
 
     return figure
 
@@ -202,6 +210,101 @@ def single_EU3_mesh_div_cbar(array, lat, lon,
     colorbar(cax, artist, clabel, pad = 10, extend = extend, fs_label = fs_cbar_label)
 
     return fig
+
+def pie_location_lc_clim_map(df_static: pd.DataFrame,
+                            lats: np.ndarray | list | tuple | pd.Series,
+                            lons: np.ndarray | list | tuple | pd.Series,
+                            landcover: np.ndarray | list | tuple | pd.Series,
+                            hydroclimate: np.ndarray | list | tuple | pd.Series,
+                            basemap_args: dict, 
+                            baselines_args: dict, 
+                            map_args: dict,
+                            markers: dict,
+                            marker_legend_args: dict,
+                            selected_landcover: list[str], 
+                            colors: dict,
+                            color_legend_args:dict) -> plt.figure:
+    
+    from my_figures.one_by_three import horizontal_right_map_two_cax
+    from my_series.aggregate import concat
+    from my_plot.basic import pie
+    from my_plot.init_ax import init_pie, EU3_plot_init
+    from my_plot.legend import color_legend, marker_legend
+    from my_plot.colors import colorbar
+    from my_resources.sources import query_static
+    from my_plot.maps import EU3_plot_lines, map_point_locations
+
+    rp, pc, xs, ys              = EU3_plot_init(**basemap_args)
+
+    fig, axs, axl1, axl2, axc   = horizontal_right_map_two_cax(projection = rp)
+
+    landcover                   = df_static['landcover'].where(df_static['landcover'].isin(selected_landcover))
+
+    pct_crop                    = df_static['PCT_CROP'] / 100
+
+    pct_nat                     = df_static['PCT_NATVEG'] / 100
+
+    pft_cols                    = [col for col in df_static.columns if 'PCT_NAT_PFT_' in col]
+
+    cft_cols                    = [col for col in df_static.columns if 'PCT_CFT_' in col]
+
+    pft_rel                     = df_static[pft_cols].multiply(pct_nat, axis = 0)
+
+    cft_rel                     = df_static[cft_cols].multiply(pct_crop, axis = 0)
+
+    df_tot                      = concat([pft_rel, cft_rel], sort = False)
+
+    ind_landcover               = query_static('CLM5-EU3-surf', 'sel_agg_layer_PFT')
+
+    shares_surf                 = [df_tot.iloc[:, ind_landcover[lc]].sum(axis = 1).mean() for lc in selected_landcover]
+
+    shares_surf_o               = shares_surf + [100 - sum(shares_surf)] 
+
+    shares_lc                   = landcover.value_counts(normalize = True)
+
+    cmapc                       = plt.cm.get_cmap('Set2').colors
+
+    colors                      = {k: v for k,v in colors.items()}
+    colorsc                     = [cmapc[colors[lc]] for lc in list(selected_landcover)]
+
+    colors['other']             = 7
+
+    colorsc_o                   = colorsc + [cmapc[7]]
+
+    color_legend(axl1, colors, cmapc, **color_legend_args)
+
+    init_pie(axs[0], ax_tag = 'ICOS network')
+    init_pie(axs[1], ax_tag = 'CLM5 surface')
+
+    pie(axs[0], shares_lc, colorsc, autopct='%1.1f%%')
+    pie(axs[1], shares_surf_o, colorsc_o, autopct='%1.1f%%')
+
+    sizes                       = [map_args['size_marker']] * len(lats)
+
+    cmap                        = plt.get_cmap('BrBG', 6)
+
+    EU3_plot_lines(axs[-1], pc, xs, ys, **baselines_args)
+    
+    for lc in landcover.unique():
+        
+        if lc not in selected_landcover: continue
+
+        lat_lc                  = lats.where(landcover == lc)
+        lon_lc                  = lons.where(landcover == lc)
+        hclim_lc                = hydroclimate.where(landcover == lc)
+
+        colors                  = [cmap(hc/6) for hc in hclim_lc]
+
+        map_point_locations(axs[2], lat_lc, lon_lc, sizes, marker = markers[lc], color = colors, projection = pc, alpha = map_args['alpha'], zorder = map_args['zorder'])
+
+        a = mpl.cm.ScalarMappable(norm = mpl.colors.Normalize(vmin=0, vmax=5), cmap = cmap) 
+        ticks = ['Very\narid', 'Arid', 'Semi\narid', 'Semi\nhumid', 'Humid', 'Very\nhumid']
+
+    colorbar(axc, a, '', pad = 10, extend = 'neither', fs_label = 8, tick_labels = ticks, orientation = 'horizontal')
+    marker_legend(axl2, markers, **marker_legend_args)
+
+    return fig
+
 
 
 def single_EU3_mesh_cat_cbar(array, lat, lon,
@@ -462,6 +565,87 @@ def bar_rmse_landcover(df, variable, sources_insitu, sources_grids, sel_landcove
     return fig
 
 
+def doy_doy_landcover(name: str, 
+                      df: pd.DataFrame,
+                      variable: str,
+                      sources_insitu: list[str], 
+                      sources_grids: list[str], 
+                      sel_landcover: list[str],
+                      colors: dict = {}, 
+                      doy_init_args: dict = {}, 
+                      doy_args: dict = {}, 
+                      doy_fill_args: dict = {},
+                      color_legend_args: dict = {}, 
+                      do_fill: bool = True, 
+                      do_line_bounds: bool = False):
+
+    from my_series.group import select_multi_index, nona_level
+    from my_series.aggregate import column_wise
+
+    from my_math.stats import gauss_kde_pdf, pbias, rmse
+    from my_resources.sources import query_variables
+
+    from my_figures.four_by_two import vertical_top_cax
+    from my_plot.init_ax import init_ts, init_dist
+    from my_plot.legend import color_legend
+    from my_plot.basic import plot, fill 
+    from my_files.handy import save_df 
+
+    import colorcet as cc
+
+    print('Plot land cover aggregated DOY and distribution plots...\n')
+    
+    df_nona                     = nona_level(df, ['Variable', 'Station'])
+
+    df_s                        = select_multi_index(df_nona, ['Variable', 'Landcover'],
+                                                      keys = [variable, sel_landcover])
+    
+    df_s                        = df_s.reindex(labels = sources_insitu + sources_grids, axis = 1, level = 'Source')
+
+    sources                     = df_s.columns.unique(level = 'Source')
+
+    df_doy                      = df_s.groupby(df_s.index.dayofyear).mean()
+
+    df_doy_lc                   = df_doy.groupby(axis = 1, level = ['Source', 'Landcover'])
+
+    df_doy_lc_mean              = df_doy_lc.mean()
+
+    df_doy_lc_mean_rmse         = column_wise(df_doy_lc_mean, ffunc = rmse)
+    df_doy_lc_mean_pbias        = column_wise(df_doy_lc_mean, ffunc = pbias)
+    save_df(df_doy_lc_mean_rmse, f'out/{name}/csv/doy_lc_mean_rmse_{variable}.csv', format = 'csv')
+    save_df(df_doy_lc_mean_pbias, f'out/{name}/csv/doy_lc_mean_pbias_{variable}.csv', format = 'csv')
+
+    df_doy_lc_std               = df_doy_lc.std()
+
+    fig, axs, axs_l             = vertical_top_cax(fy = 8)
+
+    var_units                   = query_variables(sources[0], 'var_units')[variable]
+    labels_sources              = {s: query_variables(s, 'name_label') for s in sources}
+
+    cmapc                       = cc.glasbey_hv[:]
+    colors                      = {labels_sources[k]: v for k,v in colors.items() if k in sources}
+    colorsc                     = [cmapc[colors[d]] for d in colors.keys()]
+
+    color_legend(axs_l, colors, cmapc, **color_legend_args)
+
+    for ilc, lc in enumerate(sel_landcover):
+
+        xs_doy                  = df_doy_lc_mean.index
+
+        ys_doy                  = select_multi_index(df_doy_lc_mean, levels = ['Landcover'], keys = [lc])
+        
+        err_doy                 = select_multi_index(df_doy_lc_std, levels = ['Landcover'], keys = [lc])
+
+        var_label               = f'{variable} [{var_units}]'
+
+        init_ts(axs[ilc, 0], xs_doy, df_doy_lc_mean, ylabel = f'mean {var_label}', ax_tag = lc, **doy_init_args)
+        init_ts(axs[ilc, 1], xs_doy, df_doy_lc_std, ylabel = f'std {var_label}', ax_tag = lc, **doy_init_args)
+
+        plot(axs[ilc, 0], xs_doy, ys_doy, colors = colorsc, **doy_args)
+        plot(axs[ilc, 1], xs_doy, err_doy, colors = colorsc, **doy_args)
+        
+    return fig
+
 def doy_dist_landcover(name, df, variable, sources_insitu, sources_grids, sel_landcover,
                        colors: dict = {}, doy_init_args = {}, dist_init_args = {},
                        doy_args = {}, dist_args = {}, doy_fill_args = {},
@@ -554,6 +738,73 @@ def doy_dist_landcover(name, df, variable, sources_insitu, sources_grids, sel_la
         
     return fig
 
+def dist_landcover(name: str, 
+                   df: pd.DataFrame, 
+                   variable: str, 
+                   sources_insitu: list[str], 
+                   sources_grids: list[str], 
+                   sel_landcover: list[str],
+                   colors: dict = {}, 
+                   dist_init_args: dict = {},
+                   dist_args: dict = {},
+                   color_legend_args: dict = {}):
+    
+    from my_series.group import select_multi_index, nona_level
+    from my_series.aggregate import column_wise
+
+    from my_math.stats import gauss_kde_pdf, pbias, rmse
+    from my_resources.sources import query_variables
+
+    from my_figures.two_by_two import square_top_cax
+    from my_plot.init_ax import init_ts, init_dist
+    from my_plot.legend import color_legend
+    from my_plot.basic import plot, fill 
+    from my_files.handy import save_df
+
+    import colorcet as cc
+
+    print('Plot land cover aggregated DOY and distribution plots...\n')
+    
+    df_nona                     = nona_level(df, ['Variable', 'Station'])
+
+    df_s                        = select_multi_index(df_nona, ['Variable', 'Landcover'],
+                                                      keys = [variable, sel_landcover])
+    
+    df_s                        = df_s.reindex(labels = sources_insitu + sources_grids, axis = 1, level = 'Source')
+
+    sources                     = df_s.columns.unique(level = 'Source')
+
+    df_dist_lc                  = df_s.groupby(axis = 1, level = ['Source', 'Landcover']).apply(gauss_kde_pdf, return_dict=True)
+
+    df_dist_lc.columns          = df_dist_lc.columns.set_names('pdf', level = -1)
+
+    all_xs                      = select_multi_index(df_dist_lc, 'pdf', 'xs')
+    all_ys                      = select_multi_index(df_dist_lc, 'pdf', 'ys')
+
+    var_units                   = query_variables(sources[0], 'var_units')[variable]
+    labels_sources              = {s: query_variables(s, 'name_label') for s in sources}
+
+    cmapc                       = cc.glasbey_hv[:]
+    colors                      = {labels_sources[k]: v for k,v in colors.items() if k in sources}
+    colorsc                     = [cmapc[colors[d]] for d in colors.keys()]
+
+    fig, axs, axl               = square_top_cax(fy = 5.5)
+
+    color_legend(axl, colors, cmapc, **color_legend_args)
+
+    for ilc, lc in enumerate(sel_landcover):
+
+        xs_dist                 = select_multi_index(df_dist_lc, levels = ['Landcover', 'pdf'], keys = [lc, 'xs'])
+
+        ys_dist                 = select_multi_index(df_dist_lc, levels = ['Landcover', 'pdf'], keys = [lc, 'ys'])
+
+        var_label               = f'{variable} [{var_units}]'
+
+        init_dist(axs[ilc], all_xs, all_ys, xlabel = var_label, ax_tag = lc, **dist_init_args)
+
+        plot(axs[ilc], xs_dist, ys_dist, colors = colorsc, **dist_args)
+
+    return fig
 
 def pie_landcover(df_static, selected_landcover, colors = {}, color_legend_args = {}):
 
@@ -610,8 +861,8 @@ def pie_landcover(df_static, selected_landcover, colors = {}, color_legend_args 
     init_pie(axs[0], ax_tag = 'ICOS network')
     init_pie(axs[1], ax_tag = 'Corresponding CLM5 surface')
 
-    pie(axs[0], shares_lc, colorsc)
-    pie(axs[1], shares_surf_o, colorsc_o)
+    pie(axs[0], shares_lc, colorsc, autopct='%1.1f%%')
+    pie(axs[1], shares_surf_o, colorsc_o, autopct='%1.1f%%')
 
     return fig
 

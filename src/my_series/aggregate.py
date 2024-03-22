@@ -1,18 +1,20 @@
 
 
-def concat(dfs: list = [], join: str = 'outer', axis: int = 1, sort: bool = False):
+def concat(dfs: list = [], 
+            join: str = 'outer', 
+            axis: int = 1, 
+            sort: bool = False, 
+            remove_duplicates: bool = True):
 
     import pandas as pd
 
-    if axis == 1:
-
-        dfs                 = add_missing_column_levels(dfs)
+    if axis == 1: dfs = add_missing_column_levels(dfs)
 
     df                      = pd.concat(dfs, join = join, axis = axis)
 
-    if sort: 
+    if sort: df = df.sort_index(axis = axis)
 
-        df                  = df.sort_index(axis = axis)
+    if remove_duplicates:  df = df.loc[:,~df.columns.duplicated()].copy()
 
     return df
 

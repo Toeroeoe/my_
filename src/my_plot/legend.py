@@ -1,7 +1,9 @@
 
+import matplotlib.pyplot as plt
+from matplotlib.cm import ScalarMappable
 
 def marker_legend(ax, dict_labels_markers, marker_color = 'grey', marker_size = 10, labelcolor = 'k',
-                  anchor = (0.5, 0), markerfirst = True, fs_labels = 10, handletextpad: float = 0.2,
+                  anchor = (0.5, 0), markerfirst = True, fs_labels = 12, handletextpad: float = 0.2,
                   columnspacing: float = 0.9, loc = 'lower center', handlelength: float = 1.2):
 
     from matplotlib.lines import Line2D
@@ -20,10 +22,18 @@ def marker_legend(ax, dict_labels_markers, marker_color = 'grey', marker_size = 
             handlelength = handlelength, bbox_transform = ax.transAxes, markerfirst = markerfirst)
     
 
-def color_legend(ax, dict_labels_colors, cmap, linewidth: float = 5, fs_labels: float = 10,
-                anchor = (0.5, 0), markerfirst = True, handletextpad: float = 0.35,
-                columnspacing: float = 0.9, loc = 'lower center', handlelength: float = 1.0,
-                nrows: int = 1):
+def color_legend(ax: plt.axes,
+                        dict_labels_colors: dict,
+                        cmap: ScalarMappable | list,
+                        linewidth: float = 5.0, 
+                        fs_labels: float = 10.0,
+                        anchor: tuple = (0.5, 0), 
+                        markerfirst: bool = True,
+                        handletextpad: float = 0.35,
+                        columnspacing: float = 0.9, 
+                        loc: str = 'lower center', 
+                        handlelength: float = 1.0,
+                        nrows: int = 1):
 
     from matplotlib.lines import Line2D
     

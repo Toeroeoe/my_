@@ -22,7 +22,7 @@ def open_netcdf(str_files):
     return data
 
 
-def netcdf_variable_to_array(Dataset, variable: str, dtype: str = 'float64'):
+def variable_to_array(Dataset, variable: str, dtype: str = 'float64'):
 
     import numpy as np
 
@@ -37,9 +37,9 @@ def netcdf_variable_to_array(Dataset, variable: str, dtype: str = 'float64'):
     return array_dtype
     
 
-def netcdf_variables_to_array(Dataset, variables, dtype: str = 'float64'):
+def variables_to_array(Dataset, variables, dtype: str = 'float64'):
     
-    arrays_dtype            = [netcdf_variable_to_array(Dataset, v, dtype) for v in variables]
+    arrays_dtype            = [variable_to_array(Dataset, v, dtype) for v in variables]
 
     return arrays_dtype
 

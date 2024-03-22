@@ -11,7 +11,7 @@ def src_var_cells_df(name_case: str, sources = [], variables = [], file_format: 
 
     from my_resources.sources import query_variables, query_grids, available_variables
     from my_files.handy import yearly_or_monthly_files, save_df, create_dirs
-    from my_files.netcdf import open_netcdf, netcdf_variables_to_array
+    from my_files.netcdf import open_netcdf, variables_to_array
     from my_files.csv import open_csv
     from my_gridded.dimensions import grid_to_points
     from my_series.aggregate import concat
@@ -61,7 +61,7 @@ def src_var_cells_df(name_case: str, sources = [], variables = [], file_format: 
 
         print('Load data...\n')
         data                    = open_netcdf(files)
-        arrays_list             = netcdf_variables_to_array(data, variables = vars_src, dtype = 'float32')
+        arrays_list             = variables_to_array(data, variables = vars_src, dtype = 'float32')
 
         data_geo                = open_netcdf(f'{path_grid}/{file_grid}')
         
@@ -124,7 +124,7 @@ def cell_static_info(name_case: str, sources = [], path_stations: str = 'user_in
     
     from my_resources.sources import query_static, query_grids
     from my_gridded.dimensions import grid_to_points
-    from my_files.netcdf import open_netcdf, netcdf_variables_to_array
+    from my_files.netcdf import open_netcdf, variables_to_array
     from my_files.csv import open_csv
     from my_gridded.extract import closest_cell, cell
     from my_files.handy import save_df
@@ -154,10 +154,10 @@ def cell_static_info(name_case: str, sources = [], path_stations: str = 'user_in
         
         data_geo                = open_netcdf(f"{path_grid}/{file_grid}")
         
-        [lat2d, lon2d]          = netcdf_variables_to_array(data_geo, variables = [grid_lat, grid_lon])
+        [lat2d, lon2d]          = variables_to_array(data_geo, variables = [grid_lat, grid_lon])
 
         data                    = open_netcdf(f'{path}/{file}')
-        arrays_list             = netcdf_variables_to_array(data, variables = variables)
+        arrays_list             = variables_to_array(data, variables = variables)
 
         # List of lat lon grid cell coordinates
         list_points             = grid_to_points(lat2d, lon2d)

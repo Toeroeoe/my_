@@ -7,6 +7,8 @@ def open_multiple_csv(files = [], args: dict = {}, names = []):
 
     dfs                         = {}
 
+    #if isinstance(files)
+        
     for i_f in range(len(files)):
 
         name                    = names[i_f]
