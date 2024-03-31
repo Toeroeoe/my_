@@ -1,29 +1,39 @@
 
-def src_var_cells_df(name_case: str, sources = [], variables = [], file_format: str = 'csv',
-                path_stations: str = 'user_in/csv/', file_stations: str = 'stations.csv',
-                year_start: int = 1995, year_end: int = 2018):
+
+
+def src_var_cells_df_bak(name_case: str, 
+                     sources: list, 
+                     variables: list, 
+                     file_format: str = 'csv',
+                     path_stations: str = 'user_in/csv/', 
+                     file_stations: str = 'stations.csv',
+                     path_out: str = 'out/',
+                     year_start: int = 1995, 
+                     year_end: int = 2018):
 
     print(f'\nIterate over gridded source data:\n{*sources,}\n')
 
     from glob import glob
     from itertools import product
-    from pathlib import Path
+    import importlib
 
-    from my_resources.sources import query_variables, query_grids, available_variables
-    from my_files.handy import yearly_or_monthly_files, save_df, create_dirs
-    from my_files.netcdf import open_netcdf, variables_to_array
-    from my_files.csv import open_csv
-    from my_gridded.dimensions import grid_to_points
-    from my_series.aggregate import concat
-    from my_series.group import single_src_var_X_index
-    from my_series.time import index
-    from my_resources.units import transform
-    from my_gridded.extract import grid_to_cell_df
+    from my_.resources.sources import query_variables, query_grids, available_variables
+    from my_.files.handy import yearly_or_monthly_files, save_df, create_dirs
+    from my_.files.netcdf import open_netcdf, variables_to_array
+    from my_.files.csv import open_csv
+    from my_.grids.dimensions import grid_to_points
+    from my_.series.aggregate import concat
+    from my_.series.group import single_src_var_X_index
+    from my_.series.time import index
+    from my_.resources.units import transform
+    from my_.grids.extract import grid_to_cell_df
 
     for src in sources:
+
+        #importlib.import_module(f'my_.data_{src}')
         
-        dir_out                 = f'out/{name_case}/{file_format}/'
-        dir_csv                 = f'out/{name_case}/csv/'
+        dir_out                 = f'{path_out}/{name_case}/{file_format}/'
+        dir_csv                 = f'{path_out}/{name_case}/csv/'
 
         create_dirs([dir_out, dir_csv])
         
@@ -65,7 +75,7 @@ def src_var_cells_df(name_case: str, sources = [], variables = [], file_format: 
 
         data_geo                = open_netcdf(f'{path_grid}/{file_grid}')
         
-        [lat2d, lon2d]          = netcdf_variables_to_array(data_geo, variables = [grid_lat, grid_lon], dtype ='float32')
+        [lat2d, lon2d]          = variables_to_array(data_geo, variables = [grid_lat, grid_lon], dtype ='float32')
 
         list_points             = grid_to_points(lat2d, lon2d)
 
@@ -122,12 +132,12 @@ def cell_static_info(name_case: str, sources = [], path_stations: str = 'user_in
     from glob import glob
     from itertools import product
     
-    from my_resources.sources import query_static, query_grids
-    from my_gridded.dimensions import grid_to_points
-    from my_files.netcdf import open_netcdf, variables_to_array
-    from my_files.csv import open_csv
-    from my_gridded.extract import closest_cell, cell
-    from my_files.handy import save_df
+    from my_.resources.sources import query_static, query_grids
+    from my_.grids.dimensions import grid_to_points
+    from my_.files.netcdf import open_netcdf, variables_to_array
+    from my_.files.csv import open_csv
+    from my_.grids.extract import closest_cell, cell
+    from my_.files.handy import save_df
     
     for src in sources:
 
@@ -213,7 +223,7 @@ if __name__ == '__main__':
 
     args                        = parser.parse_args()
 
-    src_var_cells_df(name_case = args.name, sources = args.sources, variables = args.variables,
+    src_var_cells_df_bak(name_case = args.name, sources = args.sources, variables = args.variables,
                     path_stations = args.path_stations, file_stations = args.file_stations,
                     file_format = args.file_format, year_start = args.year_start, year_end = args.year_end)
     

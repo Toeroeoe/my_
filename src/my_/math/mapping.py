@@ -9,7 +9,7 @@ def linear(x, multiplicant, addend):
 
 def relative_difference(array1, array2, percent: bool = False):
 
-    from my_math.arithmetic import difference, division
+    from my_.math.arithmetic import difference, division
 
     absolute_difference         = difference(array1, array2)
 

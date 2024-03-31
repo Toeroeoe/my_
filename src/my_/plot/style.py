@@ -1,6 +1,6 @@
 
 
-def style_1(font_dir: str = '/p/scratch/cjibg31/jibg3105/projects/my_py/src/my_plot/fonts'):
+def style_1(font_dir: str = '/p/scratch/cjibg31/jibg3105/projects/my_py/src/my_/plot/fonts'):
 
     import matplotlib as mpl
     import matplotlib.font_manager as fm

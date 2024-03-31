@@ -21,7 +21,7 @@ def open_multiple_csv(files = [], args: dict = {}, names = []):
     return dfs
 
 
-def open_csv(file_str, args = {}):
+def open_csv(file_str, **args):
 
     import pandas as pd
     from glob import glob

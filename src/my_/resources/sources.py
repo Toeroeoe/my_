@@ -47,7 +47,7 @@ def query_unit_transform(src, variable, option):
     return unit_transform_option
 
 
-from my_resources.units import sec_per_day
+from my_.resources.units import sec_per_day
 
 
 grids = {
@@ -189,7 +189,7 @@ variables = {
                         'grid': 'EU3',
                         'path': '/p/scratch/cjibg31/jibg3105/data/CLM5EU3/006/join_8d/pft/unlim_float/',
                         'time_step':'8D',
-                        'leap_day':False,
+                        'leap_day': False,
                         'freq_files':'yearly',
                         'name_label': r'$\mathdefault{CLM5_{PFT}}$',
                         

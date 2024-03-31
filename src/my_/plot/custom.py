@@ -182,12 +182,12 @@ def single_EU3_mesh_div_cbar(array, lat, lon,
                             fs_title: float = 12, fs_subtitle: float = 10, fs_cbar_label: float = 10):
     
 
-    from my_plot.style import style_1
-    from my_figures.single import square_right_cax
-    from my_plot.basic import colormesh
-    from my_plot.maps import EU3_plot_lines
-    from my_plot.init_ax import EU3_plot_init
-    from my_plot.colors import colormap, colorbar
+    from my_.plot.style import style_1
+    from my_.figures.single import square_right_cax
+    from my_.plot.basic import colormesh
+    from my_.plot.maps import EU3_plot_lines
+    from my_.plot.init_ax import EU3_plot_init
+    from my_.plot.colors import colormap, colorbar
 
     rp, pc, xs, ys              = EU3_plot_init(rotnpole_lat, rotnpole_lon, semmj_axis, semmn_axis, lon_extents, lat_extents)
 
@@ -939,12 +939,12 @@ def plot_ts(df, variable, station, colors: dict = {}, color_legend_args: dict = 
 
     print(f'Plot station time-series: {station}, {variable}\n')
 
-    from my_series.group import select_multi_index, nona_level
-    from my_figures.single import square_top_cax
-    from my_plot.init_ax import init_ts_2
-    from my_plot.basic import plot
-    from my_plot.legend import color_legend
-    from my_resources.sources import query_variables
+    from my_.series.group import select_multi_index, nona_level
+    from my_.figures.single import square_top_cax
+    from my_.plot.init_ax import init_ts_2
+    from my_.plot.basic import plot
+    from my_.plot.legend import color_legend
+    from my_.resources.sources import query_variables
 
     import colorcet as cc
     import numpy as np
@@ -984,11 +984,11 @@ def plot_ts_2(x, y, labels, variable, colors: dict = {}, color_legend_args: dict
 
     print(f'Plot station time-series: {variable}\n')
 
-    from my_figures.single import square_top_cax
-    from my_plot.init_ax import init_ts_2
-    from my_plot.basic import plot
-    from my_plot.legend import color_legend
-    from my_resources.sources import query_variables
+    from my_.figures.single import square_top_cax
+    from my_.plot.init_ax import init_ts_2
+    from my_.plot.basic import plot
+    from my_.plot.legend import color_legend
+    from my_.resources.sources import query_variables
 
     import colorcet as cc
     import numpy as np

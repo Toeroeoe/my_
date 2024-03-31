@@ -1,9 +1,1 @@
-my_data
-my_files
-my_gridded
-my_math
-my_misc
-my_plot
-my_resources
-my_science
-my_series
+my_

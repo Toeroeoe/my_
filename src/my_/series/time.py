@@ -1,6 +1,7 @@
 
 
 import pandas as pd
+import re
 
 def index(y0: int, 
           y1: int, 
@@ -18,7 +19,12 @@ def index(y0: int,
     y0_time                     = f'{y0}-01-01 00:00:00'
     y1_time                     = f'{y1}-12-31 {end_time}'
 
-    time_raw                    = pd.date_range(y0_time, y1_time, freq = t_res[-1]).to_series()
+    t_res_comp                  = re.split('(\d+)', t_res)
+
+    t_res_number                = t_res_comp[0] if t_res_comp[0].isdigit() else None
+    t_res_str                   = t_res_comp[-1]
+
+    time_raw                    = pd.date_range(y0_time, y1_time, freq = t_res_str).to_series()
 
     # Make yearly groups for resample
     time_groups                 = time_raw.groupby(time_raw.index.year, group_keys=False)
@@ -83,7 +89,8 @@ def lowest_frequency(frequencies: list = []):
     return lowest_freq
 
 
-def index_to_datetime(df, format):
+def index_to_datetime(df: pd.DataFrame, 
+                      format: str | None = None):
 
     import pandas as pd
 

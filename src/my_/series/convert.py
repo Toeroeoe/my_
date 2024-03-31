@@ -1,14 +1,19 @@
+import pandas as pd
+import numpy as np
 
 
-def cell_to_df(cell, columns, index):
+def cell_to_df(cell: np.ndarray, 
+               columns: pd.Index | pd.MultiIndex | pd.Series, 
+               index: pd.Index | pd.MultiIndex | pd.Series, 
+               dtype: str | None):
 
     """
     for 1d or 2d cell data
     """
 
-    import pandas as pd
+    if dtype is None: dtype = cell.dtype
 
-    df                      = pd.DataFrame(cell, columns = columns, index = index)
+    df                      = pd.DataFrame(cell, columns = columns, index = index, dtype = dtype)
     
     return df
 

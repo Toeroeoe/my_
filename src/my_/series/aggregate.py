@@ -1,12 +1,14 @@
 
+import pandas as pd
+import numpy as np
+from my_.series.group import select_multi_index
+    
 
-def concat(dfs: list = [], 
+def concat(dfs: list[pd.DataFrame], 
             join: str = 'outer', 
             axis: int = 1, 
             sort: bool = False, 
             remove_duplicates: bool = True):
-
-    import pandas as pd
 
     if axis == 1: dfs = add_missing_column_levels(dfs)
 
@@ -19,9 +21,9 @@ def concat(dfs: list = [],
     return df
 
 
-def add_missing_column_levels(dfs):
+def add_missing_column_levels(dfs: list[pd.DataFrame]):
 
-    from my_series.group import add_level_to_multi_columns
+    from my_.series.group import add_level_to_multi_columns
     
     nlevels                 = [df.columns.nlevels for df in dfs]
 
@@ -144,13 +146,12 @@ def single_column_wise(df, level: str, key: str, ffunc, ffunc_args: dict = {}):
     return df_out
 
 
-def single_level_wise(df, level: str, key: str, ffunc, ffunc_args: dict = {}):
+def single_level_wise(df: pd.DataFrame, 
+                      level: str, 
+                      key: str, 
+                      ffunc: callable, 
+                      ffunc_args: dict = {}):
 
-    import pandas as pd
-    import numpy as np
-    
-    from my_series.group import select_multi_index
-    
     columns                 = df.columns
 
     keys                    = columns.get_level_values(level).unique()

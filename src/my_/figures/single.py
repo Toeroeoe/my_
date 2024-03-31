@@ -6,7 +6,7 @@ import cartopy.crs as ccrs
 def square(fx: float = 6.7, fy: float = 6.7, dpi: int = 300, projection = None, frame: bool = False):
 
     import matplotlib.pyplot as plt
-    from my_plot.style import style_1
+    from my_.plot.style import style_1
 
     style_1()
 
@@ -21,7 +21,7 @@ def square_right_cax(fx: float = 6.7, fy: float = 6.7, dpi: int = 300, projectio
 
     import matplotlib.pyplot as plt
     from matplotlib.gridspec import GridSpec
-    from my_plot.style import style_1
+    from my_.plot.style import style_1
     
     style_1()
     
@@ -46,7 +46,7 @@ def square_top_cax(fx: float = 6.7, fy: float = 6.7, dpi: int = 300, projection 
 
     import matplotlib.pyplot as plt
     from matplotlib.gridspec import GridSpec
-    from my_plot.style import style_1
+    from my_.plot.style import style_1
 
     style_1()
 
@@ -74,7 +74,7 @@ def square_top_right_cax(fx: float = 6.7,
                          frame: bool = False):
     
     from matplotlib.gridspec import GridSpec
-    from my_plot.style import style_1
+    from my_.plot.style import style_1
     
     style_1()
 

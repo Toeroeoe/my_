@@ -1,3 +1,5 @@
+import pandas as pd
+    
 def multi_columns(groups: list = [], names: list = []):
 
     import pandas as pd
@@ -48,6 +50,29 @@ def single_src_var_lc_station_index(src, var, lc, station):
     tuple_index             = (src, var, lc, station)
 
     index                   = pd.MultiIndex.from_tuples([tuple_index], names = names)
+
+    return index
+
+
+def single_multiindex(dictionary: dict):
+    
+    import pandas as pd
+
+    names = list(dictionary.keys())
+
+    indices = list(dictionary.values())
+
+    if any([isinstance(i, list) for i in indices]):
+
+        indices = [[i] if not isinstance(i, list)
+                   else i
+                   for i in indices]
+
+        index = pd.MultiIndex.from_product(indices, names = names)
+
+    else:
+        
+        index = pd.MultiIndex.from_tuples([indices], names = names)
 
     return index
 
@@ -119,7 +144,10 @@ def layer_level_to_int(df):
     return df
 
 
-def select_multi_index(df, levels: list, keys: list, axis = 1):
+def select_multi_index(df: pd.DataFrame, 
+                       levels: list, 
+                       keys: list, 
+                       axis = 1) -> pd.DataFrame:
 
     if isinstance(levels, str): levels = [levels]
     if isinstance(keys, str): keys = [keys]
@@ -143,9 +171,11 @@ def select_multi_index(df, levels: list, keys: list, axis = 1):
     return df_sel
 
 
-def nona_level(df,  level: str, axis: int = 1, how = 'any'):
+def nona_level(df: pd.DataFrame, 
+               level: str, 
+               axis: int = 1, 
+               how: str = 'any'):
 
-    import pandas as pd
 
     df_level_groups     = df.groupby(sort = False, axis = axis, level = level)
 

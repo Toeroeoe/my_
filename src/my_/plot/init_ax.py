@@ -136,8 +136,8 @@ def init_ts_2(ax, xs, ys, axhv_color: str = 'k', axhv_ls: str = '--', axhv_lw: f
        title: str = '', xlabel: str = '', ylabel: str = '', y_title: float = 1.1, fs_title: int = 14, fs_label: int = 12, fs_ticks = 10,
        ax_tag = '', ax_tag_x: float = 0.5, ax_tag_y: float = 1.0):
     
-    from my_plot.style import nospines
-    from my_plot.limits import axgrid, numeric_ticks_2, free_date_lim, free_numeric_lim
+    from my_.plot.style import nospines
+    from my_.plot.limits import axgrid, numeric_ticks_2, free_date_lim, free_numeric_lim
 
     import matplotlib.pyplot as plt
 
