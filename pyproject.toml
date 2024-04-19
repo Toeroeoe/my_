@@ -7,7 +7,7 @@ name = "my_py"
 version = "0.6.0"
 dependencies = [
 	"requests",
-   	'importlib-metadata; python_version>"3.10"',
+   	'importlib-metadata; python_version>="3.10"',
 ]
 
 [tool.setuptools]

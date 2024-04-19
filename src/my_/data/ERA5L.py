@@ -4,6 +4,7 @@ import os
 from my_.files.handy import create_dirs, check_file_exists
 from glob import glob
 import xarray as xr
+import numpy as np
 
 @dataclass
 class ouput_data(gridded_data):
@@ -23,19 +24,24 @@ all_EUCORDEX_daily = {
     'variables': ['P',
                   'ET',
                   'PET',
+                  'Runoff',
                   'SM'],
     'variable_names': {'P': 'tp',
                        'ET': 'e',
                        'PET': 'pev',
+                       'Runoff': 'ro',
                        'SM': ['swvl1', 'swvl2', 'swvl3', 'swvl4']},
     'variable_dimensions': {'P': ['time', 'lat', 'lon'], 
                             'ET': ['time', 'lat', 'lon'],
                             'PET': ['time', 'lat', 'lon'],
+                            'Runoff': ['time', 'lat', 'lon'],
                             'SM': ['time', 'layer', 'lat', 'lon']}, 
     'variable_units': {'P': 'm/day',
                        'ET': 'm/day',
                        'PET': 'm/day',
-                       'SM': 'm^3/m^3'}
+                       'Runoff': 'm/day',
+                       'SM': 'm^3/m^3'},
+    'mask_value': -32767,
 }
 
 
@@ -58,10 +64,45 @@ def create_yearly_files(path_rawdata: os.PathLike,
 
         data_raw = xr.open_dataset(f)
 
+        data_raw['e'] = data_raw['e'] * -1
+        data_raw['pev'] = data_raw['pev'] * -1
+
         print(f'Create yearly file for file {f}...\n')
 
-        #data_y = data_raw.sel(time = data_raw.time.dt.year.isin([y]))
-
         data_raw.to_netcdf(f'{path_out}/{file_year}',
+                         format = 'NETCDF4_CLASSIC', 
+                         unlimited_dims = ['time'])
+        
+
+def merge_files(paths_rawdata: os.PathLike,
+                path_out: os.PathLike):
+    
+    """
+    Input directory should only contain the ERA5L rawdata files...
+    """
+    
+    create_dirs(path_out)
+    
+    files = []
+
+    for p in paths_rawdata:
+    
+        pp = sorted(glob(f'{p}/*.nc'))
+
+        files.extend(pp)
+
+    data_raw = xr.open_mfdataset(files)
+
+    years = np.unique(data_raw.time.dt.year.values)
+
+    for y in years:
+
+        print(f'Create yearly file for year {y}...\n')
+
+        if check_file_exists(f'{path_out}/{y}.nc'): continue
+
+        data_y = data_raw.sel(time = data_raw.time.dt.year.isin([y]))
+
+        data_y.to_netcdf(f'{path_out}/{y}.nc',
                          format = 'NETCDF4_CLASSIC', 
                          unlimited_dims = ['time'])

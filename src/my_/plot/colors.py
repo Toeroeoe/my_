@@ -5,6 +5,7 @@ def colorbar(cax: plt.Axes,
              artist: plt.Artist, 
              ylabel: str = '',
              pad: int = 10, 
+             shrink: float = 0.7,
              extend = 'neither', 
              fs_label: float = 10, 
              tick_labels: list = [],
@@ -13,29 +14,45 @@ def colorbar(cax: plt.Axes,
 
     import numpy as np
     
-    cbar = plt.colorbar(artist, cax = cax, extend = extend, orientation = orientation)
+    cbar = plt.colorbar(artist, 
+                        cax = cax, 
+                        extend = extend, 
+                        shrink = shrink, 
+                        orientation = orientation)
     
     if orientation == 'vertical':
 
-        cbar.ax.set_ylabel(ylabel, labelpad = pad, rotation = rotation, fontsize = fs_label)
+        cbar.ax.set_ylabel(ylabel, 
+                           labelpad = pad, 
+                           rotation = rotation, 
+                           fontsize = fs_label)
     
     elif orientation == 'horizontal': 
 
-        cbar.ax.set_xlabel(ylabel, labelpad = pad, rotation = rotation, fontsize = fs_label)
+        cbar.ax.set_xlabel(ylabel, 
+                           labelpad = pad, 
+                           rotation = rotation, 
+                           fontsize = fs_label)
 
     len_tick_labels         = len(tick_labels)
 
     if len_tick_labels > 0:
 
-        positions           = np.linspace(0.5, (len_tick_labels - 1) - 0.5, len_tick_labels)
+        positions           = np.linspace(0.5, 
+                                          (len_tick_labels - 1) - 0.5, 
+                                          len_tick_labels)
 
         if orientation == 'vertical':
         
-            cbar.ax.set_yticks(positions, tick_labels, fontsize = fs_label)
+            cbar.ax.set_yticks(positions, 
+                               tick_labels, 
+                               fontsize = fs_label)
 
         if orientation == 'horizontal':
 
-            cbar.ax.set_xticks(positions, tick_labels, fontsize = fs_label)
+            cbar.ax.set_xticks(positions, 
+                               tick_labels, 
+                               fontsize = fs_label)
 
 
 def colormap(cmap: str = 'viridis', cmap_n = 1000):

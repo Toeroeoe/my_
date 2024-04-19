@@ -126,30 +126,27 @@ def sites(source: str,
           file_out: str | None = None,
           type_out: str = 'csv') -> pd.DataFrame:
     
-    from my_.data.templates import gridded_data, grid, check_module
+    from my_.data.templates import gridded_data, grid, check_data_module
     from my_.series.group import single_multiindex
     from my_.series.aggregate import concat
-    from my_.files.handy import save_df
+    from my_.files.handy import save_df, check_file_exists
     from itertools import product
-    import pint
-    import pint_pandas
 
-    if file_out is None: file_out = f'out.{type_out}'
+    if file_out is None: file_out = f'out'
 
-    source_l1 = source.split('_')[0]
-    source_l2 = '_'.join(source.split('_')[1:])
+    if check_file_exists(f'{file_out}.{type_out}'): return
 
-    data_module = check_module(f'my_.data.{source_l1}')
+    data_module = check_data_module('my_.data',
+                                    source)
     if not data_module: return
 
-    data_attributes = getattr(data_module, source_l2)
-
-    data = gridded_data(**data_attributes)
+    data = gridded_data(**data_module)
+    
     data_variables = data.get_values(variables,
                                      y0 = year_start,
                                      y1 = year_end)
     
-    grid_module = check_module(f'my_.data.grids')
+    grid_module = check_data_module(f'my_.data.grids')
     grid_attributes = getattr(grid_module, data.grid)
 
     data_grid = grid(**grid_attributes)
@@ -163,6 +160,8 @@ def sites(source: str,
     n_sites = len(sites['name'])
 
     print(f'\nBegin loop over {n_sites} sites...\n')
+    
+    sites_out = sites.copy()
 
     for site, var in product(sites.index, variables):
 
@@ -209,12 +208,19 @@ def sites(source: str,
                                            site_longitude,
                                            index_time)
 
-
         list_ts.append(ts)
-
+                    
+        sites_out.loc[site, 'i_lat'] = idxs[0]
+        sites_out.loc[site, 'i_lon'] = idxs[1]
+        sites_out.loc[site, 'cell_lat'] = coords[0]
+        sites_out.loc[site, 'cell_lon'] = coords[1]
+    
     df_out = concat(list_ts, 
                     sort = False)
 
+    save_df(sites_out,
+            f'deims/sites_out_{source}.csv')
+    
     save_df(df_out, 
             f'{file_out}.{type_out}', 
             type_out)

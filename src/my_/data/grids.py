@@ -1,5 +1,6 @@
 
 EU3 = {
+    'name': 'EUCORDEX3km',
     'version': (1, 0, 0),
     'path_file': '/p/scratch/cjibg31/jibg3105/CESMDataRoot/InputData/share/domains/',
     'name_file': 'domain.lnd.CLM5EU3_v4.nc',
@@ -10,6 +11,7 @@ EU3 = {
 
 
 GLEAM = {
+    'name': 'GLEAM',
     'version': (3, 8, 1),
     'path_file': '/p/scratch/cjibg31/jibg3105/data/GLEAM/3.8a/yearly/',
     'name_file': '2000.nc',
@@ -20,6 +22,7 @@ GLEAM = {
 
 
 ERA5L_EUCORDEX = {
+    'name': 'ERA5-Land-EUCORDEX',
     'version': (1, 0, 0),
     'path_file': '/p/scratch/cjibg31/jibg3105/data/ERA5L/all/',
     'name_file': '2000.nc',

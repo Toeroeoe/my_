@@ -5,11 +5,16 @@ def check_file_exists(str_file):
     from glob import glob
 
     if len(glob(str_file)) > 0:
-        print(f'\nOutput file exists. Return.\n')
+        
+        print(f'\nOutput file(s) {str_file} exists. Return.\n')
+        
         return True
     
     else:
-        print(f'\nOutput file does not exist. It will be created now...\n')
+        
+        print(f'\nOutput file(s) {str_file} does not exist.')
+        print('It will be created now...\n')
+        
         return False
 
 

@@ -80,8 +80,8 @@ def sites_df(network: str = 'eLTER',
     ecosystem_types = [ecosystem_type(s) for s in ids]
 
     df = pd.DataFrame({'name': names,
-                       'latitude': [c[0] for c in coords],
-                       'longitude': [c[0] for c in coords],
+                       'latitude': latitudes,
+                       'longitude': longitudes,
                        'ecosystem_type': ecosystem_types},
                        index = ids)
 

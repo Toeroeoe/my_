@@ -9,8 +9,8 @@ def init_xy(ax, xs, ys, axhv_color: str = 'k', axhv_ls: str = '--', axhv_lw: flo
        title: str = '', xlabel: str = '', ylabel: str = '', y_title: float = 1.1, fs_title: int = 14, fs_label: int = 12, fs_ticks = 10,
        ax_tag = None, ax_tag_x: float = 0.5, ax_tag_y: float = 1.0):
     
-    from my_plot.limits import axgrid, common_free_lims, numeric_ticks
-    from my_plot.style import nospines
+    from my_.plot.limits import axgrid, common_free_lims, numeric_ticks
+    from my_.plot.style import nospines
 
     import matplotlib.pyplot as plt
 
@@ -54,8 +54,8 @@ def init_bar(ax, xs, ys, title: str = '', fs_title: float = 14, y_title: float =
              axhv_color: str = 'k', axhv_ls: str = '--', axhv_lw: float = 0.7, axhv_alpha: float = 0.8, axhv_dashes: tuple = (4, 4),
              ax_tag = '', ax_tag_x: float = 0.5, ax_tag_y: float = 1.0, fs_ticks: float = 10,):
 
-    from my_plot.limits import axgrid, bar_lims, numeric_ticks
-    from my_plot.style import nospines
+    from my_.plot.limits import axgrid, bar_lims, numeric_ticks
+    from my_.plot.style import nospines
 
     import matplotlib.pyplot as plt
 
@@ -101,8 +101,8 @@ def init_ts(ax, xs, ys, axhv_color: str = 'k', axhv_ls: str = '--', axhv_lw: flo
        title: str = '', xlabel: str = '', ylabel: str = '', y_title: float = 1.1, fs_title: int = 14, fs_label: int = 12, fs_ticks = 10,
        ax_tag = '', ax_tag_x: float = 0.5, ax_tag_y: float = 1.0):
     
-    from my_plot.style import nospines
-    from my_plot.limits import axgrid, numeric_ticks, free_lims
+    from my_.plot.style import nospines
+    from my_.plot.limits import axgrid, numeric_ticks, free_lims
 
     import matplotlib.pyplot as plt
 
@@ -134,15 +134,15 @@ def init_ts(ax, xs, ys, axhv_color: str = 'k', axhv_ls: str = '--', axhv_lw: flo
 
 def init_ts_2(ax, xs, ys, axhv_color: str = 'k', axhv_ls: str = '--', axhv_lw: float = 0.7, axhv_alpha: float = 0.8, axhv_dashes: tuple = (4, 4),
        title: str = '', xlabel: str = '', ylabel: str = '', y_title: float = 1.1, fs_title: int = 14, fs_label: int = 12, fs_ticks = 10,
-       ax_tag = '', ax_tag_x: float = 0.5, ax_tag_y: float = 1.0):
+       ax_tag = '', ax_tag_x: float = 0.5, ax_tag_y: float = 1.0, grid: bool = True, spines: bool = False):
     
     from my_.plot.style import nospines
     from my_.plot.limits import axgrid, numeric_ticks_2, free_date_lim, free_numeric_lim
 
     import matplotlib.pyplot as plt
 
-    axgrid(ax)
-    nospines(ax)
+    if grid: axgrid(ax)
+    if not spines: nospines(ax)
 
     plt.suptitle(title, fontsize = fs_title, y = y_title)
     
@@ -188,8 +188,8 @@ def init_dist(ax: plt.axes,
                 ax_tag_x: float = 0.5, 
                 ax_tag_y: float = 1.0) -> None:
     
-    from my_plot.style import nospines
-    from my_plot.limits import axgrid, numeric_ticks, free_lims
+    from my_.plot.style import nospines
+    from my_.plot.limits import axgrid, numeric_ticks, free_lims
 
     axgrid(ax)
     nospines(ax)

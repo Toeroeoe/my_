@@ -53,10 +53,20 @@ def hist(ax, array, bins = 'auto', density = True,  histtype = 'stepfilled', col
     return artist
 
 
-def plot(ax, xs, ys, colors = 'k', style: str = '-', lw: float = 1.0, alpha: float = 0.8,
-        markersize: float = 1.0, marker: str = '', zorder = 5):
+def plot(ax, 
+         xs, 
+         ys, 
+         colors = 'k', 
+         style: str = '-', 
+         lw: float = 1.0, 
+         alpha: float = 0.8,
+         markersize: float = 1.0, 
+         marker: str = '', 
+         zorder = 5):
 
     if isinstance(colors, list): 
+
+        print(colors)
         
         ax.set_prop_cycle('color', colors)
 

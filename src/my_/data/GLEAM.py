@@ -4,6 +4,7 @@ import netCDF4 as nc
 from glob import glob
 import nctoolkit as nct
 import xarray as xr
+import numpy as np
 
 v381_yearly = {
     'name': 'GLEAM_v3.8a_yearly',
@@ -28,7 +29,8 @@ v381_yearly = {
                             'SM': ['time', 'layer', 'lat', 'lon'],},
     'variable_units': {'ET': 'mm/year',
                        'PET': 'mm/year',
-                       'SM': 'm^3/m^3'}
+                       'SM': 'm^3/m^3'},
+    'mask_value': None
 }
 
 
@@ -45,7 +47,7 @@ def create_yearly_files(path_rawdata: os.PathLike,
 
     data_raw = xr.open_mfdataset(files)
 
-    years = data_raw.time.dt.year.values
+    years = np.unique(data_raw.time.dt.year.values)
 
     for y in years:
 

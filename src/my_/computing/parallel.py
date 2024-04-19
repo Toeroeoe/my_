@@ -1,29 +1,27 @@
 
 from mpi4py import MPI
 from typing import Callable, Any
-
-from my_files.netcdf import open_netcdf, variables_to_array
-from my_files.handy import check_file_exists
-
 import numpy as np
 
+from my_.files.netcdf import open, variables_to_array
+from my_.files.handy import check_file_exists
 
 def pixel_wise(func: Callable,
-                    variables: list[str],
-                    variables_out: list[str],
-                    files: str,
-                    file_out: str = 'out.nc',
-                    dtype: str = 'float32',
-                    dtype_out: str = 'float32',
-                    return_shape: int | list[int] | None = None,
-                    return_dims: str | list[str] = 'time',
-                    *args, **kwargs) -> Any:
+               variables: list[str],
+               variables_out: list[str],
+               files: str,
+               file_out: str = 'out.nc',
+               dtype: str = 'float32',
+               dtype_out: str = 'float32',
+               return_shape: int | list[int] | None = None,
+               return_dims: str | list[str] = 'time',
+               *args, **kwargs) -> Any:
     
     if check_file_exists(file_out): return
 
-    comm                        = MPI.COMM_WORLD
-    rank                        = comm.Get_rank()
-    size                        = comm.Get_size()
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank()
+    size = comm.Get_size()
     
     print(f'Rank {rank} out of {size} active.')
 
@@ -33,30 +31,30 @@ def pixel_wise(func: Callable,
 
         print(f'Rank {rank} is loading the data...')
         
-        data                    = open_netcdf(f'{files}')
+        data = open(f'{files}')
 
-        arrays                  = variables_to_array(data, variables, dtype = dtype)
+        arrays = variables_to_array(data, variables, dtype = dtype)
 
-        shape                   = arrays[0].shape
+        shape = arrays[0].shape
 
         if isinstance(return_shape, int): return_shape = [return_shape]
 
-        array_out               = np.empty((*return_shape, *shape[-2:]), dtype = dtype_out)
-        array_out[:]            = np.nan
+        array_out = np.empty((*return_shape, *shape[-2:]), dtype = dtype_out)
+        array_out[:] = np.nan
 
     elif rank != 0:
 
         print(f'Rank {rank} creating empty objects...')
 
-        shape                   = None
+        shape = None
 
-    shape                       = comm.bcast(shape, root = 0)
+    shape = comm.bcast(shape, root = 0)
 
     if rank != 0:
 
         print(f'I am rank {rank} and I know the shapes: {shape}. Creating empty arrays...')
 
-        arrays_recv             = [np.empty(shape[:-2], dtype = dtype)] * len(variables)
+        arrays_recv = [np.empty(shape[:-2], dtype = dtype)] * len(variables)
 
 
     comm.Barrier()
@@ -64,13 +62,13 @@ def pixel_wise(func: Callable,
 
     print(f'I am rank {rank}. Ready for sending / receiving and calculations.')
 
-    range_y                     = np.arange(shape[-2])
-    range_x                     = np.arange(shape[-1])
-    grid                        = np.array(np.meshgrid(range_y, range_x))
-    cells                       = grid.T.reshape(-1, 2)
-    length                      = len(cells)
-    perrank                     = length // (size - 1)
-    resid                       = length - perrank * (size - 1)
+    range_y = np.arange(shape[-2])
+    range_x = np.arange(shape[-1])
+    grid = np.array(np.meshgrid(range_y, range_x))
+    cells = grid.T.reshape(-1, 2)
+    length = len(cells)
+    perrank = length // (size - 1)
+    resid = length - perrank * (size - 1)
 
     for yx in range(perrank):
     
@@ -78,11 +76,11 @@ def pixel_wise(func: Callable,
 
             for r in range(1, size):
 
-                r_n             = (size - 1) * yx + (r - 1)
-                y               = cells[r_n][0]
-                x               = cells[r_n][1]
+                r_n = (size - 1) * yx + (r - 1)
+                y = cells[r_n][0]
+                x = cells[r_n][1]
 
-                arrays_yx       = [array[..., y, x] for array in arrays]
+                arrays_yx = [array[..., y, x] for array in arrays]
 
                 print(f'Rank {rank} sending cell {r_n} corresponding to')
                 print(f'grid indices {x}, {y} to rank {r}.')
@@ -93,9 +91,9 @@ def pixel_wise(func: Callable,
             
             for r in range(1, size):
 
-                r_n             = (size - 1) * yx + (r - 1)
-                y               = cells[r_n][0]
-                x               = cells[r_n][1]
+                r_n = (size - 1) * yx + (r - 1)
+                y = cells[r_n][0]
+                x = cells[r_n][1]
 
                 print(f'Rank {rank} receiving func {func.__name__} output')
                 print(f'from grid indices {x}, {y} to rank {r}.')
@@ -110,9 +108,9 @@ def pixel_wise(func: Callable,
         
         if rank != 0:
 
-            r_m                 = (size - 1) * yx + (rank - 1)
-            y                   = cells[r_m][0]
-            x                   = cells[r_m][1]
+            r_m = (size - 1) * yx + (rank - 1)
+            y = cells[r_m][0]
+            x = cells[r_m][1]
 
             print(f'Rank {rank} receiving cell {r_m} corresponding to')
             print(f'grid indices {x}, {y} from rank 0.')
@@ -122,7 +120,7 @@ def pixel_wise(func: Callable,
             print(f'Rank {rank} received cell {r_m}.')
             print(f'No executing function {func.__name__}...')
 
-            out_func            = func(arrays_recv, *args, **kwargs)
+            out_func = func(arrays_recv, *args, **kwargs)
 
             print(f'Rank {rank} executed function for grid indices {x}, {y}.')
             print(f'Sending back the output to rank 0...')
@@ -144,10 +142,10 @@ def pixel_wise(func: Callable,
         
             for r in range(1, resid + 1):
 
-                y                   = cells[-r][0]
-                x                   = cells[-r][1]
+                y = cells[-r][0]
+                x = cells[-r][1]
 
-                arrays_yx           = [array[..., y, x] for array in arrays]
+                arrays_yx = [array[..., y, x] for array in arrays]
 
                 print(f'Rank {rank} sending cell {-r} corresponding to')
                 print(f'grid indices {x}, {y} to rank {r}.')
@@ -158,13 +156,13 @@ def pixel_wise(func: Callable,
 
             for r in range(1, resid + 1):
 
-                y                   = cells[-r][0]
-                x                   = cells[-r][1]
+                y = cells[-r][0]
+                x = cells[-r][1]
 
                 print(f'Rank {rank} receiving func {func.__name__} output')
                 print(f'from grid indices {x}, {y} to rank {r}.')
 
-                return_object       = comm.recv(source = r, tag = yx)
+                return_object = comm.recv(source = r, tag = yx)
 
                 print(f'Rank {rank} received function output from rank {r},')
                 print(f'from grid indices {x}, {y} to rank {r}.')
@@ -174,8 +172,8 @@ def pixel_wise(func: Callable,
 
         if rank != 0:
 
-            y                   = cells[-rank][0]
-            x                   = cells[-rank][1]
+            y = cells[-rank][0]
+            x = cells[-rank][1]
 
             print(f'Rank {rank} receiving cell {-rank} corresponding to')
             print(f'grid indices {x}, {y} from rank 0.')
@@ -185,7 +183,7 @@ def pixel_wise(func: Callable,
             print(f'Rank {rank} received cell {-rank}.')
             print(f'No executing function {func.__name__}...')
 
-            out_func            = func(arrays_recv, *args, **kwargs)
+            out_func = func(arrays_recv, *args, **kwargs)
 
             print(f'Rank {rank} executed function for grid indices {x}, {y}.')
             print(f'Sending back the output to rank 0...')
@@ -205,9 +203,9 @@ def pixel_wise(func: Callable,
 
         if isinstance(return_dims, str): return_dims = [return_dims]
 
-        out_vars                = {v: ([*return_dims, 'lat', 'lon'], array_out) for v in variables_out}
+        out_vars = {v: ([*return_dims, 'lat', 'lon'], array_out) for v in variables_out}
 
-        DS_out                  = xr.Dataset(data_vars = out_vars)
+        DS_out = xr.Dataset(data_vars = out_vars)
 
         print('Now wrinting DS to netcdf...')
 
@@ -215,9 +213,10 @@ def pixel_wise(func: Callable,
 
         print('Script was successful! Bye bye!')
 
+
 if __name__ == '__main__':
 
-    from my_science.anomalies import standard_index
+    from my_.science.anomalies import standard_index
 
     pixel_wise(func = standard_index, 
                     variables = ['QFLX_EVAP_GRND'],

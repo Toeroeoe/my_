@@ -1,9 +1,12 @@
 
-from netCDF4 import Dataset, MFDataset
+import netCDF4 as nc
+import numpy as np
+
 
 file_ending = 'nc'
 
-def open(str_files: str):
+def open(str_files: str,
+         **kwargs):
 
     from glob import glob
     
@@ -13,23 +16,23 @@ def open(str_files: str):
 
         n_files                 = len(files)
 
-        if n_files == 1: return Dataset(files[0])
+        if n_files == 1: return nc.Dataset(files[0], **kwargs)
 
-        data                    = MFDataset(files)
+        data                    = nc.MFDataset(files, **kwargs)
 
     elif isinstance(str_files, list):
 
-        data                    = MFDataset(str_files)
+        data                    = nc.MFDataset(str_files, **kwargs)
         
     return data
 
 
-def variable_to_array(data: Dataset, 
+def variable_to_array(data: nc.Dataset, 
                       variable: str, 
                       stack_axis: int = 1,
-                      dtype: str = 'float64'):
+                      dtype: str = 'float64',
+                      mask_value: None | float | int = None):
 
-    import numpy as np
 
     if isinstance(variable, list):
 
@@ -49,18 +52,94 @@ def variable_to_array(data: Dataset,
     
     array_dtype = array.astype(np_dtype)
 
-    return array_dtype
+    if mask_value is not None:
+
+        array_out = np.ma.masked_values(array_dtype, mask_value)
+
+    if isinstance(array_dtype, np.ma.masked_array): return array_dtype.filled(np.nan)
+    else: return array_dtype
     
 
-def variables_to_array(data: Dataset, 
+def variables_to_array(data: nc.Dataset, 
                        variables: list[str],
                        stack_axis: int = 1, 
-                       dtype: str = 'float64'):
+                       dtype: str = 'float64',
+                       mask_value: None | float | int = None):
     
     arrays_dtype            = [variable_to_array(data, 
                                                  v, 
                                                  stack_axis,
-                                                 dtype) for v in variables]
+                                                 dtype,
+                                                 mask_value) for v in variables]
 
     return arrays_dtype
 
+
+def netcdf_time(data: nc.Dataset,
+                name_time: str = 'time',
+                only_use_python_datetimes: bool = False,
+                **kwargs):
+    
+    ## BAUSTELLE
+
+    var = data.variables[name_time]
+    units = var.units
+    calendar = var.calendar
+
+    print(var)
+    print(var[:].shape)
+    print(units)
+    print(calendar)
+    print(np.sort(var[:])[-1])
+    print(var[:][0])
+
+    dtime = nc.num2date(var[:], 
+                        units = units, 
+                        calendar = calendar,
+                        only_use_python_datetimes = only_use_python_datetimes,
+                        **kwargs)
+
+    return dtime
+
+
+def nc_out(
+           fname: str,
+           dimensions: dict,
+           variables: dict,
+           attributes: None | dict, 
+           format: str = 'NETCDF4_CLASSIC',
+           ) -> nc.Dataset:
+
+
+    # dims = {'lat': {'dtype': np.float64, 'dims': [lat, lon], 'size': 16, 'attrs': {'units': 'degrees east'}}}
+    # vars = {'temp: {'dtype': np.float64, 'dims':  [lat, lon], 'attrs': {'units': 'degrees east'}}}
+
+    print(f'\nCreating netCDF output to: {fname}...\n')
+
+    nc_out = nc.Dataset(fname, 
+                        mode = 'w',
+                        format = format)
+    
+    for k, v in attributes.items():
+
+        nc_out.setncattr(k, v)
+    
+    for dim, dimc in dimensions.items():
+
+        dim_nc = nc_out.createDimension(dim, dimc['size'])
+
+        dim_var = nc_out.createVariable(dim, dimc['dtype'], dimc['dims'])
+
+        for k, v in dimc['attrs'].items():
+        
+            dim_var.setncattr(k, v)
+    
+    for var, varc in variables.items():
+        
+        var_nc = nc_out.createVariable(var, varc['dtype'], varc['dims'])
+
+        for k, v in varc['attrs'].items():
+        
+            var_nc.setncattr(k, v)
+
+    return nc_out

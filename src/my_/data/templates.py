@@ -4,7 +4,8 @@ import os
 import numpy as np
 import pandas as pd
 import pint
-
+import xarray as xr
+import pint_xarray
 
 @dataclass
 class gridded_data:
@@ -23,6 +24,7 @@ class gridded_data:
     variable_names: dict
     variable_dimensions: dict
     variable_units: dict
+    mask_value: None | float | int
     
 
     def index_time(self,
@@ -74,7 +76,8 @@ class gridded_data:
         print(f'\nLoading value data for:')
         print(f'{load_variables} from year {y0} to year {y1}...\n')
 
-        type_module = check_module(f'my_.files.{self.type_file}')
+        type_module = check_data_module('my_.files',
+                                        self.type_file)
 
         if not type_module: return
 
@@ -87,7 +90,9 @@ class gridded_data:
 
         present_src_vars = self.present_source_variables(load_variables)
         
-        values = type_module.variables_to_array(data, present_src_vars)
+        values = type_module.variables_to_array(data, 
+                                                present_src_vars,
+                                                mask_value = self.mask_value)
 
         return {v: values[i] for i, v in enumerate(present_vars)}
     
@@ -97,42 +102,76 @@ class gridded_data:
                       y0: int | None,
                       y1: int | None):
         
+        if y0 is None: y0 = self.year_start
+        elif y0 < self.year_start: y0 = self.year_start
+        
+        if y1 is None: y1 = self.year_end
+        elif y1 > self.year_end: y1 = self.year_end
+
+        print(f'\nLoading data for:')
+        print(f'{load_variables} from year {y0} to year {y1}...\n')
+        
         present_vars = self.present_variables(load_variables)
 
-        values = self.get_values(load_variables,
-                                 y0,
-                                 y1)
+        type_module = check_data_module('my_.files',
+                                        self.type_file)
+
+        files = [f'{self.path}/{y}.{type_module.file_ending}'
+                for y in range(y0, y1 + 1)]
         
-        variables = {v: gridded_variables(unit = self.variable_units[v], 
-                                         array = values[i] ) 
-                                         for i, v in enumerate(present_vars)}
+        data = xr.open_mfdataset(files) if len(files) < 1 else xr.open_dataset(files[0])
+
+        name_dict = {v: k for k, v in self.variable_names.items() if k in present_vars}
+
+        #for k, v in name_dict.items():
+        #
+        #    if isinstance(v, list):
+    #
+        #        data[v] = 
+    
+        data_s = data.rename(name_dict)
+                      
+        data_v = data_s[present_vars]
                         
-        return variables
+        return data_v
 
 
     def convert_units(self,
-                      values: dict,
-                      dst_units: dict):
+                      values: dict | xr.Dataset | xr.DataArray,
+                      dst_units: dict,
+                      variables: None | dict = None):
         
         ureg = pint.UnitRegistry()
         Q_ = ureg.Quantity
 
-        values_out = {}
+        values_out = {} if isinstance(values, dict) else values.copy()
 
-        for v, array in values.items():
+        for i, (v, array) in enumerate(values.items()):
 
-            src_unit = self.variable_units[v]
-            dst_unit = dst_units[v]
+            vi = variables[v] if variables is not None else v
+
+            src_unit = self.variable_units[vi]
+            dst_unit = dst_units[vi]
         
-            print(f'\nConverting {v} units from {src_unit} to {dst_unit}...\n')
+            print(f'\nConverting {vi} units from {src_unit} to {dst_unit}...\n')
 
-            values_src = Q_(array, src_unit)
+            if isinstance(array, np.ndarray):
+                
+                Q_ = ureg.Quantity
+                
+                values = Q_(array, src_unit)
+                
+                values_dst = values.to(dst_unit)
 
-            values_dst = values_src.to(dst_unit)  
-            
-            values_out[v] = values_dst
+                values_out[v] = values_dst.magnitude
+
+            elif isinstance(array, xr.DataArray):
     
-            print(array.shape, values_dst.shape)
+                values = array.pint.quantify(src_unit)
+
+                values_dst = values.pint.to(dst_unit)
+
+                values_out[v] = values_dst.pint.dequantify()
 
         return values_out
 
@@ -140,13 +179,42 @@ class gridded_data:
     def regrid():
         ...
 
-    def resample():
-        ...
+    def resample(self,
+                 dataset: xr.DataArray | xr.Dataset,
+                 dst_time_res: str,
+                 method: str | list,
+                 var_subset: list | None = None,
+                 **kwargs) -> xr.Dataset | xr.DataArray:
+
+        from my_.series.interpolate import resample
+        
+        if var_subset is not None: dataset = dataset[var_subset]
+
+        if isinstance(method, list):
+
+            out_ds = xr.Dataset()
+            
+            for m in method:
+
+                ds = resample(dataset, dst_time_res, m, **kwargs)
+    
+                new_names = {n: f'{n}_{m}' for n in ds.keys()}
+    
+                ds_new = ds.rename(new_names)
+        
+                out_ds.update(ds_new)
+
+        elif isinstance(method, str):
+
+            out_ds = resample(dataset, dst_time_res, method, **kwargs)
+    
+        return out_ds
 
 
 @dataclass
 class grid:
 
+    name: str
     version: tuple[str]
     path_file: os.PathLike
     name_file: str
@@ -156,7 +224,10 @@ class grid:
 
     def load_coordinates(self):
         
-        type_module = check_module(f'my_.files.{self.type_file}')
+        type_module = check_data_module('my_.files',
+                                        self.type_file)
+        
+        print(f'\nLoad lat and lon variables from grid {self.name}...\n')
 
         if not type_module: return
 
@@ -177,7 +248,8 @@ class grid:
 
         if (lat.ndim == 1) & (lon.ndim == 1):
             
-            stacked_coords = np.array(np.meshgrid(lat, lon))
+            stacked_coords = np.array(np.meshgrid(lat, 
+                                                  lon))
         
             list_points = stacked_coords.T.reshape(-1, 2)
 
@@ -217,19 +289,27 @@ class gridded_variables:
 
         ...
 
-def check_module(module: str):
+def check_data_module(package_str: str, 
+                      module_str: str):
+
+    module_ = module_str.split('_')[0]
+    attribute_ = '_'.join(module_str.split('_')[1:])
 
     try:
     
-        mod = importlib.import_module(module)
+        mod = importlib.import_module(f'{package_str}.{module_}')
             
-        print(f'\nModule {module} imported successfully.\n')
+        print(f'\nModule {module_} imported successfully.\n')
+        
+        if attribute_ == '': return mod
 
-        return mod
+        out = getattr(mod, attribute_)
+
+        return out
     
     except ModuleNotFoundError: 
         
-        print(f'\nModule {module} is not yet supported. Continue...\n')
+        print(f'\nModule {module_str} is not yet supported. Continue...\n')
         
         return False
 
