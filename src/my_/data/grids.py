@@ -2,8 +2,8 @@
 EU3 = {
     'name': 'EUCORDEX3km',
     'version': (1, 0, 0),
-    'path_file': '/p/scratch/cjibg31/jibg3105/CESMDataRoot/InputData/share/domains/',
-    'name_file': 'domain.lnd.CLM5EU3_v4.nc',
+    'path_file': '/p/scratch/cjibg31/jibg3105/CESMDataRoot/InputData/share/domains/EUR-0275/domain/',
+    'name_file': 'domain.lnd.EUR-0275_final.nc',
     'type_file': 'netcdf',
     'name_latitude': 'yc',
     'name_longitude': 'xc',

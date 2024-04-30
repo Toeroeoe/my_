@@ -1,6 +1,7 @@
 
 import netCDF4 as nc
 import numpy as np
+import psutil
 
 
 file_ending = 'nc'
@@ -33,6 +34,8 @@ def variable_to_array(data: nc.Dataset,
                       dtype: str = 'float64',
                       mask_value: None | float | int = None):
 
+    print(f'\nLoad netcdf variable {variable} to memory.')
+    print(f'Available memory  [GB]: {psutil.virtual_memory()[4] / 10**9}...\n')
 
     if isinstance(variable, list):
 
@@ -41,7 +44,7 @@ def variable_to_array(data: nc.Dataset,
 
         array = np.stack(arrays, 
                          axis = stack_axis)
-
+              
     elif isinstance(variable, str):
 
         netcdf_variable = data.variables[variable]
@@ -75,6 +78,21 @@ def variables_to_array(data: nc.Dataset,
     return arrays_dtype
 
 
+def variables_to_dict(data: nc.Dataset, 
+                       variables: list[str],
+                       stack_axis: int = 1, 
+                       dtype: str = 'float64',
+                       mask_value: None | float | int = None):
+    
+    arrays_dtype            = {v: variable_to_array(data, 
+                                                    v, 
+                                                    stack_axis,
+                                                    dtype,
+                                                    mask_value) for v in variables}
+
+    return arrays_dtype
+
+    
 def netcdf_time(data: nc.Dataset,
                 name_time: str = 'time',
                 only_use_python_datetimes: bool = False,

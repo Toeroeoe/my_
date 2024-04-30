@@ -4,8 +4,9 @@ import matplotlib.pyplot as plt
 def colorbar(cax: plt.Axes, 
              artist: plt.Artist, 
              ylabel: str = '',
-             pad: int = 10, 
-             shrink: float = 0.7,
+             pad: int = 20, 
+             shrink = 0.5,
+             fraction: float = 0.05,
              extend = 'neither', 
              fs_label: float = 10, 
              tick_labels: list = [],
@@ -18,6 +19,7 @@ def colorbar(cax: plt.Axes,
                         cax = cax, 
                         extend = extend, 
                         shrink = shrink, 
+                        fraction = fraction,
                         orientation = orientation)
     
     if orientation == 'vertical':

@@ -7,8 +7,8 @@ class ouput_data(gridded_data):
 
 BGC_EU3_8daily = {
     'name': 'BGC_EU3',
-    'version': (1, 0, 6),
-    'path': '/p/scratch/cjibg31/jibg3105/data/CLM5EU3/006/join_8d/',
+    'version': (1, 1, 7),
+    'path': '/p/scratch/cjibg31/jibg3105/data/CLM5EU3/007/join/8daily/drop/',
     'type_file': 'netcdf',
     'year_start': 1995,
     'month_start': 1,
@@ -24,7 +24,6 @@ BGC_EU3_8daily = {
                     'BTRAN',
                     'Gs',
                     'Runoff',
-                    'Albedo',
                     'SM',
                     'WTD',
                  ],
@@ -36,7 +35,6 @@ BGC_EU3_8daily = {
                         'BTRAN': 'BTRANMN',
                         'Gs': 'GSSHA',
                         'Runoff': 'QOVER',
-                        'Albedo': 'ALBD',
                         'SM': 'H2OSOI',
                         'WTD': 'ZWT',
                        },
@@ -48,7 +46,6 @@ BGC_EU3_8daily = {
                             'BTRAN': ['time', 'lat', 'lon'],
                             'Gs': ['time', 'lat', 'lon'],
                             'Runoff': ['time', 'lat', 'lon'],
-                            'Albedo': ['time', 'rad', 'lat', 'lon'], # solar radiation bands: vis, nir
                             'SM': ['time', 'layer', 'lat', 'lon'],
                             'WTD':  ['time', 'lat', 'lon'],
                             }, 
@@ -59,7 +56,6 @@ BGC_EU3_8daily = {
                        'BTRAN': 'dimensionless',
                        'Gs': 'umol/s',
                        'Runoff': 'mm/s',
-                       'Albedo': 'dimensionless',
                        'SM': 'mm^3/mm^3',
                        'WTD': 'm',},
     'mask_value': None
@@ -83,7 +79,7 @@ BGC_EU3_daily = {
                     'ET',
                     'ESOIL',
                     'Tr',
-                    #'BTRAN',
+                    'BTRAN',
                     'Gs',
                     'Runoff',
                     'Albedo',

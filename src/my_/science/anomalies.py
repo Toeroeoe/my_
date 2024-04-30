@@ -27,9 +27,14 @@ def standard_index(array: np.ndarray,
     from my_.math.stats import distribution_fit, distribution_pdf, distribution_cdf
     from my_.plot.legend import color_legend
 
-    create_dirs(plot_out_dir)
-
     if isinstance(array, list): array = array[0]
+
+    if (distribution == 'gamma') and deseasonalize: 
+                       
+        print('\nDeseasonalize and gamma distribution')
+        print('are not compatible...\n')
+
+        raise NotImplementedError
 
     time_index = index(year_start, 
                        year_end, 
@@ -60,14 +65,15 @@ def standard_index(array: np.ndarray,
 
     series_roll_valid = series_roll.loc[valid_start:]
 
-    dummy_out = np.array([np.nan] * len(series)) 
-                          #index = time_index)
+    dummy_out = np.array([np.nan] * len(series_roll_valid)) 
 
     if ((distribution == 'gamma') and 
         (np.any(series_roll_valid < 0) or 
          np.all(series_roll_valid == 0))): return dummy_out
 
     if np.all(np.isnan(series_roll_valid)): return dummy_out
+
+    if np.all(series_roll_valid == series_roll_valid.iloc[0]): return dummy_out
 
     if distribution == 'gaussian_kde':
 
@@ -109,6 +115,8 @@ def standard_index(array: np.ndarray,
                          f'{str_deseasonalize}'])
 
     if plot_distributions: 
+
+        create_dirs(plot_out_dir)
         
         fig, ax = square(4, 4)
         init_dist(ax,pdf_xs, pdf_ys, xlabel = f'{window} {agg_method} {variable} [{unit}]', ylabel = 'Probability density')
@@ -133,6 +141,8 @@ def standard_index(array: np.ndarray,
 
     if plot_sxi_ts:
         
+        create_dirs(plot_out_dir)
+
         fig, ax, cax = square_top_cax(fy = 4)
         init_ts_2(ax, time_index, array, xlabel = 'Time', ylabel = f'{variable} [{unit}]')
         plot(ax, xs = time_index, ys = array, colors = 'k', lw = plot_lw, zorder = 2)

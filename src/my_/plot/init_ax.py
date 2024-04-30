@@ -81,18 +81,19 @@ def init_bar(ax, xs, ys, title: str = '', fs_title: float = 14, y_title: float =
 
 
 def EU3_plot_init(rotnpole_lat: float = 39.25, rotnpole_lon: float = -162.0, semmj_axis: int = 6370000, 
-                    semmn_axis: int = 6370000, lon_extents: list = [351.1, 60.55], lat_extents: list = [23.92, 66.1]):
+                    semmn_axis: int = 6370000, lon_extents: list = [351.1, 57], lat_extents: list = [27, 64.4]):
 
     import numpy as np
     from cartopy import crs
 
-    rp                          = crs.RotatedPole(pole_longitude = rotnpole_lon,
-                                    pole_latitude = rotnpole_lat,
-                                    globe = crs.Globe(semimajor_axis = semmj_axis,
-                                    semiminor_axis = semmn_axis))
+    rp = crs.RotatedPole(pole_longitude = rotnpole_lon,
+                         pole_latitude = rotnpole_lat,
+                         globe = crs.Globe(semimajor_axis = semmj_axis,
+                         semiminor_axis = semmn_axis))
     
-    pc                          = crs.PlateCarree()
-    xs, ys, _                   = rp.transform_points(pc, np.array(lon_extents), np.array(lat_extents)).T
+    pc = crs.PlateCarree()
+
+    xs, ys, _ = rp.transform_points(pc, np.array(lon_extents), np.array(lat_extents)).T
     
     return rp, pc, xs, ys
 

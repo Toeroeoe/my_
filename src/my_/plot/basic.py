@@ -1,3 +1,4 @@
+from cartopy.crs import Projection
 
 
 def colormesh(ax, x, y, array, cmap: str = 'coolwarm_r', v0: float = None, v1: float = None, projection = None):
@@ -28,8 +29,8 @@ def xy(ax, xs, ys, marker, sizes_marker = 50, colors_marker = [], projection = N
        diag_color: str = 'k', diag_ls: str = '--', diag_lw: float = 0.7, diag_alpha: float = 0.8, diag_dashes = (4,4),
        xlabel: str = '', ylabel: str = '', fs_label: int = 9):
 
-    from my_plot.basic import scatter
-    from my_plot.init_ax import init_xy
+    from my_.plot.basic import scatter
+    from my_.plot.init_ax import init_xy
     
     init_xy(ax, xs, ys, axhv_color, axhv_ls, axhv_lw, axhv_alpha, axhv_dashes,
        diag_color, diag_ls, diag_lw, diag_alpha, diag_dashes, xlabel, ylabel, fs_label)
@@ -60,6 +61,7 @@ def plot(ax,
          style: str = '-', 
          lw: float = 1.0, 
          alpha: float = 0.8,
+         projection: None | Projection = None,
          markersize: float = 1.0, 
          marker: str = '', 
          zorder = 5):
@@ -70,11 +72,11 @@ def plot(ax,
         
         ax.set_prop_cycle('color', colors)
 
-        artist = ax.plot(xs, ys, ls = style, lw = lw, marker = marker, markersize = markersize, alpha = alpha, zorder = zorder)
+        artist = ax.plot(xs, ys, ls = style, lw = lw, transform = projection, marker = marker, markersize = markersize, alpha = alpha, zorder = zorder)
     
     else:
         
-        artist = ax.plot(xs, ys, c = colors, ls = style, lw = lw, marker = marker, markersize = markersize, alpha = alpha, zorder = zorder)
+        artist = ax.plot(xs, ys, c = colors, ls = style, lw = lw, transform = projection, marker = marker, markersize = markersize, alpha = alpha, zorder = zorder)
 
     return artist
 

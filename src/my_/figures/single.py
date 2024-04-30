@@ -22,22 +22,35 @@ def square_right_cax(fx: float = 6.7, fy: float = 6.7, dpi: int = 300, projectio
     import matplotlib.pyplot as plt
     from matplotlib.gridspec import GridSpec
     from my_.plot.style import style_1
+    from mpl_toolkits.axes_grid1 import make_axes_locatable
+    import matplotlib.axes as maxes
     
     style_1()
     
-    nrows                           = 1
-    ncols                           = 2
-    w1, w2                          = 10, 1
+    nrows = 1
+    ncols = 2
+    w1, w2 = 10, 1
 
-    fig                             = plt.figure(figsize=(fx, fy), dpi = dpi, constrained_layout = True)
+    fig = plt.figure(figsize=(fx, fy), dpi = dpi, constrained_layout = True)
 
-    gs                              = GridSpec(figure = fig, 
-                                                ncols = ncols, nrows = nrows, 
-                                                width_ratios = [w1, w2],
-                                                wspace = 0.1)
+    gs = GridSpec(figure = fig, 
+                    ncols = ncols, nrows = nrows, 
+                    width_ratios = [w1, w2],
+                    wspace = 0.1)
 
-    ax                              = fig.add_subplot(gs[0,0], projection = projection, frameon = frame)
-    cax                             = fig.add_subplot(gs[0,1], frameon = frame)
+    ax = fig.add_subplot(gs[0,0], 
+                            projection = projection, 
+                            frameon = frame)
+
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes('right', 
+                                size = '8%', 
+                                pad = 0.8, 
+                                frameon = frame, 
+                                axes_class = maxes.Axes)
+
+    #cax = fig.add_axes([ax.get_position().x1+0.01,ax.get_position().y0,0.02,ax.get_position().height])
+    #cax = fig.add_subplot(gs[0,1], frameon = frame)
 
     return fig, ax, cax
 

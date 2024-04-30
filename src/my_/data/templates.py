@@ -6,6 +6,7 @@ import pandas as pd
 import pint
 import xarray as xr
 import pint_xarray
+from glob import glob
 
 @dataclass
 class gridded_data:
@@ -28,8 +29,8 @@ class gridded_data:
     
 
     def index_time(self,
-                   y0: int | None,
-                   y1: int | None):
+                   y0: int | None = None,
+                   y1: int | None = None):
         
         from my_.series.time import index
         
@@ -43,6 +44,19 @@ class gridded_data:
                      y1, 
                      self.resolution_time)
     
+    def present_files(self,
+                      y0: int | None,
+                      y1: int | None):
+        
+        if y0 is None: y0 = self.year_start
+        elif y0 < self.year_start: y0 = self.year_start
+        
+        if y1 is None: y1 = self.year_end
+        elif y1 > self.year_end: y1 = self.year_end
+    
+        files = [f'{self.path}/{y}.nc' for y in np.arange(y0, y1 +1)]
+
+        return files
 
     def present_variables(self, 
                           load_variables: list[str]):
@@ -119,15 +133,9 @@ class gridded_data:
         files = [f'{self.path}/{y}.{type_module.file_ending}'
                 for y in range(y0, y1 + 1)]
         
-        data = xr.open_mfdataset(files) if len(files) < 1 else xr.open_dataset(files[0])
+        data = xr.open_mfdataset(files) if len(files) > 1 else xr.open_dataset(files[0])
 
-        name_dict = {v: k for k, v in self.variable_names.items() if k in present_vars}
-
-        #for k, v in name_dict.items():
-        #
-        #    if isinstance(v, list):
-    #
-        #        data[v] = 
+        name_dict = {v: k for k, v in self.variable_names.items() if k in present_vars} 
     
         data_s = data.rename(name_dict)
                       
@@ -232,6 +240,8 @@ class grid:
         if not type_module: return
 
         file = f'{self.path_file}/{self.name_file}'
+
+        print(file)
 
         data = type_module.open(file)
 

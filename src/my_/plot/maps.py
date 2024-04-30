@@ -1,9 +1,15 @@
 
+import numpy as np
 
 def EU3_plot_lines(ax, pc, xs, ys, 
-                    lw_grid: float = 0.5, lw_coast: float = 0.5, color_grid: str = 'grey', 
-                    ls_grid: str = '--', xticks = [], yticks = [],
-                    fs_label: float = 8, label_sides: list = ['bottom', 'right']):
+                    lw_grid: float = 0.8, 
+                    lw_coast: float = 0.8, 
+                    color_grid: str = 'grey', 
+                    ls_grid: str = '--', 
+                    xticks = np.arange(-40, 80, 20), 
+                    yticks = np.arange(-20, 80, 20),
+                    fs_label: float = 8, 
+                    label_sides: list = ['bottom', 'right']):
     
     import matplotlib.ticker as mticker
 
