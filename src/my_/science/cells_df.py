@@ -1,7 +1,7 @@
 
 
 
-def src_var_cells_df_bak(name_case: str, 
+def src_var_cells_df(name_case: str, 
                      sources: list, 
                      variables: list, 
                      file_format: str = 'csv',
@@ -19,7 +19,7 @@ def src_var_cells_df_bak(name_case: str,
 
     from my_.resources.sources import query_variables, query_grids, available_variables
     from my_.files.handy import yearly_or_monthly_files, save_df, create_dirs
-    from my_.files.netcdf import open_netcdf, variables_to_array
+    from my_.files.netcdf import open, variables_to_array
     from my_.files.csv import open_csv
     from my_.grids.dimensions import grid_to_points
     from my_.series.aggregate import concat
@@ -134,7 +134,7 @@ def cell_static_info(name_case: str, sources = [], path_stations: str = 'user_in
     
     from my_.resources.sources import query_static, query_grids
     from my_.grids.dimensions import grid_to_points
-    from my_.files.netcdf import open_netcdf, variables_to_array
+    from my_.files.netcdf import open, variables_to_array
     from my_.files.csv import open_csv
     from my_.grids.extract import closest_cell, cell
     from my_.files.handy import save_df

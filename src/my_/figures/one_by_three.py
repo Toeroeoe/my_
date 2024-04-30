@@ -18,8 +18,8 @@ def horizontal_right_map_two_cax(fx: float = 6.7,
     from matplotlib.gridspec import GridSpec
     from matplotlib.patches import ConnectionPatch
 
-    from my_plot.style import style_1
-    from my_plot.init_ax import init_annotation_ax
+    from my_.plot.style import style_1
+    from my_.plot.init_ax import init_annotation_ax
 
     style_1()
 

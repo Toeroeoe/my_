@@ -46,7 +46,7 @@ def map_point_locations(ax, lats = [], lons = [],
                         alpha_land = 1.0, alpha_ocean = 0.3, land_color = 'dimgrey', ocean_color = None):
 
     import cartopy.feature as cfeature
-    from my_plot.basic import scatter
+    from my_.plot.basic import scatter
 
     ax.add_feature(cfeature.LAND, color = land_color, alpha = alpha_land, zorder = 0)
     ax.add_feature(cfeature.OCEAN, color= ocean_color, alpha = alpha_ocean, zorder = 0)

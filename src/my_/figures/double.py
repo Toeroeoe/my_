@@ -3,7 +3,7 @@
 def horizontal(fx: float = 6.7, fy: float = 3.35, dpi: int = 300, projection = None, frame: bool = False):
 
     import matplotlib.pyplot as plt
-    from my_plot.style import style_1
+    from my_.plot.style import style_1
 
     style_1()
 
@@ -22,7 +22,7 @@ def horizontal_right_cax(fx: float = 6.7, fy: float =3.35, dpi: int = 300, proje
 
     import matplotlib.pyplot as plt
     from matplotlib.gridspec import GridSpec
-    from my_plot.style import style_1
+    from my_.plot.style import style_1
 
     style_1()
 
@@ -50,8 +50,8 @@ def horizontal_top_cax(fx: float = 6.7, fy: float = 3.4, dpi: int = 300, project
 
     import matplotlib.pyplot as plt
     from matplotlib.gridspec import GridSpec
-    from my_plot.init_ax import init_annotation_ax
-    from my_plot.style import style_1
+    from my_.plot.init_ax import init_annotation_ax
+    from my_.plot.style import style_1
 
     style_1()
 

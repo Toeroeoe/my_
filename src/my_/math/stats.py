@@ -107,7 +107,7 @@ def rmse(obs, sim, decimals=2):
     
     import numpy as np
     
-    from my_series.convert import tab_to_array
+    from my_.series.convert import tab_to_array
 
     obs                             = tab_to_array(obs)
     sim                             = tab_to_array(sim)
@@ -190,7 +190,7 @@ def pbias(obs, sim, decimals: int = 2):
 
     import numpy as np
 
-    from my_series.convert import tab_to_array
+    from my_.series.convert import tab_to_array
 
     obs                             = tab_to_array(obs)
     sim                             = tab_to_array(sim)
@@ -217,7 +217,7 @@ def r(obs, sim, decimals: int = 2):
     import numpy as np
     from scipy.stats.stats import pearsonr
 
-    from my_series.convert import tab_to_array
+    from my_.series.convert import tab_to_array
 
     obs                             = tab_to_array(obs)
     sim                             = tab_to_array(sim)

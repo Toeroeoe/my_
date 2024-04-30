@@ -7,8 +7,8 @@ def square_two_top_cax(fx: float = 6.7, fy: float = 6.7, dpi: int = 300,
     import matplotlib.pyplot as plt
     from matplotlib.gridspec import GridSpec
 
-    from my_plot.style import style_1
-    from my_plot.init_ax import init_annotation_ax
+    from my_.plot.style import style_1
+    from my_.plot.init_ax import init_annotation_ax
 
     style_1()
 
@@ -37,8 +37,8 @@ def square_top_cax(fx: float = 6.7, fy: float = 6.7, dpi: int = 300,
     import matplotlib.pyplot as plt
     from matplotlib.gridspec import GridSpec
 
-    from my_plot.style import style_1
-    from my_plot.init_ax import init_annotation_ax
+    from my_.plot.style import style_1
+    from my_.plot.init_ax import init_annotation_ax
 
     style_1()
 

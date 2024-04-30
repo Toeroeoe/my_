@@ -124,7 +124,7 @@ def single_column_wise(df, level: str, key: str, ffunc, ffunc_args: dict = {}):
 
     import pandas as pd
     
-    from my_series.group import select_multi_index
+    from my_.series.group import select_multi_index
 
     columns                 = df.columns
 
