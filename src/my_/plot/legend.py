@@ -40,8 +40,9 @@ def color_legend(ax: plt.axes,
     ax.set_yticks([])
     ax.set_xticks([])
 
-    handles                     = [Line2D([0], [0], color = cmap[dict_labels_colors[ll]],
-                                linewidth = linewidth, label = ll) for ll in dict_labels_colors]
+    handles                     = [Line2D([0], [0], color = cmap[v],
+                                        linewidth = linewidth, label = k) 
+                                        for k, v in dict_labels_colors.items()]
     
     ncol                        = int(1 + (len(handles) / nrows))
 
@@ -49,6 +50,14 @@ def color_legend(ax: plt.axes,
 
     short_labels                = [l.replace('-EU3', '') for l in labels]
 
-    ax.legend(handles, short_labels, fontsize = fs_labels, ncol = ncol, frameon = False, 
-            loc = loc, bbox_to_anchor = anchor, handletextpad = handletextpad, columnspacing = columnspacing,
-            handlelength = handlelength, bbox_transform = ax.transAxes, markerfirst = markerfirst)
+    ax.legend(handles, short_labels, 
+            fontsize = fs_labels, 
+            ncol = ncol, 
+            frameon = False, 
+            loc = loc, 
+            bbox_to_anchor = anchor, 
+            handletextpad = handletextpad, 
+            columnspacing = columnspacing,
+            handlelength = handlelength, 
+            bbox_transform = ax.transAxes, 
+            markerfirst = markerfirst)

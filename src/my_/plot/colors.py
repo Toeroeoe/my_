@@ -62,7 +62,7 @@ def colormap(cmap: str = 'viridis', cmap_n = 1000):
     import matplotlib.pyplot as plt
 
 
-    cmap_c                  = plt.cm.get_cmap(cmap, cmap_n)
+    cmap_c                  = plt.get_cmap(cmap, cmap_n)
 
     return cmap_c
 

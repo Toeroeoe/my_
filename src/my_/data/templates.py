@@ -77,10 +77,13 @@ class gridded_data:
         
     
     def get_values(self,
-                   load_variables: list[str],
+                   load_variables: str | list[str],
                    y0: int | None,
                    y1: int | None):
         
+        if isinstance(load_variables, str): 
+            load_variables = [load_variables]
+
         if y0 is None: y0 = self.year_start
         elif y0 < self.year_start: y0 = self.year_start
         

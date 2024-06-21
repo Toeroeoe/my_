@@ -5,8 +5,14 @@ import re
 
 def index(y0: int, 
           y1: int, 
-          t_res: str, 
-          leapday: bool = True) -> pd.Series:
+          t_res: str,
+          month0: int = 1,
+          month1: int = 12, 
+          day0: int = 1,
+          day1: int = 31,
+          leapday: bool = True,
+          range_kwargs: dict = {},
+          resample_kwargs: dict = {}) -> pd.Series:
 
     """
     Create time index from beginning of year 0
@@ -14,25 +20,36 @@ def index(y0: int,
     To use for pandas time series;
     """
     
-    end_time                    = str(24 - int(t_res[:-1])) if t_res [-1] == 'H' else '23:59:00'
+    if t_res[-1] == 'H': end_time = str(24 - int(t_res[:-1]))
+    else: end_time = '23:59:00'
 
-    y0_time                     = f'{y0}-01-01 00:00:00'
-    y1_time                     = f'{y1}-12-31 {end_time}'
+    y0_time = f'{y0}-{month0:02}-{day0:02} 00:00:00'
+    y1_time = f'{y1}-{month1:02}-{day1:02} {end_time}'
 
-    t_res_comp                  = re.split('(\d+)', t_res)
+    t_res_comp = re.split('(\d+)', t_res)
 
-    t_res_number                = t_res_comp[0] if t_res_comp[0].isdigit() else None
-    t_res_str                   = t_res_comp[-1]
+    if t_res_comp[0].isdigit(): t_res_num = t_res_comp[0]
+    else: t_res_num = None
 
-    time_raw                    = pd.date_range(y0_time, y1_time, freq = t_res_str).to_series()
+    t_res_str = t_res_comp[-1]
+
+    time_raw = pd.date_range(y0_time, 
+                             y1_time, 
+                             freq = t_res_str,
+                             **range_kwargs).to_series()
 
     # Make yearly groups for resample
-    time_groups                 = time_raw.groupby(time_raw.index.year, group_keys=False)
+    time_groups = time_raw.groupby(time_raw.index.year, 
+                                   group_keys=False)
 
-    # Resample. Not always needed (but e.g. for multiples '8D' frequecies)
-    time_resampled              = time_groups.resample(t_res).asfreq()
+    # Resample. Not always needed (but e.g. for multiples 
+    # '8D' frequecies)
+    time_resampled = time_groups.resample(t_res, 
+                                          **resample_kwargs) \
+                                          .asfreq()
     
-    if leapday == False: time_resampled = drop_leapday(time_resampled)
+    if leapday == False: 
+        time_resampled = drop_leapday(time_resampled)
 
     return time_resampled
 

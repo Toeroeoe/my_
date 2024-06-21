@@ -81,7 +81,7 @@ def init_bar(ax, xs, ys, title: str = '', fs_title: float = 14, y_title: float =
 
 
 def EU3_plot_init(rotnpole_lat: float = 39.25, rotnpole_lon: float = -162.0, semmj_axis: int = 6370000, 
-                    semmn_axis: int = 6370000, lon_extents: list = [351.1, 57], lat_extents: list = [27, 64.4]):
+                    semmn_axis: int = 6370000, lon_extents: list = [351.1, 57], lat_extents: list = [27, 65.7]):
 
     import numpy as np
     from cartopy import crs

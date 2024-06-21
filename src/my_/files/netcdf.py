@@ -13,17 +13,17 @@ def open(str_files: str,
     
     if isinstance(str_files, str):
 
-        files                   = glob(str_files)
+        files = glob(str_files)
 
-        n_files                 = len(files)
+        n_files = len(files)
 
         if n_files == 1: return nc.Dataset(files[0], **kwargs)
 
-        data                    = nc.MFDataset(files, **kwargs)
+        data = nc.MFDataset(sorted(files), **kwargs)
 
     elif isinstance(str_files, list):
 
-        data                    = nc.MFDataset(str_files, **kwargs)
+        data = nc.MFDataset(str_files, **kwargs)
         
     return data
 
@@ -35,7 +35,7 @@ def variable_to_array(data: nc.Dataset,
                       mask_value: None | float | int = None):
 
     print(f'\nLoad netcdf variable {variable} to memory.')
-    print(f'Available memory  [GB]: {psutil.virtual_memory()[4] / 10**9}...\n')
+    print(f'Available memory [GB]: {psutil.virtual_memory()[4] / 10**9}...\n')
 
     if isinstance(variable, list):
 
@@ -53,14 +53,14 @@ def variable_to_array(data: nc.Dataset,
 
     np_dtype = getattr(np, dtype)
     
-    array_dtype = array.astype(np_dtype)
+    array_out = array.astype(np_dtype)
 
     if mask_value is not None:
 
-        array_out = np.ma.masked_values(array_dtype, mask_value)
+        array_out = np.ma.masked_values(array_out, mask_value)
 
-    if isinstance(array_dtype, np.ma.masked_array): return array_dtype.filled(np.nan)
-    else: return array_dtype
+    if isinstance(array_out, np.ma.masked_array): return array_out.filled(np.nan)
+    else: return array_out
     
 
 def variables_to_array(data: nc.Dataset, 

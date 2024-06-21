@@ -62,21 +62,39 @@ def plot(ax,
          lw: float = 1.0, 
          alpha: float = 0.8,
          projection: None | Projection = None,
-         markersize: float = 1.0, 
+         markersize: float = 1.0,
          marker: str = '', 
+         fillstyle = 'full',
          zorder = 5):
+    
+    if projection is None: projection = ax.transData
 
     if isinstance(colors, list): 
 
-        print(colors)
-        
         ax.set_prop_cycle('color', colors)
 
-        artist = ax.plot(xs, ys, ls = style, lw = lw, transform = projection, marker = marker, markersize = markersize, alpha = alpha, zorder = zorder)
+        artist = ax.plot(xs, ys, 
+                            ls = style,
+                            lw = lw, 
+                            transform = projection, 
+                            marker = marker, 
+                            markersize = markersize,
+                            fillstyle = fillstyle,
+                            alpha = alpha, 
+                            zorder = zorder)
     
     else:
         
-        artist = ax.plot(xs, ys, c = colors, ls = style, lw = lw, transform = projection, marker = marker, markersize = markersize, alpha = alpha, zorder = zorder)
+        artist = ax.plot(xs, ys, 
+                            c = colors, 
+                            ls = style, 
+                            lw = lw, 
+                            transform = projection, 
+                            marker = marker, 
+                            markersize = markersize,
+                            fillstyle = fillstyle,
+                            alpha = alpha, 
+                            zorder = zorder)
 
     return artist
 

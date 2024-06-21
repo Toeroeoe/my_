@@ -30,7 +30,7 @@ def closest_cell(coords_point: np.ndarray,
     and a list of points find the node.
     """
 
-    coords_point    = coords_point if isinstance(coords_point, np.ndarray) else np.array(coords_point)
+    if not isinstance(coords_point, np.ndarray): np.array(coords_point)
    
     deltas          = np.subtract(coords_cells, coords_point)
 

@@ -1,26 +1,27 @@
+import numpy as np
 
-def stack(array_list: list, axis: int = 0):
+
+def stack(array_list: list, 
+          axis: int = 0) -> np.ndarray:
 
     """
     Stack arrays of the same shape
     Along a new axis (default 0)
     """
 
-    import numpy as np
-
     stacked_array       = np.stack(array_list, axis = axis)
 
     return stacked_array
 
 
-def select(array, indices, axis):
+def select(array: np.ndarray, 
+           indices: np.ndarray, 
+           axis: int) -> np.ndarray:
 
     """
     Select values from array
     along axis dimension
     """
-
-    import numpy as np
 
     new_shape           = [1] * array.ndim
 
@@ -33,7 +34,11 @@ def select(array, indices, axis):
     return array_selected
 
 
-def select_by_other(array, array_sel, method: str, axis_select: int, axis_shrink: int):
+def select_by_other(array: np.ndarray, 
+                    array_sel: np.ndarray, 
+                    method: str, 
+                    axis_select: int, 
+                    axis_shrink: int) -> np.ndarray:
 
     """
     Select values from  a 3 or 4 dimenisonal array
@@ -44,8 +49,7 @@ def select_by_other(array, array_sel, method: str, axis_select: int, axis_shrink
     Currently 3d or 4d possible
     """
 
-    import numpy as np
-    from my_gridded.aggregate import apply
+    from my_.grids.aggregate import apply
 
     indices             = apply(array_sel, axis_select, method)
 
@@ -60,7 +64,9 @@ def select_by_other(array, array_sel, method: str, axis_select: int, axis_shrink
     return array_selected
 
 
-def select_by_self(array, method, axis):
+def select_by_self(array: np.ndarray, 
+                   method: str, 
+                   axis: int) -> np.ndarray:
 
     """
     Select values from array
@@ -70,8 +76,7 @@ def select_by_self(array, method, axis):
     Currently 3d or 4d possible
     """
 
-    import numpy as np
-    from my_gridded.aggregate import apply
+    from my_.grids.aggregate import apply
 
     indices             = apply(array, axis, method)
 
@@ -82,21 +87,24 @@ def select_by_self(array, method, axis):
     return array_selected
 
 
-def slice(array, indices, axis: int):
+def sslice(array: np.ndarray, 
+           indices: np.ndarray, 
+           axis: int) -> np.ndarray:
 
     """
     Take the same slice for each 1d cell
     across axis dimension
     """
 
-    import numpy as np
-
     array_sliced        = np.take(array, indices, axis = axis)
 
     return array_sliced
 
 
-def select_apply_4d(array, sel_func = select_by_other, sel_func_args = {}, apply_args = {}):
+def select_apply_4d(array: np.ndarray, 
+                    sel_func: callable = select_by_other, 
+                    sel_func_args: dict = {}, 
+                    apply_args: dict = {}) -> np.ndarray:
 
     """
     If there is a fourth dimension
@@ -106,7 +114,7 @@ def select_apply_4d(array, sel_func = select_by_other, sel_func_args = {}, apply
     and then we apply 
     """
 
-    from my_gridded.aggregate import apply
+    from my_.grids.aggregate import apply
 
     if array.ndim == 4:
          
@@ -114,15 +122,41 @@ def select_apply_4d(array, sel_func = select_by_other, sel_func_args = {}, apply
 
         array           = apply(var_array_sel, **apply_args)
 
+    else: NotImplementedError
+
     return array
 
 
-def grid_to_points(lat, lon):
-
-    import numpy as np
+def grid_to_points(lat: np.ndarray, 
+                   lon: np.ndarray) -> np.ndarray:
 
     stacked_coords              = np.dstack([lat, lon])
     
     list_points                 = stacked_coords.reshape(-1, 2)
 
     return list_points
+
+
+def repeat_nd(array: np.ndarray,
+              dims: int | list,
+              repeats: dict,
+              ndims: int =  2,) -> np.ndarray:
+    
+    if isinstance(dims, int): dims = [dims]
+
+    ddims = [d for d in range(ndims) 
+             if d not in dims]
+
+    slx = [slice(0, None)] * ndims
+    
+    for d in ddims: slx[d] = None
+
+    array = array[tuple(slx)]
+
+    for d in ddims: 
+        
+        array = np.repeat(array, 
+                          repeats[d], 
+                          d)
+
+    return array
