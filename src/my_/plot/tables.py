@@ -1,10 +1,10 @@
 
+import pandas as pd
+
 def single_site_model_benchmarks(name, df, variable: str, obs: str, df_static, sel_landcover):
 
     print('Calculate model benchmarks based on single sites and observations\n')
 
-    import pandas as pd
-    
     from my_.series.group import select_multi_index, nona_level
     from my_.series.aggregate import single_column_wise
     from my_.math.stats import rmse, pbias, r
@@ -45,36 +45,77 @@ def single_site_model_benchmarks(name, df, variable: str, obs: str, df_static, s
     
 
 
-def landcover_model_benchmarks(name, df, variable: str, obs: str, df_static, sel_landcover):
+def landcover_model_benchmarks(name: str, 
+                               df: pd.DataFrame, 
+                               variable: str, 
+                               obs: str, 
+                               sel_landcover: list[str]):
 
     print('Calculate model benchmarks based on landcover and observations\n')
     
     from my_.series.group import select_multi_index, nona_level
-    from my_.series.aggregate import single_level_wise, count_nonzero, concat
+    from my_.series.aggregate import single_level_wise, count_nonzero
     from my_.math.stats import rmse, pbias, r
     from my_.files.handy import save_df
 
-    import pandas as pd
-
-    df_nona                     = nona_level(df, ['Variable', 'Station'])
-
-    df_n                        = select_multi_index(df_nona, ['Variable', 'Landcover'],
-                                                      keys = [variable, sel_landcover])
+    stations_uq = df.columns.unique(level = 'Station')
     
-    df_groups                   = df_n.groupby(axis = 1, level = ['Landcover'])
+    stations_count = df.columns\
+                       .get_level_values('Station')\
+                       .value_counts()
+    
+    for s in stations_uq:
+        
+        if stations_count[s] == 1:
 
-    df_groups_rmse              = df_groups.apply(single_level_wise, level = 'Source', key = obs, ffunc = rmse)
-    df_groups_pbias             = df_groups.apply(single_level_wise, level = 'Source', key = obs, ffunc = pbias)
-    df_groups_r                 = df_groups.apply(single_level_wise, level = 'Source', key = obs, ffunc = r)
+            df = df.drop(s, axis = 1, level = 'Station')
 
-    df_groups_count             = pd.DataFrame({'count': df_groups.apply(count_nonzero)})
+    df_nona = nona_level(df, ['Variable', 'Station'])
 
-    df_out                      = df_groups_pbias.join(df_groups_rmse).T.swaplevel(axis = 0)
+    df_nona = df_nona.dropna(axis = 1, 
+                             how = 'all')
+
+    df_n = select_multi_index(df_nona, 
+                              ['Variable', 'Landcover'],
+                              keys = [variable, sel_landcover],
+                              axis = 1)
+    
+    df_groups = df_n.T.groupby(level = ['Landcover'])
+
+    df_groups_rmse = df_groups.apply(single_level_wise, 
+                                     level = 'Source', 
+                                     key = obs, 
+                                     ffunc = rmse,
+                                     axis = 0)
 
     
-    save_df(df_groups_count, f'out/{name}/csv/landcover_count_{variable}.csv')
+    df_groups_pbias = df_groups.apply(single_level_wise, 
+                                      level = 'Source', 
+                                      key = obs, 
+                                      ffunc = pbias,
+                                      axis = 0)
+    
+    df_groups_r  = df_groups.apply(single_level_wise, 
+                                   level = 'Source', 
+                                   key = obs, 
+                                   ffunc = r,
+                                   axis = 0)
 
-    save_df(df_out, f'out/{name}/csv/landcover_rmse_pbias_{variable}.csv')
+    df_groups_count = pd.DataFrame({'count': 
+                                   df_groups\
+                                   .apply(count_nonzero)})
+
+    df_out = df_groups_pbias.join(df_groups_rmse)\
+                            .join(df_groups_r)\
+                                  .T\
+                                  .swaplevel(axis = 1)
+
+    
+    save_df(df_groups_count, 
+            f'out/{name}/csv/landcover_count_{variable}.csv')
+    
+    save_df(df_out, 
+            f'out/{name}/csv/landcover_r_rmse_pbias_{variable}.csv')
 
 
     

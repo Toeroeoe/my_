@@ -2,17 +2,20 @@
 from mpi4py import MPI
 from typing import Callable, Any
 import numpy as np
+import os
 
-from my_.files.netcdf import open, variables_to_dict
+from my_.data.templates import gridded_data
+from my_.files.netcdf import nc_open, variables_to_dict
 from my_.files.handy import check_file_exists
 
 def pixel_wise(func: Callable,
                variables: list[str],
-               files: str,
+               data: gridded_data,
                variables_out: list[str],
                file_out: None | str = None,
                dtype: str = 'float32',
-               dtype_out: str = 'float32',
+               year_start: int | None = None,
+               year_end: int | None = None,
                return_shape: int | list[int] | None = None,
                return_dims: str | list[str] = 'time',
                *args, **kwargs) -> Any:
@@ -31,11 +34,11 @@ def pixel_wise(func: Callable,
 
         print(f'Rank {rank} is loading the data...')
         
-        data = open(files)
+        data_ = gridded_data(**data)
 
-        arrays = variables_to_dict(data = data,
-                                   variables = variables, 
-                                   dtype = dtype)
+        arrays = data_.get_values(variables_ = variables,
+                                  y0 = year_start,
+                                  y1 = year_end)
 
         shapes = {v: arrays[v].shape for v in variables}
 
@@ -74,7 +77,7 @@ def pixel_wise(func: Callable,
     range_y = np.arange(shapes[variables[0]][-2])
     range_x = np.arange(shapes[variables[0]][-1])
     grid = np.array(np.meshgrid(range_y, range_x))
-    cells = grid.T.reshape(-1, 2)[:5, :]
+    cells = grid.T.reshape(-1, 2)#[:5, :]
     length = len(cells)
     perrank = length // (size - 1)
     resid = length - perrank * (size - 1)
@@ -247,10 +250,13 @@ def pixel_wise(func: Callable,
 def along_dim(func: Callable,
               dim: int,
               variables: list[str],
-              files: str,
               variables_out: list[str],
+              data: gridded_data | None = None,
+              files: os.PathLike | None = None,
               file_out: None | str = None,
               dtype: str = 'float32',
+              year_start: int | None = None,
+              year_end: int | None = None,
               return_dims: str | list[str] = 'time',
               *args, **kwargs) -> Any:
 
@@ -268,11 +274,26 @@ def along_dim(func: Callable,
 
         print(f'Rank {rank} is loading the data...')
         
-        data = open(files)
+        if (data is None) and (files is None):
+            print('No dataset supplied...')
+            NotImplementedError
+        
+        if data is not None:
 
-        arrays = variables_to_dict(data = data,
-                                   variables = variables, 
-                                   dtype = dtype)
+            data_ = gridded_data(**data)
+
+            arrays = data_.get_values(variables_ = variables,
+                                      y0 = year_start,
+                                      y1 = year_end,
+                                      dtype = dtype)
+            
+        if files is not None:
+
+            data_ = nc_open(files)
+
+            arrays = variables_to_dict(data = data_,
+                                       variables = variables,
+                                       dtype = dtype)
 
         shapes = {v: arrays[v].shape for v in variables}
 
@@ -476,6 +497,8 @@ def along_dim(func: Callable,
             print('Script was successful! Bye bye!')
     
             return arrays_out
+
+
 
 
 if __name__ == '__main__':

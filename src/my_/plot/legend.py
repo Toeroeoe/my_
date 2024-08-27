@@ -23,17 +23,17 @@ def marker_legend(ax, dict_labels_markers, marker_color = 'grey', marker_size = 
     
 
 def color_legend(ax: plt.axes,
-                        dict_labels_colors: dict,
-                        cmap: ScalarMappable | list,
-                        linewidth: float = 5.0, 
-                        fs_labels: float = 10.0,
-                        anchor: tuple = (0.5, 0), 
-                        markerfirst: bool = True,
-                        handletextpad: float = 0.35,
-                        columnspacing: float = 0.9, 
-                        loc: str = 'lower center', 
-                        handlelength: float = 1.0,
-                        nrows: int = 1):
+                 dict_labels_colors: dict,
+                 cmap: ScalarMappable | list,
+                 linewidth: float = 5.0, 
+                 fs_labels: float = 10.0,
+                 anchor: tuple = (0.5, 0), 
+                 markerfirst: bool = True,
+                 handletextpad: float = 0.35,
+                 columnspacing: float = 0.9, 
+                 loc: str = 'lower center', 
+                 handlelength: float = 1.0,
+                 nrows: int = 1):
 
     from matplotlib.lines import Line2D
     
@@ -44,7 +44,7 @@ def color_legend(ax: plt.axes,
                                         linewidth = linewidth, label = k) 
                                         for k, v in dict_labels_colors.items()]
     
-    ncol                        = int(1 + (len(handles) / nrows))
+    ncol                        = len(handles) / nrows
 
     labels                      = list(dict_labels_colors.keys())
 

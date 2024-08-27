@@ -7,6 +7,7 @@ import pint
 import xarray as xr
 import pint_xarray
 from glob import glob
+from my_.files.netcdf import nc_open, variables_to_array
 
 @dataclass
 class gridded_data:
@@ -20,6 +21,7 @@ class gridded_data:
     year_end: int
     month_end: int
     resolution_time: str
+    leapday: bool
     grid: str
     variables: list[str]
     variable_names: dict
@@ -40,9 +42,10 @@ class gridded_data:
         if y1 is None: y1 = self.year_end
         elif y1 > self.year_end: y1 = self.year_end
     
-        return index(y0, 
-                     y1, 
-                     self.resolution_time)
+        return index(y0 = y0, 
+                     y1 = y1, 
+                     t_res = self.resolution_time,
+                     leapday = self.leapday)
     
     def present_files(self,
                       y0: int | None,
@@ -77,12 +80,13 @@ class gridded_data:
         
     
     def get_values(self,
-                   load_variables: str | list[str],
-                   y0: int | None,
-                   y1: int | None):
+                   variables_: str | list[str],
+                   y0: int | None = None,
+                   y1: int | None = None,
+                   dtype: str = 'float32'):
         
-        if isinstance(load_variables, str): 
-            load_variables = [load_variables]
+        if isinstance(variables_, str): 
+            variables_ = [variables_]
 
         if y0 is None: y0 = self.year_start
         elif y0 < self.year_start: y0 = self.year_start
@@ -91,25 +95,21 @@ class gridded_data:
         elif y1 > self.year_end: y1 = self.year_end
 
         print(f'\nLoading value data for:')
-        print(f'{load_variables} from year {y0} to year {y1}...\n')
+        print(f'{variables_} from year {y0} to year {y1}...\n')
 
-        type_module = check_data_module('my_.files',
-                                        self.type_file)
-
-        if not type_module: return
-
-        files = [f'{self.path}/{y}.{type_module.file_ending}'
+        files = [f'{self.path}/{y}.nc'
                 for y in range(y0, y1 + 1)]
 
-        data = type_module.open(files)
+        data = nc_open(files)
 
-        present_vars = self.present_variables(load_variables)
+        present_vars = self.present_variables(variables_)
 
-        present_src_vars = self.present_source_variables(load_variables)
+        present_src_vars = self.present_source_variables(variables_)
         
-        values = type_module.variables_to_array(data, 
-                                                present_src_vars,
-                                                mask_value = self.mask_value)
+        values = variables_to_array(data, 
+                                    present_src_vars,
+                                    dtype = dtype,
+                                    mask_value = self.mask_value)
 
         return {v: values[i] for i, v in enumerate(present_vars)}
     
@@ -244,9 +244,7 @@ class grid:
 
         file = f'{self.path_file}/{self.name_file}'
 
-        print(file)
-
-        data = type_module.open(file)
+        data = type_module.nc_open(file)
 
         values = type_module.variables_to_array(data, 
                                                 [self.name_latitude, 

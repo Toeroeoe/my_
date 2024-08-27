@@ -79,7 +79,7 @@ def read_resample_save(case_name: str, files: list, origin: str, suffixes: list 
                         join: str = 'outer', offset_str: str = 'D', interp_method: str = 'mean'):
 
     from glob import glob
-    from my_.series.interpolate import resample_yearly
+    from my_.series.interpolate import resample
     from my_.series.aggregate import concat
     from my_.resources.sources import variables
     from my_.series.group import layer_level_to_int
@@ -118,7 +118,7 @@ def read_resample_save(case_name: str, files: list, origin: str, suffixes: list 
     
     df                      = concat(list_dfs, join = join, axis = 1)
 
-    df_resampled            = resample_yearly(df, offset_str, method = interp_method)
+    df_resampled            = resample(df, offset_str, method = interp_method)
 
     save_df(df_resampled, file_out, file_format)
 

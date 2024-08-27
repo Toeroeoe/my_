@@ -68,7 +68,7 @@ variables_EU3_8daily = {
 
 
 SXI_365D_EU3_8daily = {
-    'name': 'HOLIDROUGHT_BGC_EU3_variables',
+    'name': 'HOLIDROUGHT_SXI_variables_365D',
     'version': (0, 1, 0),
     'path': '/p/scratch/cjibg31/jibg3105/data/HOLIDROUGHT/SXI/365D/yearly/',
     'type_file': 'netcdf',
@@ -122,7 +122,7 @@ SXI_365D_EU3_8daily = {
 }
 
 SXI_183D_EU3_8daily = {
-    'name': 'HOLIDROUGHT_BGC_EU3_variables',
+    'name': 'HOLIDROUGHT_SXI_variables_365D',
     'version': (0, 1, 0),
     'path': '/p/scratch/cjibg31/jibg3105/data/HOLIDROUGHT/SXI/183D/yearly/',
     'type_file': 'netcdf',

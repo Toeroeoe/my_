@@ -19,7 +19,7 @@ def src_var_cells_df(name_case: str,
 
     from my_.resources.sources import query_variables, query_grids, available_variables
     from my_.files.handy import yearly_or_monthly_files, save_df, create_dirs
-    from my_.files.netcdf import open, variables_to_array
+    from my_.files.netcdf import nc_open, variables_to_array
     from my_.files.csv import open_csv
     from my_.grids.dimensions import grid_to_points
     from my_.series.aggregate import concat
@@ -70,16 +70,19 @@ def src_var_cells_df(name_case: str,
         files                   = yearly_or_monthly_files(freq_files, path, year_start, year_end)
 
         print('Load data...\n')
-        data                    = open_netcdf(files)
+        data                    = nc_open(files)
         arrays_list             = variables_to_array(data, variables = vars_src, dtype = 'float32')
 
-        data_geo                = open_netcdf(f'{path_grid}/{file_grid}')
+        data_geo                = nc_open(f'{path_grid}/{file_grid}')
         
         [lat2d, lon2d]          = variables_to_array(data_geo, variables = [grid_lat, grid_lon], dtype ='float32')
 
         list_points             = grid_to_points(lat2d, lon2d)
 
-        time                    = index(year_start, year_end, time_step, leapday)
+        time                    = index(y0 = year_start, 
+                                        y1 = year_end, 
+                                        t_res = time_step, 
+                                        leapday = leapday)
 
         iterations              = product(range(len(names_stations)), range(len(vars_avail)))
 
@@ -102,10 +105,10 @@ def src_var_cells_df(name_case: str,
             column              = single_src_var_X_index(array, src, var, lc, name_station)
             
             idxs, coords, ts    = grid_to_cell_df(array = array,
-                                                    list_points = list_points, 
-                                                    shape = lat2d.shape, column = column,
-                                                    lat_point = lat_yx, lon_point = lon_yx,
-                                                    index = time)
+                                                  points = list_points, 
+                                                  shape = lat2d.shape, column = column,
+                                                  latitude = lat_yx, longitude = lon_yx,
+                                                  index = time)
             
             ts_ux               = transform(ts, src, var)
 
@@ -134,7 +137,7 @@ def cell_static_info(name_case: str, sources = [], path_stations: str = 'user_in
     
     from my_.resources.sources import query_static, query_grids
     from my_.grids.dimensions import grid_to_points
-    from my_.files.netcdf import open, variables_to_array
+    from my_.files.netcdf import nc_open, variables_to_array
     from my_.files.csv import open_csv
     from my_.grids.extract import closest_cell, cell
     from my_.files.handy import save_df
@@ -162,11 +165,11 @@ def cell_static_info(name_case: str, sources = [], path_stations: str = 'user_in
         grid_lat                = query_grids(grid, 'var_lat')
         grid_lon                = query_grids(grid, 'var_lon')
         
-        data_geo                = open_netcdf(f"{path_grid}/{file_grid}")
+        data_geo                = nc_open(f"{path_grid}/{file_grid}")
         
         [lat2d, lon2d]          = variables_to_array(data_geo, variables = [grid_lat, grid_lon])
 
-        data                    = open_netcdf(f'{path}/{file}')
+        data                    = nc_open(f'{path}/{file}')
         arrays_list             = variables_to_array(data, variables = variables)
 
         # List of lat lon grid cell coordinates
@@ -223,7 +226,7 @@ if __name__ == '__main__':
 
     args                        = parser.parse_args()
 
-    src_var_cells_df_bak(name_case = args.name, sources = args.sources, variables = args.variables,
+    src_var_cells_df(name_case = args.name, sources = args.sources, variables = args.variables,
                     path_stations = args.path_stations, file_stations = args.file_stations,
                     file_format = args.file_format, year_start = args.year_start, year_end = args.year_end)
     

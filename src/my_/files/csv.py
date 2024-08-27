@@ -1,9 +1,11 @@
 
+import os
+import pandas as pd
+from glob import glob
 
-def open_multiple_csv(files = [], args: dict = {}, names = []):
-
-    import pandas as pd
-    from glob import glob
+def open_multiple_csv(files: os.PathLike, 
+                      args: dict = {}, 
+                      names = []):
 
     dfs                         = {}
 
@@ -21,7 +23,8 @@ def open_multiple_csv(files = [], args: dict = {}, names = []):
     return dfs
 
 
-def open_csv(file_str, **args):
+def open_csv(file_str: os.PathLike, 
+             **args) -> pd.DataFrame:
 
     import pandas as pd
     from glob import glob

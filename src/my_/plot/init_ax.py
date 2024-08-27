@@ -2,17 +2,37 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+from cartopy import crs
 import pandas as pd
 
-def init_xy(ax, xs, ys, axhv_color: str = 'k', axhv_ls: str = '--', axhv_lw: float = 0.7, axhv_alpha: float = 0.8, axhv_dashes: tuple = (4, 4),
-       diag_color: str = 'k', diag_ls: str = '--', diag_lw: float = 0.7, diag_alpha: float = 0.8, diag_dashes = (4,4),
-       title: str = '', xlabel: str = '', ylabel: str = '', y_title: float = 1.1, fs_title: int = 14, fs_label: int = 12, fs_ticks = 10,
-       ax_tag = None, ax_tag_x: float = 0.5, ax_tag_y: float = 1.0):
+def init_xy(ax: plt.Axes, 
+            xs: np.ndarray | pd.Series | pd.DataFrame, 
+            ys: np.ndarray | pd.Series | pd.DataFrame, 
+            xerr: np.ndarray | pd.Series | pd.DataFrame | None = None, 
+            yerr: np.ndarray | pd.Series | pd.DataFrame | None = None, 
+            axhv_color: str = 'k', 
+            axhv_ls: str = '--', 
+            axhv_lw: float = 0.7, 
+            axhv_alpha: float = 0.8, 
+            axhv_dashes: tuple = (4, 4),
+            diag_color: str = 'k', 
+            diag_ls: str = '--', 
+            diag_lw: float = 0.7, 
+            diag_alpha: float = 0.8, 
+            diag_dashes: tuple = (4,4),
+            title: str = '', 
+            xlabel: str = '', 
+            ylabel: str = '', 
+            y_title: float = 1.1, 
+            fs_title: int = 14, 
+            fs_label: int = 12, 
+            fs_ticks: int = 10,
+            ax_tag: str | None = None, 
+            ax_tag_x: float = 0.5, 
+            ax_tag_y: float = 1.0):
     
     from my_.plot.limits import axgrid, common_free_lims, numeric_ticks
     from my_.plot.style import nospines
-
-    import matplotlib.pyplot as plt
 
     axgrid(ax)
     nospines(ax)
@@ -25,27 +45,48 @@ def init_xy(ax, xs, ys, axhv_color: str = 'k', axhv_ls: str = '--', axhv_lw: flo
     ax.tick_params(axis='both', which='major', pad=10)
 
     ax.axhline(0, color = axhv_color, 
-                ls = axhv_ls, lw = axhv_lw, 
-                alpha = axhv_alpha, dashes = axhv_dashes, zorder = 1)
+                ls = axhv_ls, 
+                lw = axhv_lw, 
+                alpha = axhv_alpha, 
+                dashes = axhv_dashes, 
+                zorder = 1)
     
     ax.axvline(0, color = axhv_color, 
-                ls = axhv_ls, lw = axhv_lw, 
-                alpha = axhv_alpha, dashes = axhv_dashes, zorder = 1)
+                ls = axhv_ls, 
+                lw = axhv_lw, 
+                alpha = axhv_alpha, 
+                dashes = axhv_dashes, 
+                zorder = 1)
 
     ax.plot([-1.1, 1.1], [-1.1, 1.1], 
-            transform = ax.transAxes, color = diag_color, 
-            ls = diag_ls, lw = diag_lw, 
-            alpha = diag_alpha, dashes = diag_dashes, zorder = 1)
+            transform = ax.transAxes, 
+            color = diag_color, 
+            ls = diag_ls, 
+            lw = diag_lw, 
+            alpha = diag_alpha, 
+            dashes = diag_dashes, 
+            zorder = 1)
     
     props = dict(facecolor='white', edgecolor='none', alpha=0.85)
 
     if ax_tag is not None:
 
-        ax.text(ax_tag_x, ax_tag_y, ax_tag, fontsize = fs_label, transform = ax.transAxes, va = 'bottom', ha = 'center', bbox = props)
+        ax.text(ax_tag_x, 
+                ax_tag_y, 
+                ax_tag, 
+                fontsize = fs_label, 
+                transform = ax.transAxes, 
+                va = 'bottom', 
+                ha = 'center', 
+                bbox = props)
     
     ax.axis('square')
     
-    common_free_lims(ax, xs, ys)
+    common_free_lims(ax = ax, 
+                     xs = xs, 
+                     ys = ys,
+                     xerr = xerr,
+                     yerr = yerr)
 
     numeric_ticks(ax, fs_ticks = fs_ticks)
 
@@ -80,11 +121,12 @@ def init_bar(ax, xs, ys, title: str = '', fs_title: float = 14, y_title: float =
     numeric_ticks(ax, nticks_x = len(ys), nticks_y = 5, fs_ticks = fs_ticks, integerx = True, x = False)
 
 
-def EU3_plot_init(rotnpole_lat: float = 39.25, rotnpole_lon: float = -162.0, semmj_axis: int = 6370000, 
-                    semmn_axis: int = 6370000, lon_extents: list = [351.1, 57], lat_extents: list = [27, 65.7]):
-
-    import numpy as np
-    from cartopy import crs
+def EU3_plot_init(rotnpole_lat: float = 39.25, 
+                  rotnpole_lon: float = -162.0, 
+                  semmj_axis: int = 6370000, 
+                  semmn_axis: int = 6370000, 
+                  lon_extents: list = [351.1, 57], 
+                  lat_extents: list = [27, 65.7]):
 
     rp = crs.RotatedPole(pole_longitude = rotnpole_lon,
                          pole_latitude = rotnpole_lat,
@@ -98,36 +140,71 @@ def EU3_plot_init(rotnpole_lat: float = 39.25, rotnpole_lon: float = -162.0, sem
     return rp, pc, xs, ys
 
 
-def init_ts(ax, xs, ys, axhv_color: str = 'k', axhv_ls: str = '--', axhv_lw: float = 0.7, axhv_alpha: float = 0.8, axhv_dashes: tuple = (4, 4),
-       title: str = '', xlabel: str = '', ylabel: str = '', y_title: float = 1.1, fs_title: int = 14, fs_label: int = 12, fs_ticks = 10,
-       ax_tag = '', ax_tag_x: float = 0.5, ax_tag_y: float = 1.0):
+def init_ts(ax: plt.Axes, 
+            xs: np.ndarray | pd.Series | pd.DataFrame, 
+            ys: np.ndarray | pd.Series | pd.DataFrame, 
+            axhv_color: str = 'k', 
+            axhv_ls: str = '--', 
+            axhv_lw: float = 0.7, 
+            axhv_alpha: float = 0.8, 
+            axhv_dashes: tuple = (4, 4),
+            title: str = '', 
+            xlabel: str = '', 
+            ylabel: str = '', 
+            y_title: float = 1.1, 
+            fs_title: int = 14, 
+            fs_label: int = 12, 
+            fs_ticks = 10,
+            ax_tag = '', 
+            ax_tag_x: float = 0.5, 
+            ax_tag_y: float = 1.0):
     
     from my_.plot.style import nospines
     from my_.plot.limits import axgrid, numeric_ticks, free_lims
 
-    import matplotlib.pyplot as plt
-
     axgrid(ax)
     nospines(ax)
 
-    plt.suptitle(title, fontsize = fs_title, y = y_title)
+    plt.suptitle(title, 
+                 fontsize = fs_title, 
+                 y = y_title)
     
-    ax.set_ylabel(ylabel, fontsize = fs_label)
-    ax.set_xlabel(xlabel, fontsize = fs_label)
+    ax.set_ylabel(ylabel, 
+                  fontsize = fs_label)
     
-    ax.tick_params(axis='both', which='major', pad=10)
+    ax.set_xlabel(xlabel, 
+                  fontsize = fs_label)
+    
+    ax.tick_params(axis='both', 
+                   which='major', 
+                   pad=10)
 
     ax.axhline(0, color = axhv_color, 
-                ls = axhv_ls, lw = axhv_lw, 
-                alpha = axhv_alpha, dashes = axhv_dashes, zorder = 1)
+               ls = axhv_ls, 
+               lw = axhv_lw, 
+               alpha = axhv_alpha, 
+               dashes = axhv_dashes, 
+               zorder = 1)
     
     ax.axvline(0, color = axhv_color, 
-                ls = axhv_ls, lw = axhv_lw, 
-                alpha = axhv_alpha, dashes = axhv_dashes, zorder = 1)
+                ls = axhv_ls, 
+                lw = axhv_lw, 
+                alpha = axhv_alpha, 
+                dashes = axhv_dashes, 
+                zorder = 1)
     
-    props = dict(facecolor='white', edgecolor='none', alpha=0.85)
+    props = dict(facecolor = 'white', 
+                 edgecolor = 'none', 
+                 alpha = 0.85)
 
-    ax.text(ax_tag_x, ax_tag_y, ax_tag, fontsize = fs_label, transform = ax.transAxes, va = 'bottom', ha = 'center', bbox = props)
+    ax.text(ax_tag_x, 
+            ax_tag_y, 
+            ax_tag, 
+            fontsize = fs_label, 
+            transform = ax.transAxes, 
+            va = 'bottom', 
+            ha = 'center', 
+            bbox = props)
 
     numeric_ticks(ax, fs_ticks = fs_ticks)
     free_lims(ax, xs, ys)

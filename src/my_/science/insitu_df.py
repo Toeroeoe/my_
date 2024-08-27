@@ -40,6 +40,13 @@ def src_var_insitu_df(name_case: str, sources = [], variables = [],
                     file_out = file_out, file_format = file_format,
                     year_start = year_start, year_end = year_end,
                     dir_prefix = 'ICOSETC', file_prefix = 'ICOSETC_')
+            
+        if processing == 'ARCHIVE':
+            
+            archive(name_case, df_stations, src, variables,
+                    file_out = file_out, file_format = file_format,
+                    year_start = year_start, year_end = year_end,
+                    dir_prefix = 'ICOSETC', file_prefix = 'ICOSETC_')
 
         
     
@@ -136,6 +143,85 @@ def oneflux(name, df_stations, src: str, variables = [], resample_method = 'mean
     df_oneflux                  = concat(list_dfs, sort = False)
 
     save_df(df_oneflux, file_out, file_format)
+
+
+def archive(name, df_stations, src: str, variables = [], 
+            file_format: str = 'csv', file_out: str = 'oneflux_out.csv',
+            year_start: int = 2017, year_end: int = 2024,
+            dir_prefix = 'FLX', file_prefix = 'FLX_*_FULLSET_'):
+    
+    import pandas as pd
+
+    from my_.misc.list_dict_key import keys_same_value, translate_dict_values, filter_dict_keys
+    from my_.resources.sources import query_variables, available_variables
+    from my_.files.csv import open_csv 
+    from my_.files.handy import save_df
+    from my_.series.time import index, index_to_datetime
+    from my_.series.group import  multi_columns
+    from my_.series.interpolate import resample, reindex
+    from my_.series.aggregate import concat
+    from my_.resources.units import transform_df
+    from my_.files.handy import check_file_exists
+
+    path = query_variables(src, 'path')    
+    csv_open_args = query_variables(src, 'csv_open_args')
+    date_format = query_variables(src, 'date_format')
+
+    names_stations = df_stations['name'].values
+    names_FLX_stations = df_stations['FLX_name'].values
+    landcover_stations = df_stations['landcover'].values
+
+    cols = pd.MultiIndex.from_tuples([], names=('Source', 'Variable', 'Landcover', 'Station'))
+
+    time_index = index(y0 = year_start,
+                       y1 = year_end,
+                       t_res = 'D')
+
+    df_oneflux = pd.DataFrame(columns = cols,
+                              index = time_index)
+   
+    for i_station in range(len(names_stations)):
+
+        name = names_stations[i_station]
+        lc = landcover_stations[i_station]
+        name_FLX = names_FLX_stations[i_station]
+
+        print(f'Extract site {name}, in-situ ONEFLUX data for {src}...\n')
+
+        file = f'{path}/{dir_prefix}*{name_FLX}*ARCHIVE_L2/{file_prefix}*ANCILLARY_L2.csv'
+
+        if not check_file_exists(file): continue
+        
+        ts_df = open_csv(file, args = csv_open_args)
+
+        for v in variables:
+
+            ts_df_values = ts_df[ts_df['VARIABLE'] == v]['DATAVALUE']
+                                 
+            ts_df_dates = ts_df[ts_df['VARIABLE'].isin([f'{v}_DATE', f'{v}_DATE_START'])]['DATAVALUE']
+
+            ts_df_dates = pd.to_datetime(ts_df_dates, format = date_format)
+
+            new_cols = multi_columns([[src], [v], [lc], [name]], 
+                                      names = ['Source', 'Variable', 'Landcover', 'Station'])
+                                
+            df_i = pd.DataFrame(columns = new_cols, 
+                                index = ts_df_dates.values, 
+                                dtype = 'float')
+
+            df_i[(src, v, lc, name)] = ts_df_values.values
+
+            df_i_transformed = transform_df(df_i, src, variables)
+
+            df_oneflux = pd.merge(df_oneflux, 
+                                  df_i_transformed,
+                                  left_index = True,
+                                  right_index = True,
+                                  how = 'outer')
+
+    df_i_t_agg = df_oneflux.groupby(level = 0).mean()
+
+    save_df(df_i_t_agg, file_out, file_format)
 
 
 if __name__ == '__main__':

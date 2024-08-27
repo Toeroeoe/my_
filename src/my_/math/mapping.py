@@ -1,10 +1,11 @@
+import pandas as pd
+import numpy as np
 
+def linear(values, multiplicant, addend):
+    
+    new_values = values * multiplicant + addend
 
-def linear(x, multiplicant, addend):
-
-    y                           = x * multiplicant + addend
-
-    return y
+    return new_values
 
 
 def relative_difference(array1, array2, percent: bool = False):

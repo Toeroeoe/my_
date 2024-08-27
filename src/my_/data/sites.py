@@ -9,8 +9,8 @@ def from_network(network: str = 'eLTER',
                  verified: bool = True) -> list:
     
     network_codes = {'eLTER': '4742ffca-65ac-4aae-815f-83738500a1fc',
-                       'DLTER': 'e904354a-f3a0-40ce-a9b5-61741f66c824',
-                       'ICOS': '80633d38-4c85-4ee0-a4ce-7bbbd99c888c'}
+                     'DLTER': 'e904354a-f3a0-40ce-a9b5-61741f66c824',
+                     'ICOS': '80633d38-4c85-4ee0-a4ce-7bbbd99c888c'}
     
 
     sites = deims.getListOfSites(network = network_codes[network], 

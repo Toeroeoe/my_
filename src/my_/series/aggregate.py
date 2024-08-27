@@ -12,11 +12,11 @@ def concat(dfs: list[pd.DataFrame],
 
     if axis == 1: dfs = add_missing_column_levels(dfs)
 
-    df                      = pd.concat(dfs, join = join, axis = axis)
+    df = pd.concat(dfs, join = join, axis = axis)
 
     if sort: df = df.sort_index(axis = axis)
 
-    if remove_duplicates:  df = df.loc[:,~df.columns.duplicated()].copy()
+    if remove_duplicates: df = df.loc[:, ~df.columns.duplicated()].copy()
 
     return df
 
@@ -85,10 +85,20 @@ def mask_le(df, masker, value, skip_mask_NA = True):
     return df_masked
 
 
-def apply(df, method):
+def groupwise(df: pd.DataFrame,
+              func) -> pd.DataFrame:
+    
+    #if isinstance(func, callable): func = [func]
 
+    for f_ in func:
 
-    import pandas as pd
+        df = f_(df)
+
+    return df
+    
+
+def apply(df: pd.DataFrame, 
+          method: str):
 
     # find the method in numpy attributes
     method_pd               = getattr(pd, method)
@@ -120,57 +130,90 @@ def column_wise(df, ffunc):
     return df_out
 
 
-def single_column_wise(df, level: str, key: str, ffunc, ffunc_args: dict = {}):
-
-    import pandas as pd
+def single_axis_wise(df: pd.DataFrame, 
+                       level: str, 
+                       key: str, 
+                       ffunc: callable, 
+                       axis: int = 1,
+                       ffunc_args: dict = {}):
     
     from my_.series.group import select_multi_index
 
-    columns                 = df.columns
+    if axis == 1:
 
-    keys                    = columns.get_level_values(level)
+        axx = df.columns
 
-    index                   = columns.droplevel(level).unique()
+    elif axis == 0:
 
-    df_out                  = pd.DataFrame(columns = index,  index = keys)
+        axx = df.index
 
-    independent             = select_multi_index(df, levels = level, keys = key)
+    else: NotImplementedError
 
-    for icol, col in enumerate(df):
+    keys = axx.get_level_values(level)
 
-        dependent           = df[col]
-        ix                  = keys[icol]
+    index = axx.droplevel(level).unique()
+
+    df_out = pd.DataFrame(columns = index,  index = keys)
+
+    independent = select_multi_index(df, 
+                                     axis = axis,
+                                     levels = level, 
+                                     keys = key)
+
+    for ix, xx in enumerate(axx):
+
+        dependent = df[xx]
+        ix = keys[ix]
         
-        df_out.loc[ix, index] = ffunc(independent, dependent, **ffunc_args)
+        df_out.loc[ix, index] = ffunc(independent, 
+                                      dependent, 
+                                      **ffunc_args)
 
     return df_out
 
 
-def single_level_wise(df: pd.DataFrame, 
+def single_level_wise(df: pd.DataFrame,
                       level: str, 
                       key: str, 
                       ffunc: callable, 
+                      axis: int = 1,
                       ffunc_args: dict = {}):
 
-    columns                 = df.columns
-
-    keys                    = columns.get_level_values(level).unique()
-
-    df_out                  = pd.DataFrame(columns = [ffunc.__name__],  index = keys)
-
-    independent             = select_multi_index(df, levels = level, keys = key).to_numpy().flatten()
-
-    for value in df.columns.get_level_values(level).unique():
-
-        dependent           = select_multi_index(df, levels = level, keys = value).to_numpy().flatten()
-
-        #for icol, col in enumerate(dependent):
-
-            #print(independent.iloc[:,icol], dependent[col])
-            
-            #results.append(ffunc(independent.iloc[:,icol], dependent[col], **ffunc_args))
+    if axis == 1:
         
-        df_out.loc[value, ffunc.__name__] = ffunc(independent, dependent, **ffunc_args)
+        axx = df.columns
+
+    elif axis == 0:
+        
+        axx = df.index
+    
+    else: NotImplementedError
+
+    keys = axx.get_level_values(level).unique()
+
+    df_out = pd.DataFrame(columns = [ffunc.__name__],  
+                          index = keys)
+
+    independent = select_multi_index(df, 
+                                     levels = level, 
+                                     keys = key,
+                                     axis = axis)\
+                                     .to_numpy()\
+                                     .flatten()
+
+    for value in keys:
+
+        dependent = select_multi_index(df, 
+                                       levels = level, 
+                                       keys = value,
+                                       axis = axis)\
+                                       .to_numpy()\
+                                       .flatten()
+
+        df_out.loc[value, 
+                   ffunc.__name__] = ffunc(independent, 
+                                           dependent, 
+                                           **ffunc_args)
     
     return df_out
 

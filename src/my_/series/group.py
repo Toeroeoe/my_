@@ -151,34 +151,52 @@ def select_multi_index(df: pd.DataFrame,
 
     if isinstance(levels, str): levels = [levels]
     if isinstance(keys, str): keys = [keys]
+    if isinstance(df, pd.Series): df = df.to_frame()
 
-    axx                 = df.columns if axis == 1 else df.index
+    axx = df.columns if axis == 1 else df.index
 
-    n_levels            = axx.nlevels
+    n_levels = axx.nlevels
 
-    names_levels        = axx.names
+    names_levels = axx.names
 
-    index_level         = [names_levels.index(level) for level in levels]
+    index_level = [names_levels.index(level) for level in levels]
 
-    list_index          = [slice(None)] * n_levels
+    list_index = [slice(None)] * n_levels
 
     for i_indxs, indxs in enumerate(index_level):
+        
+        kk = keys[i_indxs]
 
-        list_index[indxs] = keys[i_indxs]
+        if isinstance(kk, str): kk = [kk]
 
-    df_sel              = df.loc[:, tuple(list_index)] if axis == 1 else df.loc[tuple(list_index)]
+        iikeys = [k for k in kk
+                  if k in axx.get_level_values(indxs)]
+
+        list_index[indxs] = iikeys
+    
+    if axis == 1:
+        df_sel = df.loc[:, tuple(list_index)]
+
+    else: 
+        df_sel = df.loc[tuple(list_index), :]
 
     return df_sel
 
 
 def nona_level(df: pd.DataFrame, 
-               level: str, 
+               level: str | list, 
                axis: int = 1, 
                how: str = 'any'):
 
+    if axis == 1 : df = df.T
 
-    df_level_groups     = df.groupby(sort = False, axis = axis, level = level)
+    df_level_groups = df.groupby(sort = False, 
+                                 level = level)
 
-    df_nona             = df_level_groups.apply(pd.DataFrame.dropna, how = how)
+    df_nona = df_level_groups.apply(pd.DataFrame.dropna, 
+                                    axis = axis,
+                                    how = how)
+    
+    if axis == 1: return df_nona.T
 
-    return df_nona
+    return df_nona 

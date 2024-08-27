@@ -6,8 +6,8 @@ import psutil
 
 file_ending = 'nc'
 
-def open(str_files: str,
-         **kwargs):
+def nc_open(str_files: str | list,
+            **kwargs):
 
     from glob import glob
     
@@ -23,7 +23,7 @@ def open(str_files: str,
 
     elif isinstance(str_files, list):
 
-        data = nc.MFDataset(str_files, **kwargs)
+        data = nc.MFDataset(sorted(str_files), **kwargs)
         
     return data
 
@@ -83,6 +83,9 @@ def variables_to_dict(data: nc.Dataset,
                        stack_axis: int = 1, 
                        dtype: str = 'float64',
                        mask_value: None | float | int = None):
+    
+    if isinstance(variables, str): 
+        variables = [variables]
     
     arrays_dtype            = {v: variable_to_array(data, 
                                                     v, 

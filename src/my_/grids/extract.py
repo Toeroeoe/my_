@@ -76,7 +76,7 @@ def grid_to_cell_df(array: np.ndarray,
     timeseries_cell             = cell_to_df(array_cell, 
                                              column, 
                                              index,
-                                             dtype) 
+                                             dtype).astype('float') 
 
     return indices_cell, coords_cell, timeseries_cell
 
@@ -146,7 +146,7 @@ def sites(source: str,
                                      y0 = year_start,
                                      y1 = year_end)
     
-    grid_module = check_data_module(f'my_.data.grids')
+    grid_module = check_data_module(f'my_.data', 'grids')
     grid_attributes = getattr(grid_module, data.grid)
 
     data_grid = grid(**grid_attributes)

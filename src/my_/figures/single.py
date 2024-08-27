@@ -55,9 +55,14 @@ def square_right_cax(fx: float = 6.7, fy: float = 6.7, dpi: int = 300, projectio
     return fig, ax, cax
 
 
-def square_top_cax(fx: float = 6.7, fy: float = 6.7, dpi: int = 300, projection = None, frame: bool = False):
+def square_top_cax(fx: float = 6.7, 
+                   fy: float = 6.7, 
+                   dpi: int = 300, 
+                   projection: ccrs.Projection | None = None, 
+                   frame: bool = False) -> tuple[plt.Figure, 
+                                                 plt.Axes, 
+                                                 plt.Axes]:
 
-    import matplotlib.pyplot as plt
     from matplotlib.gridspec import GridSpec
     from my_.plot.style import style_1
 
@@ -74,10 +79,13 @@ def square_top_cax(fx: float = 6.7, fy: float = 6.7, dpi: int = 300, projection 
                                                 ncols = ncols, nrows = nrows, 
                                                 height_ratios = [w1, w2])
     
-    ax                              = fig.add_subplot(gs[1,0], projection = projection, frameon = frame)
+    ax                              = fig.add_subplot(gs[1, 0], 
+                                                      projection = projection, 
+                                                      frameon = frame)
+    
     cax                             = fig.add_subplot(gs[0,0], frameon = frame)
 
-    return fig, ax, cax
+    return fig, ax, cax, gs
 
 
 def square_top_right_cax(fx: float = 6.7, 

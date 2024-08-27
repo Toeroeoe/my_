@@ -1,4 +1,6 @@
 from cartopy.crs import Projection
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 def colormesh(ax, x, y, array, cmap: str = 'coolwarm_r', v0: float = None, v1: float = None, projection = None):
@@ -8,16 +10,39 @@ def colormesh(ax, x, y, array, cmap: str = 'coolwarm_r', v0: float = None, v1: f
     return artist
 
 
-def scatter(ax, xs, ys, marker = None, sizes_marker: int = 50, colors_marker: str = 'black', 
-            face: bool = True, alpha: float = 0.7, projection = None, zorder: int = 5):
+def scatter(ax: plt.Axes, 
+            xs: np.ndarray, 
+            ys: np.ndarray, 
+            marker: str | None = None, 
+            sizes_marker: int = 50, 
+            colors_marker: str = 'black', 
+            edgecolor: str | list | None = None,
+            face: bool = True, 
+            alpha: float = 0.7, 
+            projection: Projection | None = None, 
+            zorder: int = 5):
 
-    if isinstance(sizes_marker, int): sizes_marker = [sizes_marker] * len(xs)
-    if isinstance(colors_marker, str): colors_marker = [colors_marker] * len(xs)
+    if isinstance(sizes_marker, int): 
+        sizes_marker = [sizes_marker] * len(xs)
 
-    if projection == None: projection = ax.transData
+    if isinstance(colors_marker, str): 
+        colors_marker = [colors_marker] * len(xs)
 
-    artist = ax.scatter(xs, ys, marker = marker, s = sizes_marker, c = colors_marker,
-                        alpha = alpha, transform = projection, zorder = zorder)
+    if isinstance(edgecolor, str):
+        edgecolor = [edgecolor] * len(xs)
+
+    if projection == None: 
+        projection = ax.transData
+    
+    artist = ax.scatter(xs, 
+                        ys, 
+                        marker = marker, 
+                        s = sizes_marker, 
+                        c = colors_marker,
+                        edgecolors = edgecolor,
+                        alpha = alpha, 
+                        transform = projection, 
+                        zorder = zorder)
     
     if not face: artist.set_facecolor("none")
 
@@ -54,19 +79,26 @@ def hist(ax, array, bins = 'auto', density = True,  histtype = 'stepfilled', col
     return artist
 
 
-def plot(ax, 
-         xs, 
-         ys, 
-         colors = 'k', 
+def plot(ax: plt.Axes, 
+         xs: np.ndarray, 
+         ys: np.ndarray, 
+         colors: str | list = 'k', 
+         edgecolors: str | list = 'k',
          style: str = '-', 
          lw: float = 1.0, 
          alpha: float = 0.8,
          projection: None | Projection = None,
          markersize: float = 1.0,
-         marker: str = '', 
+         marker: str | list = '', 
          fillstyle = 'full',
          zorder = 5):
     
+    if isinstance(markersize, int): 
+        markersize = [markersize] * len(xs)
+
+    if isinstance(edgecolors, str):
+        edgecolors = [edgecolors] * len(xs)
+
     if projection is None: projection = ax.transData
 
     if isinstance(colors, list): 
@@ -74,14 +106,14 @@ def plot(ax,
         ax.set_prop_cycle('color', colors)
 
         artist = ax.plot(xs, ys, 
-                            ls = style,
-                            lw = lw, 
-                            transform = projection, 
-                            marker = marker, 
-                            markersize = markersize,
-                            fillstyle = fillstyle,
-                            alpha = alpha, 
-                            zorder = zorder)
+                         ls = style,
+                         lw = lw, 
+                         transform = projection, 
+                         marker = marker, 
+                         markersize = markersize,
+                         fillstyle = fillstyle,
+                         alpha = alpha, 
+                         zorder = zorder)
     
     else:
         

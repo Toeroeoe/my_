@@ -15,11 +15,12 @@ EUCORDEX_3km_8daily = {
     'year_end': 2018,
     'month_end': 12,
     'resolution_time': '8D',
+    'leapday': False,
     'grid': 'EU3',
     'variables': [
                   'P',
                   'Temp',
-                  'PRSF',
+                  'PSRF',
                   'FSDS',
                   'FLDS',
                   'WIND', 
@@ -28,7 +29,7 @@ EUCORDEX_3km_8daily = {
     'variable_names': {
                        'P': 'PRECTmms',
                        'Temp': 'TBOT',
-                       'PRSF': 'PRSF',
+                       'PSRF': 'PSRF',
                        'FSDS': 'FSDS',
                        'FLDS': 'FLDS',
                        'WIND': 'WIND',
@@ -37,7 +38,7 @@ EUCORDEX_3km_8daily = {
     'variable_dimensions': {
                             'P': ['time', 'lat', 'lon'], 
                             'Temp': ['time', 'lat', 'lon'], 
-                            'PRSF': ['time', 'lat', 'lon'], 
+                            'PSRF': ['time', 'lat', 'lon'], 
                             'FSDS': ['time', 'lat', 'lon'], 
                             'FLDS': ['time', 'lat', 'lon'], 
                             'WIND': ['time', 'lat', 'lon'], 
@@ -46,7 +47,58 @@ EUCORDEX_3km_8daily = {
     'variable_units': {
                        'P': 'mm/s',
                        'Temp': 'K',
-                       'PRSF': 'Pa',
+                       'PSRF': 'Pa',
+                       'FSDS': 'W/m^2',
+                       'FLDS': 'W/m^2',
+                       'WIND': 'm/s',
+                       'RH': '%',
+                      },
+    'mask_value': None
+}
+
+EUCORDEX_3km_weekly = {
+    'name': 'COSMOREA5_EUCORDEX_3km_weekly',
+    'version': (1, 0, 0),
+    'path': '/p/scratch/cjibg31/jibg3105/data/COSMOREA6/weekly/',
+    'type_file': 'netcdf',
+    'year_start': 1995,
+    'month_start': 1,
+    'year_end': 2018,
+    'month_end': 12,
+    'resolution_time': '7D',
+    'leapday': False,
+    'grid': 'EU3',
+    'variables': [
+                  'P',
+                  'Temp',
+                  'PSRF',
+                  'FSDS',
+                  'FLDS',
+                  'WIND', 
+                  'RH',
+                 ],
+    'variable_names': {
+                       'P': 'PRECTmms',
+                       'Temp': 'TBOT',
+                       'PSRF': 'PSRF',
+                       'FSDS': 'FSDS',
+                       'FLDS': 'FLDS',
+                       'WIND': 'WIND',
+                       'RH': 'RH',
+                       },
+    'variable_dimensions': {
+                            'P': ['time', 'lat', 'lon'], 
+                            'Temp': ['time', 'lat', 'lon'], 
+                            'PSRF': ['time', 'lat', 'lon'], 
+                            'FSDS': ['time', 'lat', 'lon'], 
+                            'FLDS': ['time', 'lat', 'lon'], 
+                            'WIND': ['time', 'lat', 'lon'], 
+                            'RH': ['time', 'lat', 'lon'], 
+                           }, 
+    'variable_units': {
+                       'P': 'mm/s',
+                       'Temp': 'K',
+                       'PSRF': 'Pa',
                        'FSDS': 'W/m^2',
                        'FLDS': 'W/m^2',
                        'WIND': 'm/s',
@@ -56,8 +108,8 @@ EUCORDEX_3km_8daily = {
 }
 
 
-EUCORDEX_3km_daily = {
-    'name': 'COSMOREA5_EUCORDEX_3km_daily',
+EUCORDEX_3km_6hourly = {
+    'name': 'COSMOREA5_EUCORDEX_3km_6hourly',
     'version': (1, 0, 0),
     'path': '/p/scratch/cjibg31/jibg3105/CESMDataRoot/InputData/Forcings/COSMOREA6/yearly_files/',
     'type_file': 'netcdf',
@@ -65,7 +117,8 @@ EUCORDEX_3km_daily = {
     'month_start': 1,
     'year_end': 2018,
     'month_end': 12,
-    'resolution_time': 'D',
+    'resolution_time': '6H',
+    'leapday': False,
     'grid': 'EU3',
     'variables': [
                   'P',

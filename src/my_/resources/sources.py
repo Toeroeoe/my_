@@ -145,6 +145,7 @@ variables = {
                             'ER': 'ER',
                             'ET': 'QFLX_EVAP_TOT',
                             'ET-corr': 'QFLX_EVAP_TOT',
+                            'LAI': 'TLAI',
                         },
 
                         'var_units': {
@@ -153,7 +154,7 @@ variables = {
                             'ER': r'$\mathdefault{g\;C\;day^{-1}}$',
                             'ET': r'$\mathdefault{mm\;day^{-1}}$',
                             'ET-corr': r'$\mathdefault{mm\;day^{-1}}$',
-
+                            'LAI': r'$\mathdefault{m^{2}\;m^{-2}}$',
                         },
                         
                         'var_unit_transform_methods': {
@@ -162,6 +163,7 @@ variables = {
                             'ER': 'linear',
                             'ET': 'linear',
                             'ET-corr': 'linear',
+                            'LAI': 'linear',
 
                         },
                         
@@ -171,6 +173,7 @@ variables = {
                             'ER': sec_per_day,
                             'ET': sec_per_day,
                             'ET-corr': sec_per_day,
+                            'LAI': 1.0,
 
                         },
 
@@ -180,6 +183,7 @@ variables = {
                             'ER': 0,
                             'ET': 0,
                             'ET-corr': 0,
+                            'LAI': 0.0,
                         },
 
                     },
@@ -475,6 +479,38 @@ variables = {
                             'Precip': 0,
                             'RH': 0,
                             'SWdown': 0,
+                        },
+                    },
+
+
+            'ICOS-ETC-L2-ARCHIVE': {
+                        'processing': 'ARCHIVE',
+                        'path': '/p/scratch/cjibg31/jibg3105/data/ICOS/ETC_L2_ARCHIVE',
+                        'name_label': r'$\mathdefault{ICOS}$',
+                        'date_format': '%Y%m%d',
+                        
+                        'var_names': {
+                            'LAI': 'LAI',
+                        },
+
+                        'var_units': {
+                            'LAI': r'$\mathdefault{m^{2}\;m^{-2}}$',
+                        },
+
+                        'csv_open_args': {
+                            'na_values': ['-9999'],
+                            },
+
+                        'var_unit_transform_methods': {
+                            'LAI': 'linear',
+                            },
+                        
+                        'var_unit_transform_m': {
+                            'LAI': 1,
+                        },
+
+                        'var_unit_transform_b': {
+                            'LAI': 0,
                         },
                     },
 }

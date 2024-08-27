@@ -1,20 +1,25 @@
 
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
 def axgrid(ax, color: str = 'dimgray', ls: str = '--', which: str = 'major', visible: bool = True, alpha: float = 0.4):
 
     ax.grid(which = which, color = color, visible = visible, ls = ls, alpha = alpha, zorder = 0)
 
 
-def common_free_lims(ax, xs, ys, rel_b: float = 0.1):
-
-    import numpy as np
-    import pandas as pd
+def common_free_lims(ax: plt.Axes, 
+                     xs: np.ndarray | pd.Series | pd.DataFrame, 
+                     ys: np.ndarray | pd.Series | pd.DataFrame, 
+                     xerr: np.ndarray | pd.Series | pd.DataFrame, 
+                     yerr: np.ndarray | pd.Series | pd.DataFrame, 
+                     rel_b: float = 0.1):
 
     if isinstance(ys, pd.Series): ys = ys.values
     if isinstance(xs, pd.Series): xs = xs.values
 
-    imax                    = np.nanmax([*xs, *ys])
-    imin                    = np.nanmin([*xs, *ys])
+    imax                    = np.nanmax([xs + xerr, ys + yerr])
+    imin                    = np.nanmin([xs - xerr, ys - yerr])
 
     max_rel                 = np.nanmax(np.abs([imax, imin]))
 
@@ -56,10 +61,10 @@ def bar_lims(ax, xs, ys, rel_b: float = 0.1):
     return [xmin_rel, xmax_rel], [ymin_rel, ymax_rel]
 
 
-def free_lims(ax, xs, ys, rel_b: float = 0.1):
-
-    import numpy as np
-    import pandas as pd
+def free_lims(ax: plt.Axes, 
+              xs: np.ndarray | pd.Series | pd.DataFrame, 
+              ys: np.ndarray | pd.Series | pd.DataFrame, 
+              rel_b: float = 0.1):
 
     if isinstance(ys, pd.Series): ys = ys.values
     if isinstance(ys, pd.DataFrame): ys = ys.values

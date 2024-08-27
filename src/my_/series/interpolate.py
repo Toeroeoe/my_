@@ -12,44 +12,29 @@ def resample(df: pd.DataFrame | pd.Series | xr.Dataset | xr.DataArray,
 
     if isinstance(df, xr.Dataset) | isinstance(df, xr.DataArray):
 
-        func = getattr(xr.DataArray, method)
+        func_ = getattr(xr.DataArray, method)
     
         index = 'time.year'
         
         offset_str = {'time': offset_str}
+        
+        df_resampler = df.resample(offset_str)
+
+        df_resampled = func_(df_resampler, **kwargs)
 
     elif isinstance(df, pd.DataFrame) | isinstance(df, pd.Series):
-
-        func = getattr(pd.DataFrame, method)
     
         index = df.index.year
 
         if yearly_agg: df = df.groupby(index, group_keys = False)
-    
+
+        df_resampler = df.resample(offset_str)
+
+        df_resampled = df_resampler.agg(method)
+
     else: NotImplementedError
 
-    df_resampler = df.resample(offset_str)
-
-    df_resampled = func(df_resampler, **kwargs)
-
     return df_resampled
-
-
-def resample_yearly(df, offset_str: str = 'D', method: str = 'mean'):
-
-    ### Obsolete !!! (I think)
-
-    import pandas as pd
-
-    method_pd                   = getattr(pd.DataFrame, method)
-
-    df_y_groups                 = df.groupby(df.index.year, group_keys = False)
-    df_y_resampler              = df_y_groups.resample(offset_str)
-
-    df_resampled                = df_y_resampler.agg(method_pd, skipna = False)
-
-    return df_resampled
-
 
 
 def reindex(df, timeseries, method =  None):
