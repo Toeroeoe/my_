@@ -2,12 +2,11 @@
 import numpy as np
 import xarray as xr
 
-def vpd_allen_2000(
-                    temp_max: np.ndarray | xr.DataArray | xr.Dataset,
-                    temp_min: np.ndarray | xr.DataArray | xr.Dataset,
-                    temp: np.ndarray | xr.DataArray | xr.Dataset,
-                    rh: np.ndarray | xr.DataArray | xr.Dataset,
-                   ) -> np.ndarray | xr.DataArray | xr.Dataset:
+def vpd_allen_2000(temp_max: np.ndarray | xr.DataArray,
+                   temp_min: np.ndarray | xr.DataArray,
+                   temp: np.ndarray | xr.DataArray,
+                   rh: np.ndarray | xr.DataArray,
+                   ) -> np.ndarray | xr.DataArray:
     
     # Temperature in ° Celsius    
 

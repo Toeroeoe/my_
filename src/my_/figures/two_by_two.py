@@ -2,7 +2,7 @@
 
 def square_two_top_cax(fx: float = 6.7, fy: float = 6.7, dpi: int = 300, 
                         layout: str = 'constrained', projection = None, frame: bool = False,
-                        hspace: float = 0.05, wspace: float = 0.05, annotation: bool = True):
+                        hspace: float = 0.3, wspace: float = 0.4, annotation: bool = True):
 
     import matplotlib.pyplot as plt
     from matplotlib.gridspec import GridSpec
@@ -12,13 +12,18 @@ def square_two_top_cax(fx: float = 6.7, fy: float = 6.7, dpi: int = 300,
 
     style_1()
 
-    ncols, nrows                    = 2, 3
+    ncols, nrows = 2, 3
 
-    figure                          = plt.figure(figsize = (fx, fy), dpi = dpi, layout = layout)
+    figure = plt.figure(figsize = (fx, fy), 
+                        dpi = dpi, )
+                        #layout = layout)
 
-    gs                              = GridSpec(figure = figure, ncols = ncols, nrows = nrows,
+    gs                              = GridSpec(figure = figure, 
+                                               ncols = ncols, 
+                                               nrows = nrows,
                                                height_ratios = [1, 20, 20],
-                                               hspace = hspace, wspace = wspace)
+                                               hspace = hspace, 
+                                               wspace = wspace)
 
     axs_kw                          = {'frameon': frame, 'projection': projection}
 

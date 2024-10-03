@@ -210,6 +210,66 @@ def init_ts(ax: plt.Axes,
     free_lims(ax, xs, ys)
 
 
+def init_lol(ax: plt.Axes, 
+             xs: np.ndarray | pd.Series | pd.DataFrame, 
+             ys: np.ndarray | pd.Series | pd.DataFrame, 
+             axhv_color: str = 'k', 
+             axhv_ls: str = '--', 
+             axhv_lw: float = 0.7, 
+             axhv_alpha: float = 0.8, 
+             axhv_dashes: tuple = (4, 4),
+             title: str = '', 
+             xlabel: str = '', 
+             ylabel: str = '', 
+             y_title: float = 1.1, 
+             fs_title: int = 14, 
+             fs_label: int = 12, 
+             fs_ticks = 10,
+             ax_tag = '', 
+             ax_tag_x: float = 0.5, 
+             ax_tag_y: float = 1.0):
+    
+    from my_.plot.style import nospines
+    from my_.plot.limits import axgrid, numeric_ticks, free_lims, bar_lims
+
+    axgrid(ax)
+    nospines(ax)
+
+    ax.set_title(title, 
+                 fontsize = fs_title, 
+                 y = y_title)
+    
+    ax.set_ylabel(ylabel, 
+                  fontsize = fs_label)
+    
+    ax.set_xlabel(xlabel, 
+                  fontsize = fs_label)
+    
+    ax.tick_params(axis='both', 
+                   which='major', 
+                   pad=10)
+    
+    props = dict(facecolor = 'white', 
+                 edgecolor = 'none', 
+                 alpha = 0.8)
+
+    ax.text(ax_tag_x, 
+            ax_tag_y, 
+            ax_tag, 
+            fontsize = fs_label, 
+            transform = ax.transAxes, 
+            va = 'bottom', 
+            ha = 'center', 
+            bbox = props)
+
+    numeric_ticks(ax, 
+                  nticks_x = 4, 
+                  nticks_y = len(ys) + 1, 
+                  fs_ticks = fs_ticks, 
+                  integery = True,
+                  integerx = True)
+    
+
 def init_ts_2(ax, xs, ys, axhv_color: str = 'k', axhv_ls: str = '--', axhv_lw: float = 0.7, axhv_alpha: float = 0.8, axhv_dashes: tuple = (4, 4),
        title: str = '', xlabel: str = '', ylabel: str = '', y_title: float = 1.1, fs_title: int = 14, fs_label: int = 12, fs_ticks = 10,
        ax_tag = '', ax_tag_x: float = 0.5, ax_tag_y: float = 1.0, grid: bool = True, spines: bool = False):

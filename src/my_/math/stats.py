@@ -253,47 +253,89 @@ def distribution_pdf(distribution: str = 'norm', parameter: int | list = [0, 1],
     import scipy.stats as stats
     import numpy as np
 
-    func_dist                       = getattr(stats, distribution)
+    func_dist = getattr(stats, distribution)
 
-    mins                            = func_dist.ppf(1/n, *parameter)
+    mins = func_dist.ppf(1/n, *parameter)
 
-    maxs                            = func_dist.ppf(1 - 1/n, *parameter)
+    maxs = func_dist.ppf(1 - 1/n, *parameter)
 
-    xs                              = np.linspace(mins, maxs, n)
+    xs = np.linspace(mins, maxs, n)
 
-    ys                              = func_dist.pdf(xs, *parameter)
+    ys = func_dist.pdf(xs, *parameter)
 
     return xs, ys
 
 
-def distribution_cdf(distribution: str = 'norm', parameter: int | list = [0, 1], n = 100000):
+def distribution_cdf(distribution: str = 'norm', 
+                     parameter: int | list = [0, 1], 
+                     n = 100000):
 
     import scipy.stats as stats
     import numpy as np
 
-    func_dist                       = getattr(stats, distribution)
+    func_dist = getattr(stats, distribution)
 
 
-    mins                            = func_dist.ppf(1/n, *parameter)
+    mins = func_dist.ppf(1/n, *parameter)
 
-    maxs                            = func_dist.ppf(1 - 1/n, *parameter)
+    maxs = func_dist.ppf(1 - 1/n, *parameter)
 
-    xs                              = np.linspace(mins, maxs, n)
+    xs = np.linspace(mins, maxs, n)
 
-    ys                              = func_dist.cdf(xs, *parameter)
+    ys = func_dist.cdf(xs, *parameter)
 
     return xs, ys
 
 
-def distribution_data(distribution: str = 'norm', parameter: dict | tuple = {}, n = 100000):
+def distribution_data(distribution: str = 'norm', 
+                      parameter: dict | tuple = {}, 
+                      n = 100000):
 
     #Baustelle
 
     import scipy.stats as stats
     import numpy as np
 
-    func_dist                       = getattr(stats, distribution)
+    func_dist = getattr(stats, distribution)
 
-    data                            = func_dist.rvs(0, 1, n)    
+    data = func_dist.rvs(0, 1, n)    
+
+def peaks(df: pd.Series, 
+          sigma: int = 6,
+          distance: int = 46):
+
+    from scipy.signal import find_peaks
+    from scipy.ndimage import gaussian_filter1d
+
+    smoo = gaussian_filter1d(df, sigma = sigma)
+
+    peaks_ = find_peaks(smoo, distance = distance)
+
+    if not peaks_[0]: 
+        return np.nan
+    else:
+        return peaks_[0][0]
 
 
+def inflictions(df: pd.Series,
+                sigma: int = 6):
+    
+    from scipy.ndimage import gaussian_filter1d
+
+    smoo = gaussian_filter1d(df, sigma = sigma)
+
+    d2 = np.gradient(np.gradient(smoo))
+
+    infl = np.nonzero(np.diff(np.sign(d2)))[0]
+
+    df_out = df.copy().drop(df.index)
+
+    if (len(infl) == 0) or (len(infl) >= len(df.index) / 2): 
+        
+        infl = [np.nan]
+
+    for i in range(len(infl)):
+
+        df_out[i] = infl[i]
+
+    return df_out

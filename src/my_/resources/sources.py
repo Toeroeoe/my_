@@ -256,26 +256,31 @@ variables = {
                         'var_names': {
                             'GPP': 'GPP_GLASS',
                             'ET': 'ET_GLASS',
+                            'LAI': 'LAI_GLASS'
                         },
 
                         'var_units': {
                             'GPP': r'$\mathdefault{g\;C\;day^{-1}}$',
                             'ET': r'$\mathdefault{mm\;day^{-1}}$',
+                            'LAI': r'$\mathdefault{m^{2}\;m^{-2}}$',
                         },
 
                         'var_unit_transform_methods': {
                             'GPP': 'linear',
                             'ET': 'linear',
+                            'LAI': 'linear',
                         },
                         
                         'var_unit_transform_m': {
                             'GPP': 1,
                             'ET': 1,
+                            'LAI': 1,
                         },
 
                         'var_unit_transform_b': {
                             'GPP': 0,
                             'ET': 0,
+                            'LAI': 0,
                         },
                     },
             
@@ -289,22 +294,27 @@ variables = {
                         
                         'var_names': {
                             'ET': 'ET_ERA5L',
+                            'LAI': 'LAI_ERA5L'
                         },
 
                         'var_units': {
                             'ET': r'$\mathdefault{mm\;day^{-1}}$',
+                            'LAI': r'$\mathdefault{m^{2}\;m^{-2}}$',
                         },
 
                         'var_unit_transform_methods': {
                             'ET': 'linear',
+                            'LAI': 'linear',
                         },
                         
                         'var_unit_transform_m': {
                             'ET': 1,
+                            'LAI': 1,
                         },
 
                         'var_unit_transform_b': {
                             'ET': 0,
+                            'LAI': 0,
                         },
                     },
             
@@ -421,7 +431,7 @@ variables = {
                             'GPP': 'D',
                             'NEE': 'D',
                             'ER': 'D',
-                            'ET': 'M',
+                            'ET': 'D',
                             'ET-corr': 'D',
                             'Temp': 'D',
                             'Precip': 'D',

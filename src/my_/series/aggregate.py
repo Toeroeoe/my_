@@ -5,10 +5,10 @@ from my_.series.group import select_multi_index
     
 
 def concat(dfs: list[pd.DataFrame], 
-            join: str = 'outer', 
-            axis: int = 1, 
-            sort: bool = False, 
-            remove_duplicates: bool = True):
+           join: str = 'outer', 
+           axis: int = 1, 
+           sort: bool = False, 
+           remove_duplicates: bool = True):
 
     if axis == 1: dfs = add_missing_column_levels(dfs)
 
@@ -131,11 +131,11 @@ def column_wise(df, ffunc):
 
 
 def single_axis_wise(df: pd.DataFrame, 
-                       level: str, 
-                       key: str, 
-                       ffunc: callable, 
-                       axis: int = 1,
-                       ffunc_args: dict = {}):
+                     level: str, 
+                     key: str, 
+                     ffunc: callable, 
+                     axis: int = 1,
+                     ffunc_args: dict = {}):
     
     from my_.series.group import select_multi_index
 
@@ -224,4 +224,4 @@ def count_nonzero(df):
 
     df_np                   = df.to_numpy()
 
-    return np.count_nonzero(~np.isnan(df_np))/4
+    return np.count_nonzero(~np.isnan(df_np))/6

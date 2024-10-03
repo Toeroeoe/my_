@@ -435,17 +435,19 @@ def taylor_landcover(df: pd.DataFrame,
                      marker_legend_args: dict = {},
                      color_legend_args: dict = {}):
     
-    from my_.figures.single import square_top_cax
     from my_.series.group import select_multi_index, nona_level
     from my_.plot.legend import marker_legend, color_legend
     from my_.series.aggregate import single_level_wise, groupwise
     from my_.math.stats import rmse, r, pbias
     from matplotlib.projections import PolarAxes
     from mpl_toolkits.axisartist import floating_axes, grid_finder
-    from my_.plot.style import style_1, nospines
+    from my_.plot.style import style_1
     from matplotlib.gridspec import GridSpec
     from my_.plot.limits import axgrid
     from my_.resources.sources import query_variables
+    from sklearn.preprocessing import MinMaxScaler
+
+    scaler = MinMaxScaler(feature_range = (0, 1))
 
     print('Plot Taylor diagram...\n')
 
@@ -464,6 +466,7 @@ def taylor_landcover(df: pd.DataFrame,
     stations_count = df.columns\
                        .get_level_values('Station')\
                        .value_counts()
+
     
     for s in stations_uq:
         
@@ -471,10 +474,10 @@ def taylor_landcover(df: pd.DataFrame,
 
             df = df.drop(s, axis = 1, level = 'Station')
         
-    df_nona = nona_level(df, ['Variable', 'Station'])
-
-    df_nona = df_nona.dropna(axis = 1, 
-                             how = 'all')
+    df_nona = nona_level(df, 
+                         ['Variable', 'Station'],
+                         axis = 1,
+                         how = 'any')
 
     df_n = select_multi_index(df_nona, 
                               ['Variable', 'Landcover'],
@@ -482,6 +485,9 @@ def taylor_landcover(df: pd.DataFrame,
                               axis = 1)
     
     for var in variables: 
+
+        var_units = query_variables(sources[0], 
+                                'var_units')[var]
 
         var_df = select_multi_index(df_n,
                                     levels = ['Variable'],
@@ -500,12 +506,19 @@ def taylor_landcover(df: pd.DataFrame,
                               key = obs,
                               ffunc = r,
                               axis = 0)
+
+        pbias_df = var_df.T.groupby(level = ['Landcover'])\
+                       .apply(single_level_wise,
+                              level = 'Source',
+                              key = obs,
+                              ffunc = pbias,
+                              axis = 0)
         
         rmse_df = var_df.T.groupby(level = ['Landcover'])\
                           .apply(single_level_wise,
                                  level = 'Source',
                                  key = obs,
-                                 ffunc = r,
+                                 ffunc = rmse,
                                  axis = 0)
 
         ref_std = select_multi_index(std_df,
@@ -513,9 +526,13 @@ def taylor_landcover(df: pd.DataFrame,
                                      keys = [obs],
                                      axis  = 0)
 
-
         tr = PolarAxes.PolarTransform()
 
+        pbias_ms_scale = scaler.fit_transform(np.abs(pbias_df))
+
+        pbias_ms = pbias_df.copy()
+
+        pbias_ms.iloc[:, :] = 6 + np.abs(pbias_ms_scale) * 10
     
         if (r_df < 0).values.any():
             
@@ -546,7 +563,12 @@ def taylor_landcover(df: pd.DataFrame,
                                           std_max),
                                 grid_locator1 = gl1, 
                                 tick_formatter1 = tf1)
-        
+
+        markers_l = {10: 'o', 20: 'o', 30: 'o', 40: 'o'}
+
+        markers_s = {k: 6 + scaler.transform([[float(k)]]) * 10 
+                     for k in markers_l.keys()}
+    
         style_1()
      
         nrows = 3
@@ -564,13 +586,23 @@ def taylor_landcover(df: pd.DataFrame,
         axl_r = fig.add_subplot(gs[0, 1], frameon = False)
 
         marker_legend(axl_l, 
-                      markers, 
-                      **marker_legend_args)
+                      markers_l, 
+                      marker_color = 'gray',
+                      marker_sizes = markers_s,
+                      title = 'absolute PBIAS [%]',
+                      anchor = (0.5, 0.5), 
+                      markerfirst = True, 
+                      fs_labels = 10,
+                      labelcolor = 'k',
+                      handletextpad = 0.2,
+                      columnspacing = 0.9, 
+                      loc = 'center',
+                      handlelength = 1.2)
     
         color_legend(axl_r, 
                      colorscc,
                      cmapc, 
-                     nrows = 3,
+                     ncols = 2,
                      **color_legend_args)
         
         i_ax = [[1, 0], [1, 1], [2, 0], [2, 1]]
@@ -586,6 +618,8 @@ def taylor_landcover(df: pd.DataFrame,
             ref_std_lc = ref_std.loc[(lc, obs)].item()
             r_lc = r_df.loc[lc]
             std_lc = std_df.loc[lc]
+            pbias_lc = pbias_df.loc[lc]
+            ms_lc = pbias_ms.loc[lc]
             marker = markers[lc]
 
             ax = fig.add_subplot(gs[*i_ax[ilc]], 
@@ -600,10 +634,10 @@ def taylor_landcover(df: pd.DataFrame,
             ax.axis["top"].toggle(ticklabels = True, label=True)
             ax.axis["top"].major_ticklabels.set_axis_direction("top")
             ax.axis["top"].label.set_axis_direction("top")
-            ax.axis["top"].label.set_text("Correlation")
+            ax.axis["top"].label.set_text("Correlation [-]")
 
             ax.axis["left"].set_axis_direction("bottom")  # "X axis"
-            ax.axis["left"].label.set_text("Standard deviation")
+            ax.axis["left"].label.set_text(f"Standard deviation [{var_units}]")
 
             ax.axis["right"].set_axis_direction("top")    # "Y-axis"
             ax.axis["right"].toggle(ticklabels = True)
@@ -616,8 +650,6 @@ def taylor_landcover(df: pd.DataFrame,
                 ax.axis["bottom"].set_visible(False)            
 
             ax = ax.get_aux_axes(tr)  
-
-            plt.axis("off")
         
             #l_, = ax.plot([0], ref_std_lc, marker = marker,
             #             color = 'k', ls = '', ms = 10, label = '',
@@ -635,17 +667,45 @@ def taylor_landcover(df: pd.DataFrame,
             rms = np.sqrt(ref_std_lc**2 + 
                           rs ** 2 - 2 * ref_std_lc *
                           rs * np.cos(ts))
-            contours = ax.contour(ts, rs, rms, 5, colors = 'k', linestyles = '--',
-                                  linewidths = 0.6, alpha = 0.5)
             
-            ax.clabel(contours, inline = True, fontsize = 10)
+            contours = ax.contour(ts, 
+                                  rs, 
+                                  rms, 
+                                  4, 
+                                  colors = 'k', 
+                                  linestyles = '--',
+                                  linewidths = 0.6, 
+                                  alpha = 0.5)
+            
+            ax.clabel(contours, 
+                      inline = True, 
+                      fmt = f'%.1f {var_units}',
+                      fontsize = 8)
 
+            props = dict(facecolor = 'white', 
+                         edgecolor = 'none', 
+                         alpha = 0.85)
+
+            ax.text(0.5, 
+                    1.0, 
+                    lc, 
+                    fontsize = 12, 
+                    transform = ax.transAxes, 
+                    va = 'bottom', 
+                    ha = 'center', 
+                    bbox = props)
+            
             for src in std_df.index.get_level_values('Source'):
-
-                #if src == obs: continue
 
                 r_src_lc = r_lc.loc[src].item()
                 std_src_lc = std_lc.loc[src].item()
+                pbias_src_lc = pbias_lc.loc[src].item()
+                ms_src_lc = ms_lc.loc[src].item()
+
+                
+
+                if src == obs:
+                    ms_src_lc = 5
                 
                 color = colorsc[src]
                 
@@ -653,10 +713,12 @@ def taylor_landcover(df: pd.DataFrame,
                         std_src_lc, 
                         marker = marker, 
                         color = color, 
+                        markerfacecolor = "None",
+                        markeredgewidth = 2.4,
                         ls = '', 
-                        ms = 8, 
+                        ms = ms_src_lc, 
                         label = '',
-                        alpha = 0.7,
+                        alpha = 0.8,
                         clip_on = False)
 
     return fig
@@ -682,7 +744,7 @@ def xy_landcover_moments(df: pd.DataFrame,
     from my_.plot.init_ax import init_xy
     from my_.plot.basic import scatter, error
     from my_.plot.legend import marker_legend, color_legend
-    from my_.series.convert import tile_df_to_list
+    #from my_.series.convert import tile_df_to_list
 
     from my_.resources.sources import query_variables
 
@@ -699,16 +761,17 @@ def xy_landcover_moments(df: pd.DataFrame,
                        .get_level_values('Station')\
                        .value_counts()
     
+    
     for s in stations_uq:
         
-        if stations_count[s] == 1:
+        if stations_count[s] <= len(sources_grids):
 
             df = df.drop(s, axis = 1, level = 'Station')
-        
-    df_nona = nona_level(df, ['Variable', 'Station'])
-
-    df_nona = df_nona.dropna(axis = 1, 
-                             how = 'all')
+            
+    df_nona = nona_level(df, ['Variable', 'Station'], 
+                         how = 'any', 
+                         axis = 1)
+    
 
     df_i = select_multi_index(df_nona, 
                               levels = ['Source', 
@@ -717,6 +780,7 @@ def xy_landcover_moments(df: pd.DataFrame,
                               keys = [sources_insitu, 
                                       [variable], 
                                       sel_landcover])
+    
 
     df_d = select_multi_index(df_nona, 
                               levels = ['Source', 
@@ -733,6 +797,7 @@ def xy_landcover_moments(df: pd.DataFrame,
                            level = ['Source', 'Landcover'])
 
     i_sources = df_i_lc.obj.columns.unique(level = 'Source')
+
     d_sources = df_d_lc.obj.columns.unique(level = 'Source')
 
     cmapc = cc.glasbey_hv[:] + [[0.0, 0.0, 0.0]]
@@ -745,13 +810,15 @@ def xy_landcover_moments(df: pd.DataFrame,
 
     if len(i_sources) > 1: raise NotImplementedError
 
-    fig, axs, axs_l = square_two_top_cax()
+    fig, axs, axs_l = square_two_top_cax(fy = 8)
 
     labels_sources = {s: query_variables(s, 'name_label') 
                       for s in d_sources}
 
     colors = {labels_sources[k]: v 
               for k,v in colors.items() if k in d_sources}
+    
+
 
     marker_legend(axs_l[0], 
                   markers, 
@@ -760,12 +827,12 @@ def xy_landcover_moments(df: pd.DataFrame,
     color_legend(axs_l[1], 
                  colors,
                  cmapc, 
-                 nrows = np.ceil(len(d_sources) / 3), 
+                 ncols = (len(d_sources) // 2) + 1, 
                  **color_legend_args)
 
     for iax, ax in enumerate(axs):
 
-        agg_moment              = moments[iax]
+        agg_moment = moments[iax]
 
         agg_method = getattr(stats, agg_moment)
         err_method = getattr(stats, f'std_error_{agg_moment}')
@@ -794,44 +861,49 @@ def xy_landcover_moments(df: pd.DataFrame,
 
         for lc in df_i.columns.unique(level = 'Landcover'):
 
-            colorsc = [cmapc[colors[d]] 
-                       for d in colors.keys()]
-
             ys = select_multi_index(df_d_lc_agg, 
                                     'Landcover', 
                                     lc, 
                                     axis = 0)
+            
+            colorsc = [cmapc[colors[labels_sources[d]]] 
+                    for d in ys\
+                        .index\
+                        .get_level_values('Source')]
 
             xs = select_multi_index(df_i_lc_agg, 
                                     'Landcover', 
                                     lc, 
-                                    axis = 0)
+                                    axis = 0).values.flatten()
 
             x_err = select_multi_index(df_i_lc_agg_err, 
                                        'Landcover', 
                                        lc, 
-                                       axis = 0)
+                                       axis = 0).values.flatten()
 
             y_err = select_multi_index(df_d_lc_agg_err, 
                                        'Landcover', 
                                        lc, 
-                                       axis = 0)
+                                       axis = 0).values.flatten()
             
-            xs_tile = tile_df_to_list(xs.to_numpy(), 
-                                      len(d_sources))
+            xs_tile = np.tile(xs, len(d_sources))
+            
+            x_err_tile = np.tile(x_err, len(d_sources))
 
-            if len(ys.columns) == 0: continue
+            if len(ys) == 0: continue
 
             scatter(ax, 
                     xs_tile, 
-                    ys, markers[lc], 
+                    ys.values.flatten(), markers[lc], 
                     colors_marker = colorsc, 
                     **xy_args)
             
+            print(x_err_tile, y_err)
+
             error(ax, 
                   xs_tile, 
-                  ys, 
-                  x_err = x_err, 
+                  ys.values.flatten(), 
+                  x_err = x_err_tile, 
                   y_err = y_err, 
                   ecolors = colorsc, 
                   elinewidth = 2)
@@ -858,7 +930,9 @@ def bar_rmse_landcover(df, variable, sources_insitu, sources_grids, sel_landcove
 
     print('Plot land cover aggregated rmse bar plots...\n')
 
-    df_nona                     = nona_level(df, ['Variable', 'Station'])
+    df_nona                     = nona_level(df, ['Variable', 'Station'],
+                                             axis = 1,
+                                             how = 'any')
 
     df_s                        = select_multi_index(df_nona, ['Variable', 'Landcover'],
                                                       keys = [variable, sel_landcover])
@@ -880,15 +954,19 @@ def bar_rmse_landcover(df, variable, sources_insitu, sources_grids, sel_landcove
     cmapc = cc.glasbey_hv[:] + [[0.0, 0.0, 0.0]]
 
     colors                      = {labels_sources[k]: v for k,v in colors.items() if k in sources}
-    colorsc                     = [cmapc[colors[d]] for d in colors.keys()]
 
-    color_legend(axs_l, colors, cmapc, **color_legend_args)
 
     xs                          = np.arange(len(sources))
 
     ys                          = df_lc_rmse_mean
 
+    ys = ys.reindex(sources_insitu + sources_grids, axis = 1, level = 'Source')
+
+    color_legend(axs_l, colors, cmapc, **color_legend_args)
+
     y_err                       = df_lc_rmse_std
+
+    y_err = y_err.reindex(sources_insitu + sources_grids, axis = 1, level = 'Source')
     
     for iax, ax in enumerate(axs):
 
@@ -896,15 +974,20 @@ def bar_rmse_landcover(df, variable, sources_insitu, sources_grids, sel_landcove
 
         ys_lc                   = select_multi_index(ys, levels = ['Landcover'], keys = [lc], axis = 0)
 
+        colorsc = [cmapc[colors[labels_sources[d]]] 
+                for d in ys_lc\
+                    .index\
+                    .get_level_values('Source')]
+
         y_err_lc                = select_multi_index(y_err, levels = ['Landcover'], keys = [lc], axis = 0)
 
         ecolors                 = ['gray'] * len(ys_lc)
 
         init_bar(ax, xs, ys + y_err, ax_tag = lc, ylabel = f'RMSD [{var_units}]', **bar_init_args)
 
-        bar(ax, xs, ys_lc, color = colorsc, **bar_args)
+        bar(ax, xs, ys_lc.values.flatten(), color = colorsc, **bar_args)
         
-        error(ax, xs, ys_lc, y_err = y_err_lc, ecolors = ecolors, 
+        error(ax, xs, ys_lc.values, y_err = y_err_lc.values, ecolors = ecolors, 
               capsize = 4, alpha = 0.8, zorder = 6)
     
     return fig
@@ -926,10 +1009,13 @@ def doy_doy_landcover(name: str,
     from my_.math.stats import pbias, rmse
     from my_.resources.sources import query_variables
     from my_.figures.four_by_two import vertical_top_cax
+    from my_.figures.two_by_two import square_two_top_cax
     from my_.plot.init_ax import init_ts
     from my_.plot.legend import color_legend
     from my_.plot.basic import plot
     from my_.files.handy import save_df 
+    from scipy.signal import find_peaks
+    from scipy.ndimage import gaussian_filter1d
 
     import colorcet as cc
 
@@ -947,10 +1033,14 @@ def doy_doy_landcover(name: str,
 
             df = df.drop(s, axis = 1, level = 'Station')
     
-    df_nona = nona_level(df, ['Variable', 'Station'])
+    df_nona = nona_level(df, 
+                         ['Variable', 'Station'],
+                         axis = 1,
+                         how = 'any')
 
     df_nona = df_nona.dropna(axis = 1, 
                              how = 'all')
+
 
     df_s = select_multi_index(df_nona, 
                               ['Variable', 'Landcover'],
@@ -964,10 +1054,16 @@ def doy_doy_landcover(name: str,
 
     df_doy = df_s.groupby(df_s.index.dayofyear).mean()
 
-    df_doy_lc = df_doy.T.groupby(level = ['Source', 
+    df_doy_lc = df_doy.groupby(axis = 1, level = ['Source', 
                                           'Landcover'])
 
     df_doy_lc_mean = df_doy_lc.mean()
+
+    modes = df_doy_lc_mean.apply(find_peaks, distance = 46)
+
+    df_doy_lc_mean_d2 = df_doy_lc_mean.apply(gaussian_filter1d, sigma = 100).apply(np.gradient).apply(np.gradient)
+
+    df_doy_lc_mean_infl = df_doy_lc_mean_d2.apply(np.sign).apply(np.diff).apply(np.nonzero)
 
     df_doy_lc_mean_rmse = column_wise(df_doy_lc_mean, 
                                       ffunc = rmse)
@@ -989,8 +1085,6 @@ def doy_doy_landcover(name: str,
 
     df_doy_lc_std = df_doy_lc.std()
 
-    fig, axs, axs_l = vertical_top_cax(fy = 8)
-
     var_units = query_variables(sources[0], 
                                 'var_units')[variable]
     
@@ -998,28 +1092,41 @@ def doy_doy_landcover(name: str,
                       for s in sources}
 
     cmapc = cc.glasbey_hv[:] + [[0.0, 0.0, 0.0]]
+    
     colors = {labels_sources[k]: v 
               for k, v in colors.items() if k in sources}
 
-    
-    colorsc = [cmapc[colors[d]] 
-               for d in colors.keys()]
+    fig, axs, axs_l = vertical_top_cax(fy = 8)
 
     color_legend(axs_l, colors, cmapc, **color_legend_args)
 
+
     for ilc, lc in enumerate(sel_landcover):
 
-        xs_doy = df_doy_lc_mean.columns
+        xs_doy = df_doy_lc_mean.index
 
         ys_doy = select_multi_index(df_doy_lc_mean, 
                                     levels = ['Landcover'], 
-                                    keys = [lc],
-                                    axis = 0).T
+                                    keys = [lc])
+        
+        if len(ys_doy.columns) < 2: continue
+        
+        ys_doy = ys_doy.reindex(labels = sources_insitu + sources_grids, 
+                        axis = 1, 
+                        level = 'Source')
+        
+        colorsc = [cmapc[colors[labels_sources[d]]] 
+                    for d in ys_doy\
+                        .columns\
+                        .get_level_values('Source')]
         
         err_doy = select_multi_index(df_doy_lc_std, 
                                      levels = ['Landcover'], 
-                                     keys = [lc],
-                                     axis = 0).T
+                                     keys = [lc])
+        
+        err_doy = err_doy.reindex(labels = sources_insitu + sources_grids, 
+                        axis = 1, 
+                        level = 'Source')
 
         var_label = f'{variable} [{var_units}]'
 
@@ -1039,18 +1146,491 @@ def doy_doy_landcover(name: str,
 
         plot(ax = axs[ilc, 0], 
              xs = xs_doy, 
-             ys = ys_doy, 
+             ys = ys_doy,
+             lw = [3] + [1.5] * len(sources_grids), 
              colors = colorsc, 
              **doy_args)
         
         plot(ax = axs[ilc, 1], 
              xs = xs_doy, 
              ys = err_doy, 
+             lw = [3] + [1.5] * len(sources_grids),
              colors = colorsc, 
              **doy_args)
-        
+
     return fig
 
+
+def knee(xy: pd.Series, 
+        interp_method = 'interp1d',
+        degree: int = 7,
+        curve: str = 'convex',
+        direction: str = 'increasing'):
+    
+    from kneed import KneeLocator
+
+    kneeds = KneeLocator(x = xy.index,
+                         y = xy.values,
+                         polynomial_degree = degree,
+                         interp_method = interp_method,
+                         curve = curve,
+                         direction = direction)
+    
+    return kneeds.knee
+
+
+
+def doy_lollipop(df: pd.DataFrame,
+                 variable: str,
+                 sel_landcover: list[str],
+                 sources_insitu: list[str],
+                 sources_grids: list[str],
+                 color_legend_args: dict,
+                 colors: dict):
+
+    from my_.series.group import select_multi_index, nona_level
+    from my_.resources.sources import query_variables
+    from my_.figures.two_by_two import square_top_cax
+    from my_.plot.init_ax import init_lol
+    from my_.plot.legend import color_legend
+    from my_.plot.basic import scatter, hlines, vlines, error
+    from my_.files.handy import save_df 
+    from my_.math.stats import peaks, inflictions
+    from scipy.ndimage import gaussian_filter1d
+    from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+    
+
+
+    import colorcet as cc
+
+    import string
+
+        
+    abc                     = string.ascii_lowercase
+    
+    list_abc                = list(abc)
+
+    print('Plot land cover aggregated DOY lollipop...\n')
+
+    stations_uq = df.columns.unique(level = 'Station')
+    
+    stations_count = df.columns\
+                       .get_level_values('Station')\
+                       .value_counts()
+    
+    for s in stations_uq:
+        
+        if stations_count[s] == 1:
+
+            df = df.drop(s, axis = 1, level = 'Station')
+    
+    df_nona = nona_level(df, 
+                         ['Variable', 'Station'],
+                         axis = 1,
+                         how = 'any')
+
+    df_nona = df_nona.dropna(axis = 1, 
+                             how = 'all')
+
+    df_s = select_multi_index(df_nona, 
+                              ['Variable', 'Landcover'],
+                              keys = [variable, sel_landcover])
+ 
+    df_s = df_s.reindex(labels = sources_insitu + sources_grids, 
+                        axis = 1, 
+                        level = 'Source')
+
+    sources = df_s.columns.unique(level = 'Source')
+
+    df_doy = df_s.groupby(df_s.index.dayofyear).mean()
+
+    df_doy_modes = df_doy.apply(peaks, distance = 46)
+
+    df_doy_modes_lc_mean = df_doy_modes.groupby(level = ['Source', 
+                                                'Landcover']).mean()
+    
+    df_doy_modes_lc_mean = pd.DataFrame(df_doy_modes_lc_mean).T
+    
+    df_doy_modes_lc_std = df_doy_modes.groupby(level = ['Source', 
+                                               'Landcover']).std()
+    
+    df_doy_modes_lc_std = pd.DataFrame(df_doy_modes_lc_std).T
+
+    df_doy_infl = df_doy.apply(inflictions)
+
+    df_doy_infl_lc_mean = df_doy_infl.groupby(axis = 1,
+                                              level = ['Source', 
+                                              'Landcover']).mean()
+    
+    df_doy_infl_lc_std = df_doy_infl.groupby(axis = 1,
+                                             level = ['Source', 
+                                             'Landcover']).std()
+    
+    save_df(df_doy_infl_lc_mean, f'infl_mean_{variable}.csv')
+    save_df(df_doy_infl_lc_std, f'infl_std_{variable}.csv')
+    save_df(df_doy_modes_lc_mean, f'modes_mean_{variable}.csv')
+    save_df(df_doy_modes_lc_std, f'modes_std_{variable}.csv')
+
+    labels_sources = {s: query_variables(s, 'name_label') 
+                      for s in sources}
+
+    cmapc = cc.glasbey_hv[:] + [[0.0, 0.0, 0.0]]
+    
+    colors = {labels_sources[k]: v 
+              for k, v in colors.items() if k in sources_grids}
+
+    fig, axs, axs_l = square_top_cax(fx = 9.4,
+                                     annotation = False)
+
+    color_legend(axs_l, 
+                 colors, 
+                 cmapc, 
+                 **color_legend_args)
+
+
+    for ilc, lc in enumerate(sel_landcover):
+
+        xs_mode = select_multi_index(df_doy_modes_lc_mean, 
+                                    levels = ['Landcover'], 
+                                    keys = [lc])
+        
+        err_mode = select_multi_index(df_doy_modes_lc_std, 
+                                    levels = ['Landcover'], 
+                                    keys = [lc])
+        
+        xs_infl = select_multi_index(df_doy_infl_lc_mean, 
+                                    levels = ['Landcover'], 
+                                    keys = [lc])
+        
+        err_infl = select_multi_index(df_doy_infl_lc_std, 
+                                      levels = ['Landcover'], 
+                                      keys = [lc])
+        
+        ys_source = np.arange(len(sources_grids))
+
+        ys_obs = np.arange(len(sources_grids))
+        
+        if len(xs_mode.columns) < 2: continue
+        
+        xmin = select_multi_index(xs_mode,
+                                  levels = ['Source',
+                                            'Landcover'],
+                                  keys = [sources_insitu[0],
+                                          lc]).T * 8
+        
+        xmin_err = select_multi_index(err_mode,
+                                  levels = ['Source',
+                                            'Landcover'],
+                                  keys = [sources_insitu[0],
+                                          lc]).T * 8
+
+        xmax = select_multi_index(xs_mode,
+                                  levels = ['Source',
+                                            'Landcover'],
+                                  keys = [sources_grids,
+                                          lc]).T * 8
+
+        xmax_err = select_multi_index(err_mode,
+                                  levels = ['Source',
+                                            'Landcover'],
+                                  keys = [sources_grids,
+                                          lc]).T * 8
+        
+        xinfl = select_multi_index(xs_infl,
+                                  levels = ['Source',
+                                            'Landcover'],
+                                  keys = [sources_grids,
+                                          lc]).T * 8
+        
+        err_xinfl = select_multi_index(err_infl,
+                                  levels = ['Source',
+                                            'Landcover'],
+                                  keys = [sources_grids,
+                                          lc]).T * 8
+        
+        xinfl_o = select_multi_index(xs_infl,
+                                  levels = ['Source',
+                                            'Landcover'],
+                                  keys = [sources_insitu[0],
+                                          lc]).T * 8
+        
+        err_xinfl_o = select_multi_index(err_infl,
+                                  levels = ['Source',
+                                            'Landcover'],
+                                  keys = [sources_insitu[0],
+                                          lc]).T * 8
+        
+        xmax = xmax.reindex(sources_grids, 
+                            axis = 0,
+                            level = 'Source')
+        
+        xmax_err = xmax_err.reindex(sources_grids, 
+                                    axis = 0,
+                                     level = 'Source')
+        
+        xinfl = xinfl.reindex(sources_grids, 
+                                     axis = 0, 
+                                     level = 'Source')
+
+        err_xinfl = err_xinfl.reindex(sources_grids, 
+                                      axis = 0,
+                                     level = 'Source')
+        
+        colorsc = [cmapc[colors[labels_sources[d]]] 
+                    for d in xmax\
+                        .index\
+                        .get_level_values('Source')]
+        
+        init_lol(ax = axs[ilc], 
+                 xs = xmax, 
+                 ys = ys_source,
+                 title = lc,
+                 ax_tag = 'Peak', 
+                 axhv_ls = '--',
+                 axhv_lw = 1,
+                 axhv_dashes = (4, 4),
+                 fs_title = 14,
+                 y_title = 1.05,
+                 fs_label = 10,
+                 fs_ticks = 10,
+                 ax_tag_x = 0.5,
+                 ax_tag_y = 1,
+                 ylabel = '',
+                 xlabel = 'Day of year')
+        
+        hlines(axs[ilc],
+               ys = ys_source,
+               xmin = xmin,
+               xmax = xmax,
+               colors = colorsc,
+               linewidth = 7,
+               alpha = 0.9)
+        
+        vlines(axs[ilc],
+               xs = xmin.values,
+               ymin = -1,
+               ymax = 0.95,
+               colors = 'k',
+               linewidth = 3,
+               linestyle = 'solid',
+               alpha = 0.7)
+        
+        axs[ilc].vlines(
+               x = [0, 1],
+               ymin = -1,
+               ymax = 0.95,
+               colors = 'k',
+               linewidth = 2,
+               linestyle = 'dashed',
+               alpha = 0.7,
+               transform = axs[ilc].transAxes)
+        
+        scatter(axs[ilc],
+                xs = xmax.values,
+                ys = ys_source,
+                colors_marker = colorsc,
+                marker = 'o',
+                sizes_marker = 150,
+                alpha = 0.9)
+
+        error(axs[ilc],
+              xs = xmax.values,
+              ys = ys_source,
+              x_err = xmax_err.values,
+              ecolors = ['darkgray'] * len(ys_source),
+              elinewidth = 2.5,
+              capsize = 6, 
+              alpha = 0.9, 
+              zorder = 6)
+        
+        error(axs[ilc],
+              xs = xmin.values,
+              ys = [-0.35],
+              x_err = xmin_err.values,
+              ecolors = ['k'],
+              capsize = 6,
+              elinewidth = 2.5, 
+              alpha = 0.8, 
+              zorder = 6)
+
+        axs[ilc].set_ylim((-0.5, len(sources_grids)))
+        axs[ilc].set_xlim((np.min(np.concatenate([xmax.values - xmax_err.values, 
+                         xmin.values - xmin_err.values])) - 16, 
+                         np.max(np.concatenate([xmax.values + xmax_err.values, 
+                         xmin.values + xmin_err.values])) + 16))
+        axs[ilc].set_yticks([], labels =[])
+
+        divider = make_axes_locatable(axs[ilc])
+        axinfl1 = divider.append_axes("left", size="100%", pad=0.1, sharey=axs[ilc])
+        axinfl2 = divider.append_axes("right", size="100%", pad=0.1, sharey=axs[ilc])
+
+        init_lol(ax = axinfl1, 
+                 xs = xinfl_o, 
+                 ys = ys_source,
+                 ax_tag = 'Season start', 
+                 axhv_ls = '--',
+                 axhv_lw = 1,
+                 axhv_dashes = (4, 4),
+                 fs_title = 14,
+                 y_title = 1.05,
+                 fs_label = 10,
+                 fs_ticks = 10,
+                 ax_tag_x = 0.5,
+                 ax_tag_y = 1,
+                 ylabel = '',
+                 xlabel = '')
+        
+        hlines(axinfl1,
+               ys = ys_source,
+               xmin = xinfl_o.iloc[:, 0],
+               xmax = xinfl.iloc[:, 0],
+               colors = colorsc,
+               linewidth = 7,
+               alpha = 0.9)
+        
+        vlines(axinfl1,
+               xs = xinfl_o.iloc[:, 0].values,
+               ymin = -1,
+               ymax = 0.95,
+               colors = 'k',
+               linewidth = 3,
+               linestyle = 'solid',
+               alpha = 0.8)
+        
+        axinfl1.vlines(
+               x = [1],
+               ymin = -1,
+               ymax = 0.95,
+               colors = 'k',
+               linewidth = 2,
+               linestyle = 'dashed',
+               alpha = 0.7,
+               transform = axinfl1.transAxes)
+        
+        scatter(axinfl1,
+                xs = xinfl.iloc[:,0],
+                ys = ys_source,
+                colors_marker = colorsc,
+                marker = 'o',
+                sizes_marker = 150,
+                alpha = 0.9)
+        
+        error(axinfl1,
+              xs = xinfl.iloc[:, 0],
+              ys = ys_source,
+              x_err = err_xinfl.iloc[:, 0],
+              ecolors = ['darkgray'] * len(ys_source),
+              elinewidth = 2.5,
+              capthick = 2,
+              capsize = 6, 
+              alpha = 0.9, 
+              zorder = 6)
+        
+        error(axinfl1,
+              xs = xinfl_o.iloc[:, 0],
+              ys = [-0.35],
+              x_err = err_xinfl_o.iloc[:, 0],
+              ecolors = ['k'],
+              capsize = 6,
+              capthick = 2,
+              elinewidth = 2.5, 
+              alpha = 0.8, 
+              zorder = 6)
+        
+        axinfl1.set_ylim((-0.5, len(sources_grids)))
+        axinfl1.set_xlim(np.min(np.concatenate([xinfl.iloc[:, 0].values - err_xinfl.iloc[:, 0].values, 
+                         xinfl_o.iloc[:, 0].values - err_xinfl_o.iloc[:, 0].values])) - 16, 
+                         np.max(np.concatenate([xinfl.iloc[:, 0].values + err_xinfl.iloc[:, 0].values, 
+                         xinfl_o.iloc[:, 0].values + err_xinfl_o.iloc[:, 0].values])) + 16)
+        axinfl1.set_yticklabels([])
+
+        axinfl1.text(0.5, 1.10, list_abc[ilc] + ')', fontsize = 14,
+                transform = axinfl1.transAxes,
+                va = 'bottom', 
+                ha = 'center')
+
+        init_lol(ax = axinfl2, 
+                 xs = xinfl_o, 
+                 ys = ys_source,
+                 ax_tag = 'Season end', 
+                 axhv_ls = '--',
+                 axhv_lw = 1,
+                 axhv_dashes = (4, 4),
+                 fs_title = 14,
+                 y_title = 1.05,
+                 fs_label = 10,
+                 fs_ticks = 10,
+                 ax_tag_x = 0.5,
+                 ax_tag_y = 1,
+                 ylabel = '',
+                 xlabel = '')
+        
+        hlines(axinfl2,
+               ys = ys_source,
+               xmin = xinfl_o.iloc[:, 1],
+               xmax = xinfl.iloc[:, 1],
+               colors = colorsc,
+               linewidth = 7,
+               alpha = 0.9)
+        
+        vlines(axinfl2,
+               xs = xinfl_o.iloc[:, 1].values,
+               ymin = -1,
+               ymax = 0.95,
+               colors = 'k',
+               linewidth = 3,
+               linestyle = 'solid',
+               alpha = 0.7)
+        
+        axinfl2.vlines(
+               x = [0],
+               ymin = -1,
+               ymax = 0.95,
+               colors = 'k',
+               linewidth = 2,
+               linestyle = 'dashed',
+               alpha = 0.8,
+               transform = axinfl2.transAxes)
+        
+        scatter(axinfl2,
+                xs = xinfl.iloc[:, 1],
+                ys = ys_source,
+                colors_marker = colorsc,
+                marker = 'o',
+                sizes_marker = 150,
+                alpha = 0.9)
+        
+        error(axinfl2,
+              xs = xinfl.iloc[:, 1],
+              ys = ys_source,
+              x_err = err_xinfl.iloc[:, 1],
+              ecolors = ['darkgray'] * len(ys_source),
+              elinewidth = 2.5,
+              capthick = 2,
+              capsize = 6, 
+              alpha = 0.9, 
+              zorder = 6)
+        
+        error(axinfl2,
+              xs = xinfl_o.iloc[:, 1],
+              ys = [-0.35],
+              x_err = err_xinfl_o.iloc[:, 1],
+              ecolors = ['k'],
+              capsize = 6,
+              capthick = 2,
+              elinewidth = 2.5, 
+              alpha = 0.8, 
+              zorder = 6)
+        
+        axinfl2.set_ylim((-0.5, len(sources_grids)))
+        axinfl2.set_xlim(np.min(np.concatenate([xinfl.iloc[:, 1].values - err_xinfl.iloc[:, 1].values, 
+                         xinfl_o.iloc[:, 1].values - err_xinfl_o.iloc[:, 1].values])) - 16, 
+                         np.max(np.concatenate([xinfl.iloc[:, 1].values + err_xinfl.iloc[:, 1].values, 
+                         xinfl_o.iloc[:, 1].values + err_xinfl_o.iloc[:, 1].values])) + 16)
+        axinfl2.set_yticklabels([])
+
+    return fig
 
 def doy_dist_landcover(name, df, variable, sources_insitu, sources_grids, sel_landcover,
                        colors: dict = {}, doy_init_args = {}, dist_init_args = {},
@@ -1072,7 +1652,10 @@ def doy_dist_landcover(name, df, variable, sources_insitu, sources_grids, sel_la
 
     print('Plot land cover aggregated DOY and distribution plots...\n')
     
-    df_nona                     = nona_level(df, ['Variable', 'Station'])
+    df_nona                     = nona_level(df,
+                                             ['Variable', 'Station'],
+                                             axis = 1,
+                                             how = 'any')
 
     df_s                        = select_multi_index(df_nona, ['Variable', 'Landcover'],
                                                       keys = [variable, sel_landcover])
@@ -1167,16 +1750,20 @@ def dist_landcover(name: str,
 
     print('Plot land cover aggregated DOY and distribution plots...\n')
     
-    df_nona                     = nona_level(df, ['Variable', 'Station'])
+    df_nona                     = nona_level(df,
+                                             ['Variable', 'Station'],
+                                             axis = 1,
+                                             how = 'any')
 
     df_s                        = select_multi_index(df_nona, ['Variable', 'Landcover'],
                                                       keys = [variable, sel_landcover])
     
-    df_s                        = df_s.reindex(labels = sources_insitu + sources_grids, axis = 1, level = 'Source')
+    #df_s                        = df_s.reindex(sources_insitu + sources_grids, axis = 1, level = 'Source')
 
     sources                     = df_s.columns.unique(level = 'Source')
 
     df_dist_lc                  = df_s.groupby(axis = 1, level = ['Source', 'Landcover']).apply(gauss_kde_pdf, return_dict=True)
+
 
     df_dist_lc.columns          = df_dist_lc.columns.set_names('pdf', level = -1)
 
@@ -1186,25 +1773,35 @@ def dist_landcover(name: str,
     var_units                   = query_variables(sources[0], 'var_units')[variable]
     labels_sources              = {s: query_variables(s, 'name_label') for s in sources}
 
-    cmapc                       = cc.glasbey_hv[:]
-    colors                      = {labels_sources[k]: v for k,v in colors.items() if k in sources}
-    colorsc                     = [cmapc[colors[d]] for d in colors.keys()]
+    cmapc                       = cc.glasbey_hv[:] + [[0.0, 0.0, 0.0]]
+    colorsp                     = {labels_sources[k]: v for k, v in colors.items() if k in sources}
 
     fig, axs, axl               = square_top_cax(fy = 5.5)
 
-    color_legend(axl, colors, cmapc, **color_legend_args)
+    color_legend(axl, colorsp, cmapc, **color_legend_args)
 
     for ilc, lc in enumerate(sel_landcover):
 
-        xs_dist                 = select_multi_index(df_dist_lc, levels = ['Landcover', 'pdf'], keys = [lc, 'xs'])
+        lw = [3] + [1.5] * len(sources_grids)
 
-        ys_dist                 = select_multi_index(df_dist_lc, levels = ['Landcover', 'pdf'], keys = [lc, 'ys'])
+        xs_dist = select_multi_index(df_dist_lc, levels = ['Landcover', 'pdf'], keys = [lc, 'xs'])
+
+        xs_dist = xs_dist.reindex(sources_insitu + sources_grids, axis = 1, level = 'Source')
+
+        ys_dist = select_multi_index(df_dist_lc, levels = ['Landcover', 'pdf'], keys = [lc, 'ys'])
+
+        ys_dist = ys_dist.reindex(sources_insitu + sources_grids, axis = 1, level = 'Source')
+
+        colorsc = [cmapc[colorsp[labels_sources[d]]] 
+                    for d in ys_dist\
+                        .columns\
+                        .get_level_values('Source')]
 
         var_label               = f'{variable} [{var_units}]'
 
         init_dist(axs[ilc], all_xs, all_ys, xlabel = var_label, ax_tag = lc, **dist_init_args)
 
-        plot(axs[ilc], xs_dist, ys_dist, colors = colorsc, **dist_args)
+        plot(axs[ilc], xs_dist, ys_dist, lw = lw, colors = colorsc, **dist_args)
 
     return fig
 
@@ -1283,7 +1880,10 @@ def doy_landcover(df, variable, sources_insitu, sources_grids, sel_landcover,
 
     import colorcet as cc
 
-    df_nona                     = nona_level(df, ['Variable', 'Station'])
+    df_nona                     = nona_level(df, 
+                                             ['Variable', 'Station'],
+                                             axis = 1,
+                                             how = 'any')
 
     df_s                        = select_multi_index(df_nona, ['Variable', 'Landcover'],
                                                       keys = [variable, sel_landcover])
@@ -1347,18 +1947,36 @@ def plot_ts(df, variable, station, colors: dict = {}, color_legend_args: dict = 
     import colorcet as cc
     import numpy as np
 
-    df_nona                     = nona_level(df, ['Variable', 'Station'])
+
+    stations_uq = df.columns.unique(level = 'Station')
+    
+    stations_count = df.columns\
+                       .get_level_values('Station')\
+                       .value_counts()
+    
+    for s in stations_uq:
+        
+        if stations_count[s] == 1:
+
+            df = df.drop(s, axis = 1, level = 'Station')
+
+    df_nona                     = nona_level(df, 
+                                             ['Variable', 'Station'],
+                                             axis = 1,
+                                             how = 'any')
 
     df_s                        = select_multi_index(df_nona, ['Variable', 'Station'],
                                                       keys = [variable, station])
     
     sources                     = df_s.columns.unique(level = 'Source')
+
+    fig, ax, axl, gs            = square_top_cax(**fig_args)
+
+    if len(sources) == 0 : return fig
     
-    cmapc                       = cc.glasbey_hv[:]
+    cmapc                       = cc.glasbey_hv[:] + [[0.0, 0.0, 0.0]]
     colors                      = {k: v for k,v in colors.items() if k in sources}
     colorsc                     = [cmapc[colors[d]] for d in list(sources)]
-
-    fig, ax, axl                = square_top_cax(**fig_args)
 
     var_units                   = query_variables(sources[0], 'var_units')[variable]
 
@@ -1371,8 +1989,8 @@ def plot_ts(df, variable, station, colors: dict = {}, color_legend_args: dict = 
 
     init_ts_2(ax, df_s.dropna(how = 'all').index, df_s.dropna(how = 'all'),
             title = f'{station} {variable} [{var_units}]', **ts_init_args)
-
-    plot(ax, xs, ys, colors = colorsc, **plot_args)
+    
+    plot(ax, xs, ys, colors = colorsc, cycle_direction = 1, **plot_args)
 
     return  fig
 
@@ -1395,7 +2013,7 @@ def plot_ts_2(x, y, labels, variable, colors: dict = {}, color_legend_args: dict
     colors                      = {k: v for k, v in colors.items() if k in labels}
     colorsc                     = [cmapc[colors[d]] for d in list(labels)]
 
-    fig, ax, axl                = square_top_cax(**fig_args)
+    fig, ax, axl, gs            = square_top_cax(**fig_args)
 
     #var_units                   = query_variables('CLM5-EU3', 'var_units')[variable]
 

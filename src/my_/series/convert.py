@@ -18,9 +18,9 @@ def cell_to_df(cell: np.ndarray,
     return df
 
 
-def tile_df_to_list(df, n_times):
+def tile_array_to_list(array, n_times):
 
-    list_df                 = list(df)
+    list_df                 = list(array)
 
     list_tiled              = list_df * n_times
 

@@ -184,17 +184,17 @@ def select_multi_index(df: pd.DataFrame,
 
 
 def nona_level(df: pd.DataFrame, 
-               level: str | list, 
+               level: str | list[str], 
                axis: int = 1, 
-               how: str = 'any'):
+               how: str = 'all'):
 
     if axis == 1 : df = df.T
 
     df_level_groups = df.groupby(sort = False, 
                                  level = level)
-
-    df_nona = df_level_groups.apply(pd.DataFrame.dropna, 
-                                    axis = axis,
+    
+    df_nona = df_level_groups.apply(pd.DataFrame.dropna,
+                                    axis = 1,
                                     how = how)
     
     if axis == 1: return df_nona.T

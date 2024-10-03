@@ -117,7 +117,7 @@ def src_var_cells_df(name_case: str,
             df_cells_info.loc[i_station,['lat_cell', 'lon_cell']] = coords
             df_cells_info.loc[i_station,['i_lat_cell', 'i_lon_cell']] = idxs
         
-        df_out                  = concat(list_ts, sort = False)
+        df_out = concat(list_ts)
 
         save_df(df_cells_info, file_out_info, 'csv')
         save_df(df_out, file_out, file_format)

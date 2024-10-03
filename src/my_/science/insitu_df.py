@@ -106,7 +106,7 @@ def oneflux(name, df_stations, src: str, variables = [], resample_method = 'mean
         
             file                = f'{path}/{dir_prefix}*{name_FLX}*/{file_prefix}*{ts}{ts}*.csv'
         
-            ts_df               = open_csv(file, args = csv_open_args)
+            ts_df               = open_csv(file, **csv_open_args)
 
             ts_df_date          = index_to_datetime(ts_df, format = date_formats[ts])
         
@@ -192,7 +192,7 @@ def archive(name, df_stations, src: str, variables = [],
 
         if not check_file_exists(file): continue
         
-        ts_df = open_csv(file, args = csv_open_args)
+        ts_df = open_csv(file, **csv_open_args)
 
         for v in variables:
 

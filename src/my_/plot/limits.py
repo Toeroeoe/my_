@@ -3,9 +3,19 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-def axgrid(ax, color: str = 'dimgray', ls: str = '--', which: str = 'major', visible: bool = True, alpha: float = 0.4):
+def axgrid(ax: plt.Axes, 
+           color: str = 'dimgray', 
+           ls: str = '--', 
+           which: str = 'major', 
+           visible: bool = True, 
+           alpha: float = 0.4):
 
-    ax.grid(which = which, color = color, visible = visible, ls = ls, alpha = alpha, zorder = 0)
+    ax.grid(which = which, 
+            color = color, 
+            visible = visible, 
+            ls = ls, 
+            alpha = alpha, 
+            zorder = 0)
 
 
 def common_free_lims(ax: plt.Axes, 
@@ -17,14 +27,18 @@ def common_free_lims(ax: plt.Axes,
 
     if isinstance(ys, pd.Series): ys = ys.values
     if isinstance(xs, pd.Series): xs = xs.values
+    if isinstance(yerr, pd.Series): yerr = yerr.values
+    if isinstance(xerr, pd.Series): xerr = xerr.values
 
-    imax                    = np.nanmax([xs + xerr, ys + yerr])
-    imin                    = np.nanmin([xs - xerr, ys - yerr])
+    imax = np.nanmax(np.concatenate([xs + xerr, 
+                                     ys + yerr]))
+    imin = np.nanmin(np.concatenate([xs - xerr, 
+                                     ys - yerr]))
 
-    max_rel                 = np.nanmax(np.abs([imax, imin]))
+    max_rel = np.nanmax(np.abs([imax, imin]))
 
-    imax_rel                = imax + max_rel * rel_b
-    imin_rel                = imin - max_rel * rel_b
+    imax_rel = imax + max_rel * rel_b
+    imin_rel = imin - max_rel * rel_b
 
     ax.set_ylim((imin_rel, imax_rel))
     ax.set_xlim((imin_rel, imax_rel))
@@ -132,13 +146,24 @@ def free_numeric_lim(ax, xs, x = False, y = True, rel_b: float = 0.1):
 
     
 
-def numeric_ticks(ax, nticks_y = 5, nticks_x = 5, fs_ticks = 10, integerx = False, integery = False,
-                  time_x: bool = False, x: bool = True, y: bool = True):
+def numeric_ticks(ax, 
+                  nticks_y = 5, 
+                  nticks_x = 5, 
+                  fs_ticks = 10, 
+                  integerx = False, 
+                  integery = False,
+                  time_x: bool = False, 
+                  x: bool = True, 
+                  y: bool = True):
 
     from matplotlib.ticker import MaxNLocator
 
-    xlocator                = MaxNLocator(prune = 'both', nbins = nticks_x, integer = integerx)
-    ylocator                = MaxNLocator(prune = 'both', nbins = nticks_y, integer = integery)
+    xlocator = MaxNLocator(prune = 'both', 
+                           nbins = nticks_x, 
+                           integer = integerx)
+    ylocator = MaxNLocator(prune = 'both', 
+                           nbins = nticks_y, 
+                           integer = integery)
 
     ax.yaxis.set_major_locator(ylocator)
     ax.xaxis.set_major_locator(xlocator)

@@ -70,7 +70,7 @@ def open_csv_or_parquet(file: str, csv_args = {'index_col': 0}, parquet_args = {
 
     args                        = csv_args if ending == 'csv' else parquet_args
 
-    df                          = open_method(file, args)
+    df                          = open_method(file, **args)
 
     return df
 
@@ -90,7 +90,6 @@ def read_resample_save(case_name: str, files: list, origin: str, suffixes: list 
     list_dfs                    = []
 
     if glob(file_out): print('Resampled file found\n'); return open_csv_or_parquet(file_out)
-
 
     print('Resampling...\n')
 
@@ -118,7 +117,10 @@ def read_resample_save(case_name: str, files: list, origin: str, suffixes: list 
     
     df                      = concat(list_dfs, join = join, axis = 1)
 
+    #print(df.loc[((df.index > pd.to_datetime('1995-01-01')) & (df.index < pd.to_datetime('2018-12-31')))].groupby(axis = 1, level = ['Source', 'Landcover']).count().sum())
+
     df_resampled            = resample(df, offset_str, method = interp_method)
+    #print(df_resampled[((df_resampled.index > pd.to_datetime('1995-01-01')) & (df_resampled.index < pd.to_datetime('2018-12-31')))].groupby(axis = 1, level = ['Source', 'Landcover']).count().sum())
 
     save_df(df_resampled, file_out, file_format)
 

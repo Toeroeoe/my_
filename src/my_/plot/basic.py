@@ -87,46 +87,41 @@ def plot(ax: plt.Axes,
          style: str = '-', 
          lw: float = 1.0, 
          alpha: float = 0.8,
+         cycle_direction: int = 0,
          projection: None | Projection = None,
          markersize: float = 1.0,
          marker: str | list = '', 
          fillstyle = 'full',
          zorder = 5):
     
-    if isinstance(markersize, int): 
-        markersize = [markersize] * len(xs)
+    l = ys.shape[1] if cycle_direction else len(xs)
 
-    if isinstance(edgecolors, str):
-        edgecolors = [edgecolors] * len(xs)
+    if isinstance(lw, float):
+        lw = [lw] * l
+
+    if isinstance(markersize, int) \
+       or isinstance(markersize, float): 
+       markersize = [markersize] * l
+
+    if isinstance(colors, str): 
+        colors = [colors] * l
+
+    if len(colors) == 1:
+        colors = colors * l
 
     if projection is None: projection = ax.transData
 
-    if isinstance(colors, list): 
+    ax.set_prop_cycle(color = colors,
+                      linewidth = lw,
+                      markersize = markersize)
 
-        ax.set_prop_cycle('color', colors)
-
-        artist = ax.plot(xs, ys, 
-                         ls = style,
-                         lw = lw, 
-                         transform = projection, 
-                         marker = marker, 
-                         markersize = markersize,
-                         fillstyle = fillstyle,
-                         alpha = alpha, 
-                         zorder = zorder)
-    
-    else:
-        
-        artist = ax.plot(xs, ys, 
-                            c = colors, 
-                            ls = style, 
-                            lw = lw, 
-                            transform = projection, 
-                            marker = marker, 
-                            markersize = markersize,
-                            fillstyle = fillstyle,
-                            alpha = alpha, 
-                            zorder = zorder)
+    artist = ax.plot(xs, ys, 
+                     transform = projection, 
+                     marker = marker, 
+                     ls = style,
+                     fillstyle = fillstyle,
+                     alpha = alpha, 
+                     zorder = zorder)
 
     return artist
 
@@ -137,7 +132,11 @@ def fill(ax, xs, y1s, y2s, colors, alpha: float = 0.4, zorder: int = 2):
 
         for iy, y1 in enumerate(y1s):
             
-            artist = ax.fill_between(xs, y1s[y1], y2s.iloc[:,iy], color = colors[iy], alpha = alpha, zorder = zorder)
+            artist = ax.fill_between(xs, y1s[y1], 
+                                     y2s.iloc[:,iy], 
+                                     color = colors[iy], 
+                                     alpha = alpha, 
+                                     zorder = zorder)
 
     return artist
 
@@ -147,16 +146,75 @@ def pie(ax, shares, colors, **kwargs):
     ax.pie(shares, colors = colors, **kwargs)
 
 
-def error(ax, xs, ys, x_err = None, y_err = None, 
-          ecolors = None, elinewidth = None, capsize = 0.0, capthick = None,
-          alpha = 0.8, zorder = 5):
+def error(ax: plt.Axes, 
+          xs: np.ndarray, 
+          ys: np.ndarray, 
+          x_err: np.ndarray | None = None, 
+          y_err: np.ndarray | None = None, 
+          ecolors: list | str | None = None, 
+          elinewidth: str | None = None, 
+          capsize: float | None = 0.0, 
+          capthick: float | None = None,
+          alpha: float = 0.8, 
+          zorder: int = 5):
+    
+    if x_err is None: x_err = [0] * len(y_err)
+    if y_err is None: y_err = [0] * len(x_err)
+    if isinstance(ecolors, str): ecolors = [ecolors]
 
     for i in range(len(ecolors)):
 
-        artist = ax.errorbar(xs[i], ys[i], xerr = x_err, yerr = y_err[i], 
-                ecolor = ecolors[i],
-                elinewidth = elinewidth,
-                capsize = capsize, capthick = capthick,
-                linestyle='', alpha = alpha, zorder = zorder)
+        artist = ax.errorbar(xs[i], ys[i], 
+                             xerr = x_err[i], yerr = y_err[i], 
+                             ecolor = ecolors[i],
+                             elinewidth = elinewidth,
+                             capsize = capsize, 
+                             capthick = capthick,
+                             linestyle='', 
+                             alpha = alpha, 
+                             zorder = zorder)
+    
+    return artist
+
+def hlines(ax: plt.Axes,
+           ys: np.ndarray,
+           xmin: np.ndarray,
+           xmax: np.ndarray,
+           colors: str | list = None,
+           linestyle: str = 'solid',
+           linewidth: int | float = 2,
+           alpha: float = 0.8,
+           zorder: int = 5):
+    
+    artist = ax.hlines(y = ys,
+                       xmin = xmin,
+                       xmax = xmax,
+                       colors = colors,
+                       linestyle = linestyle,
+                       linewidth = linewidth,
+                       alpha = alpha,
+                       zorder = zorder)
+    
+    return artist
+
+
+def vlines(ax: plt.Axes,
+           xs: np.ndarray,
+           ymin: np.ndarray,
+           ymax: np.ndarray,
+           colors: str | list = None,
+           linestyle: str = 'solid',
+           linewidth: int | float = 2,
+           alpha: float = 0.8,
+           zorder: int = 5):
+    
+    artist = ax.axvline(x = xs,
+                        ymin = ymin,
+                        ymax = ymax,
+                        color = colors,
+                        linestyle = linestyle,
+                        linewidth = linewidth,
+                        alpha = alpha,
+                        zorder = zorder)
     
     return artist
