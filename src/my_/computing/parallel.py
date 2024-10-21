@@ -44,7 +44,7 @@ def pixel_wise(func: Callable,
 
         if isinstance(return_shape, int): return_shape = [return_shape]
 
-        arrays_out = {v: np.empty([shapes[variables[0]][-2:]],
+        arrays_out = {v: np.empty([*return_shape, *shapes[variables[0]][-2:]],
                                    dtype = dtype) 
                                    for v in variables_out}
         
@@ -488,7 +488,7 @@ def along_dim(func: Callable,
 
             print('Now wrinting DS to netcdf...')
 
-            DS_out.to_netcdf(path = file_out, mode='w')
+            DS_out.to_netcdf(path = file_out, mode = 'w', format = 'NETCDF4_CLASSIC')
 
             print('Script was successful! Bye bye!')
     

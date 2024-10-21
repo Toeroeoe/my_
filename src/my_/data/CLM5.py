@@ -8,7 +8,7 @@ class ouput_data(gridded_data):
 BGC_EU3_8daily = {
     'name': 'BGC_EU3',
     'version': (1, 1, 7),
-    'path': '/p/scratch/cjibg31/jibg3105/data/CLM5EU3/007/join/',
+    'path': '/p/scratch/cjibg31/jibg3105/data/CLM5EU3/007/join_8d/',
     'type_file': 'netcdf',
     'year_start': 1995,
     'month_start': 1,
@@ -79,7 +79,7 @@ BGC_EU3_8daily = {
 BGC_EU3_daily = {
     'name': 'BGC_EU3',
     'version': (1, 1, 7),
-    'path': '/p/scratch/cjibg31/jibg3105/data/CLM5EU3/007/join_d/',
+    'path': '/p/data1/jibg31/CLM5.0_EU3km/outputs/007/join_d/',
     'type_file': 'netcdf',
     'year_start': 1995,
     'month_start': 1,

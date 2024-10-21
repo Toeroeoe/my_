@@ -52,9 +52,6 @@ def standard_index(array: np.ndarray,
         series_deseasonalized = series.groupby(series.index.year, 
                                                group_keys = False) \
                                                .apply(mean_year_sub)
-        
-        print(series, series.mean())
-        print(series_deseasonalized, series_deseasonalized.mean())
 
         series = series_deseasonalized
 

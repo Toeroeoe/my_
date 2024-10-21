@@ -44,21 +44,23 @@ def kmeans(data: list[np.ndarray],
 
 
 def dbscan(data: list[np.ndarray],
+           weights: np.ndarray | None = None,
            **kwargs):
     
-    from joblib import effective_n_jobs#, parallel_config
-    #from dask_jobqueue import SLURMCluster
-    #rom dask.distributed import Client
-    
-    #cluster = SLURMCluster(processes = 1, cores = 128, memory = '1GB')
-    #client = Client()
+    from joblib import effective_n_jobs
 
     print(f'\nCompute DBscan clusters')
     print(f'with {effective_n_jobs(-1)} cpus...\n')
 
     shape = data[0].shape
+
+    if weights is None: weights = np.ones(shape)
+
+    data.append(weights)
+
+    data_stacked = np.stack(data, 
+                            axis = -1)
     
-    data_stacked = np.stack(data, axis = -1)
     data_valid = ~np.isnan(data_stacked)
 
     mask = np.all(data_valid, axis = -1)
@@ -68,13 +70,12 @@ def dbscan(data: list[np.ndarray],
     print(f'\nNumber of points:')
     print(f'{data_masked.shape[0]}\n')
     print(f'\nNumber of features:') 
-    print(f'{data_masked.shape[1]}\n')
+    print(f'{data_masked.shape[1]-1}\n')
 
     clusterer = DBSCAN(**kwargs, n_jobs = -1)
-
-    #with parallel_config('dask', n_jobs = -1):
         
-    labels = clusterer.fit_predict(data_masked)
+    labels = clusterer.fit_predict(data_masked[:, :-1],
+                                   sample_weight = data_masked[:, -1])
     
     array_r = np.zeros(shape)
     array_r[:] = np.nan

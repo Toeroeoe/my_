@@ -111,7 +111,7 @@ EUCORDEX_3km_weekly = {
 EUCORDEX_3km_6hourly = {
     'name': 'COSMOREA5_EUCORDEX_3km_6hourly',
     'version': (1, 0, 0),
-    'path': '/p/scratch/cjibg31/jibg3105/CESMDataRoot/InputData/Forcings/COSMOREA6/yearly_files/',
+    'path': '/p/data1/jibg31/FORCINGS/COSMOREA6/yearly_files/',
     'type_file': 'netcdf',
     'year_start': 1995,
     'month_start': 1,

@@ -145,6 +145,20 @@ class gridded_data:
         data_v = data_s[present_vars]
                         
         return data_v
+    
+    def apply_landmask(self,
+                       variables: dict,
+                       landmask: np.ndarray):
+
+        if isinstance(variables, xr.Dataset):
+            return variables.where(landmask)
+        
+        masked_dict = {k: np.where(landmask, 
+                                   v, 
+                                   np.nan) 
+                       for k, v in variables.items()}
+        
+        return masked_dict
 
 
     def convert_units(self,
@@ -153,7 +167,6 @@ class gridded_data:
                       variables: None | dict = None):
         
         ureg = pint.UnitRegistry()
-        Q_ = ureg.Quantity
 
         values_out = {} if isinstance(values, dict) else values.copy()
 
@@ -177,8 +190,11 @@ class gridded_data:
                 values_out[v] = values_dst.magnitude
 
             elif isinstance(array, xr.DataArray):
+
+                array.lat.attrs['units'] = 'degree'
+                array.lon.attrs['units'] = 'degree'
     
-                values = array.pint.quantify(src_unit)
+                values = array.pint.quantify({f'{v}': src_unit})
 
                 values_dst = values.pint.to(dst_unit)
 
@@ -232,6 +248,7 @@ class grid:
     type_file: str
     name_latitude: str
     name_longitude: str
+    name_landmask: str
 
     def load_coordinates(self):
         
@@ -249,6 +266,24 @@ class grid:
         values = type_module.variables_to_array(data, 
                                                 [self.name_latitude, 
                                                 self.name_longitude])
+
+        return values
+
+    def load_landmask(self):
+
+        type_module = check_data_module('my_.files',
+                                        self.type_file)
+        
+        print(f'\nLoad lat and lon variables from grid {self.name}...\n')
+
+        if not type_module: return
+
+        file = f'{self.path_file}/{self.name_file}'
+
+        data = type_module.nc_open(file)
+
+        values = type_module.variables_to_array(data, 
+                                                [self.name_landmask])
 
         return values
 

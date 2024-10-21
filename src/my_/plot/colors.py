@@ -55,6 +55,8 @@ def colorbar(cax: plt.Axes,
             cbar.ax.set_xticks(positions, 
                                tick_labels, 
                                fontsize = fs_label)
+            
+    return cbar
 
 
 def colormap(cmap: str = 'viridis', cmap_n = 1000):
