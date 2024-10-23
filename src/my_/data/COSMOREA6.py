@@ -1,9 +1,3 @@
-from dataclasses import dataclass
-from my_.data.templates import gridded_data
-
-@dataclass
-class ouput_data(gridded_data):
-    pass
 
 EUCORDEX_3km_8daily = {
     'name': 'COSMOREA5_EUCORDEX_3km_8daily',

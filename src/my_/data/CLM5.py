@@ -1,9 +1,4 @@
-from dataclasses import dataclass
-from my_.data.templates import gridded_data
 
-@dataclass
-class ouput_data(gridded_data):
-    pass
 
 BGC_EU3_8daily = {
     'name': 'BGC_EU3',

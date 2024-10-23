@@ -1,14 +1,9 @@
-from dataclasses import dataclass
-from my_.data.templates import gridded_data
 import os
 from my_.files.handy import create_dirs, check_file_exists
 from glob import glob
 import xarray as xr
 import numpy as np
 
-@dataclass
-class ouput_data(gridded_data):
-    pass
 
 all_EUCORDEX_daily = {
     'name': 'BGC_EU3',

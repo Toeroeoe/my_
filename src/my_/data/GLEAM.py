@@ -1,8 +1,6 @@
 from my_.files.handy import create_dirs, check_file_exists
 import os
-import netCDF4 as nc
 from glob import glob
-import nctoolkit as nct
 import xarray as xr
 import numpy as np
 

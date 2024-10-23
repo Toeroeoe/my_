@@ -300,21 +300,25 @@ def distribution_data(distribution: str = 'norm',
 
     data = func_dist.rvs(0, 1, n)    
 
-def peaks(df: pd.Series, 
+def peaks(data: pd.Series | np.ndarray, 
           sigma: int = 6,
           distance: int = 46):
 
     from scipy.signal import find_peaks
     from scipy.ndimage import gaussian_filter1d
 
-    smoo = gaussian_filter1d(df, sigma = sigma)
+    smoo_ = gaussian_filter1d(data, sigma = sigma)
 
-    peaks_ = find_peaks(smoo, distance = distance)
+    peaks_ = find_peaks(smoo_, distance = distance)
 
-    if not peaks_[0]: 
+    if isinstance(peaks_[0], np.ndarray):
+        return peaks_[0]
+    elif not peaks_[0]: 
         return np.nan
-    else:
+    elif isinstance(data, pd.Series):
         return peaks_[0][0]
+    elif isinstance(data, np.ndarray):
+        return peaks_[0]
 
 
 def inflictions(df: pd.Series,
