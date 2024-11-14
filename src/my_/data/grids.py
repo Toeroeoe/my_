@@ -31,3 +31,13 @@ ERA5L_EUCORDEX = {
     'name_latitude': 'latitude',
     'name_longitude': 'longitude',
 }
+
+GLDAS_EUROCORDEX = {
+    'name': 'GLDAS_EUROCORDEX',
+    'version': (1, 0, 0),
+    'path_file': '/p/scratch/cjibg31/jibg3105/data/GLDAS/NOAH025_M/',
+    'name_file': '2000.nc',
+    'type_file': 'netcdf',
+    'name_latitude': 'lat',
+    'name_longitude': 'lon',
+}

@@ -24,7 +24,7 @@ class cluster_data(gridded_data):
     def __post_init__(self):
         
         self.path = self.path + \
-                    f'{self.agg_period}_' + \
+                    f'/{self.agg_period}_' + \
                     f'l-{self.grid_window}_' + \
                     f'p-{self.frac_points}_' + \
                     f'k-{self.weigh_mid}_' + \
@@ -34,7 +34,32 @@ class cluster_data(gridded_data):
                     f'y0-{self.year_start}_' + \
                     f'y1-{self.year_end}/'
 
+    def get_file_fix(self):
+        
+        str_f = f'{self.agg_period}_' + \
+                f'l-{self.grid_window}_' + \
+                f'p-{self.frac_points}_' + \
+                f'k-{self.weigh_mid}_' + \
+                f'e-{self.weigh_steep}_' + \
+                f'a-{self.filter_area}_' + \
+                f't-{self.factor_time}_' + \
+                f'y0-{self.year_start}_' + \
+                f'y1-{self.year_end}'
+        
+        return str_f
+    
+    def get_properties(self, variable):
 
+        dir_file = '/p/scratch/cjibg31/jibg3105/projects/papers/CLM5EU3_Droughts/out/cluster_properties'
+
+        name_file = self.get_file_fix()
+
+        properties = pd.read_excel(f'{dir_file}/{variable}_{name_file}.xlsx', 
+                           header = [0, 1],
+                           index_col = 0)
+        
+        return properties
+    
 variables_EU3_8daily = {
     'name': 'HOLIDROUGHT_BGC_EU3_variables',
     'version': (0, 1, 0),
@@ -92,7 +117,7 @@ variables_EU3_8daily = {
 
 
 SXI_365D_EU3_8daily = {
-    'name': 'HOLIDROUGHT_SXI_variables_365D',
+    'name': 'HOLIDROUGHT_SXI_365D',
     'version': (0, 1, 0),
     'path': '/p/scratch/cjibg31/jibg3105/data/HOLIDROUGHT/SXI/365D/',
     'type_file': 'netcdf',
@@ -148,7 +173,7 @@ SXI_365D_EU3_8daily = {
 
 
 SXI_183D_EU3_8daily = {
-    'name': 'HOLIDROUGHT_SXI_variables_183D',
+    'name': 'HOLIDROUGHT_SXI_183D',
     'version': (0, 1, 0),
     'path': '/p/scratch/cjibg31/jibg3105/data/HOLIDROUGHT/SXI/183D/',
     'type_file': 'netcdf',
@@ -203,7 +228,7 @@ SXI_183D_EU3_8daily = {
 }
 
 SXI_92D_EU3_8daily = {
-    'name': 'HOLIDROUGHT_SXI_variables_92D',
+    'name': 'HOLIDROUGHT_SXI_92D',
     'version': (0, 1, 0),
     'path': '/p/scratch/cjibg31/jibg3105/data/HOLIDROUGHT/SXI/92D/',
     'type_file': 'netcdf',
@@ -259,7 +284,7 @@ SXI_92D_EU3_8daily = {
 
 
 SXI_31D_EU3_8daily = {
-    'name': 'HOLIDROUGHT_SXI_variables_31D',
+    'name': 'HOLIDROUGHT_SXI_31D',
     'version': (0, 1, 0),
     'path': '/p/scratch/cjibg31/jibg3105/data/HOLIDROUGHT/SXI/31D/',
     'type_file': 'netcdf',
@@ -315,9 +340,9 @@ SXI_31D_EU3_8daily = {
 
 
 cluster_365D_EU3_8daily = {
-    'name': 'HOLIDROUGHT_SXI_variables_365D',
+    'name': 'HOLIDROUGHT_clusters_365D',
     'version': (0, 1, 0),
-    'path': '/p/scratch/cjibg31/jibg3105/data/HOLIDROUGHT/cluster/yearly/',
+    'path': '/p/scratch/cjibg31/jibg3105/data/HOLIDROUGHT/cluster/',
     'type_file': 'netcdf',
     'year_start': 1996,
     'month_start': 1,
@@ -343,7 +368,7 @@ cluster_365D_EU3_8daily = {
                        'SXI_BTRAN': 'SXI_BTRAN',
                        'SXI_Gs': 'SXI_Gs',
                        'SXI_Runoff': 'SXI_Runoff',
-                       'SXI_SM': 'SXI_SM_0',
+                       'SXI_SM': 'SXI_SM',
                        'SXI_WTD': 'SXI_WTD',
                        'SXI_VPD': 'SXI_VPD',
                        'SXI_P': 'SXI_P'},
@@ -370,6 +395,198 @@ cluster_365D_EU3_8daily = {
     'mask_value': None,
 
     'agg_period': '365D',
+    'grid_window': 3,
+    'frac_points': 0.1,
+    'weigh_mid': -1.4,
+    'weigh_steep': 6.0,
+    'filter_area': 30000.0,
+    'factor_time': 1.0,
+}
+
+cluster_183D_EU3_8daily = {
+    'name': 'HOLIDROUGHT_clusters_183D',
+    'version': (0, 1, 0),
+    'path': '/p/scratch/cjibg31/jibg3105/data/HOLIDROUGHT/cluster/',
+    'type_file': 'netcdf',
+    'year_start': 1995,
+    'month_start': 7,
+    'year_end': 2018,
+    'month_end': 12,
+    'resolution_time': '8D',
+    'grid': 'EU3',
+    'leapday': False,
+
+    'variables': ['SXI_GPP', 
+                  'SXI_ESOIL',
+                  'SXI_Tr',
+                  'SXI_BTRAN',
+                  'SXI_Gs',
+                  'SXI_Runoff',
+                  'SXI_SM',
+                  'SXI_WTD',
+                  'SXI_VPD',
+                  'SXI_P'],
+    'variable_names': {'SXI_GPP': 'SXI_GPP', 
+                       'SXI_ESOIL': 'SXI_ESOIL',
+                       'SXI_Tr': 'SXI_Tr',
+                       'SXI_BTRAN': 'SXI_BTRAN',
+                       'SXI_Gs': 'SXI_Gs',
+                       'SXI_Runoff': 'SXI_Runoff',
+                       'SXI_SM': 'SXI_SM',
+                       'SXI_WTD': 'SXI_WTD',
+                       'SXI_VPD': 'SXI_VPD',
+                       'SXI_P': 'SXI_P'},
+    'variable_dimensions': {'SXI_GPP': ['time', 'lat', 'lon'], 
+                            'SXI_ESOIL': ['time', 'lat', 'lon'],
+                            'SXI_Tr': ['time', 'lat', 'lon'],  
+                            'SXI_BTRAN': ['time', 'lat', 'lon'],
+                            'SXI_Gs': ['time', 'lat', 'lon'],
+                            'SXI_Runoff': ['time', 'lat', 'lon'],
+                            'SXI_SM': ['time', 'layer', 'lat', 'lon'],
+                            'SXI_WTD': ['time', 'lat', 'lon'],
+                            'SXI_VPD': ['time', 'lat', 'lon'],
+                            'SXI_P': ['time', 'lat', 'lon']}, 
+    'variable_units': {'SXI_GPP': 'dimensionless',
+                       'SXI_ESOIL': 'dimensionless',
+                       'SXI_Tr': 'dimensionless',
+                       'SXI_BTRAN': 'dimensionless',
+                       'SXI_Gs': 'dimensionless',
+                       'SXI_Runoff': 'dimensionless',
+                       'SXI_SM': 'dimensionless',
+                       'SXI_WTD': 'dimensionless',
+                       'SXI_VPD': 'dimensionless',
+                       'SXI_P': 'dimensionless'},
+    'mask_value': None,
+
+    'agg_period': '183D',
+    'grid_window': 3,
+    'frac_points': 0.1,
+    'weigh_mid': -1.4,
+    'weigh_steep': 6.0,
+    'filter_area': 30000.0,
+    'factor_time': 1.0,
+}
+
+cluster_92D_EU3_8daily = {
+    'name': 'HOLIDROUGHT_clusters_92D',
+    'version': (0, 1, 0),
+    'path': '/p/scratch/cjibg31/jibg3105/data/HOLIDROUGHT/cluster/',
+    'type_file': 'netcdf',
+    'year_start': 1995,
+    'month_start': 4,
+    'year_end': 2018,
+    'month_end': 12,
+    'resolution_time': '8D',
+    'grid': 'EU3',
+    'leapday': False,
+
+    'variables': ['SXI_GPP', 
+                  'SXI_ESOIL',
+                  'SXI_Tr',
+                  'SXI_BTRAN',
+                  'SXI_Gs',
+                  'SXI_Runoff',
+                  'SXI_SM',
+                  'SXI_WTD',
+                  'SXI_VPD',
+                  'SXI_P'],
+    'variable_names': {'SXI_GPP': 'SXI_GPP', 
+                       'SXI_ESOIL': 'SXI_ESOIL',
+                       'SXI_Tr': 'SXI_Tr',
+                       'SXI_BTRAN': 'SXI_BTRAN',
+                       'SXI_Gs': 'SXI_Gs',
+                       'SXI_Runoff': 'SXI_Runoff',
+                       'SXI_SM': 'SXI_SM',
+                       'SXI_WTD': 'SXI_WTD',
+                       'SXI_VPD': 'SXI_VPD',
+                       'SXI_P': 'SXI_P'},
+    'variable_dimensions': {'SXI_GPP': ['time', 'lat', 'lon'], 
+                            'SXI_ESOIL': ['time', 'lat', 'lon'],
+                            'SXI_Tr': ['time', 'lat', 'lon'],  
+                            'SXI_BTRAN': ['time', 'lat', 'lon'],
+                            'SXI_Gs': ['time', 'lat', 'lon'],
+                            'SXI_Runoff': ['time', 'lat', 'lon'],
+                            'SXI_SM': ['time', 'layer', 'lat', 'lon'],
+                            'SXI_WTD': ['time', 'lat', 'lon'],
+                            'SXI_VPD': ['time', 'lat', 'lon'],
+                            'SXI_P': ['time', 'lat', 'lon']}, 
+    'variable_units': {'SXI_GPP': 'dimensionless',
+                       'SXI_ESOIL': 'dimensionless',
+                       'SXI_Tr': 'dimensionless',
+                       'SXI_BTRAN': 'dimensionless',
+                       'SXI_Gs': 'dimensionless',
+                       'SXI_Runoff': 'dimensionless',
+                       'SXI_SM': 'dimensionless',
+                       'SXI_WTD': 'dimensionless',
+                       'SXI_VPD': 'dimensionless',
+                       'SXI_P': 'dimensionless'},
+    'mask_value': None,
+
+    'agg_period': '92D',
+    'grid_window': 3,
+    'frac_points': 0.1,
+    'weigh_mid': -1.4,
+    'weigh_steep': 6.0,
+    'filter_area': 30000.0,
+    'factor_time': 1.0,
+}
+
+cluster_31D_EU3_8daily = {
+    'name': 'HOLIDROUGHT_clusters_31D',
+    'version': (0, 1, 0),
+    'path': '/p/scratch/cjibg31/jibg3105/data/HOLIDROUGHT/cluster/',
+    'type_file': 'netcdf',
+    'year_start': 1995,
+    'month_start': 2,
+    'year_end': 2018,
+    'month_end': 12,
+    'resolution_time': '8D',
+    'grid': 'EU3',
+    'leapday': False,
+
+    'variables': ['SXI_GPP', 
+                  'SXI_ESOIL',
+                  'SXI_Tr',
+                  'SXI_BTRAN',
+                  'SXI_Gs',
+                  'SXI_Runoff',
+                  'SXI_SM',
+                  'SXI_WTD',
+                  'SXI_VPD',
+                  'SXI_P'],
+    'variable_names': {'SXI_GPP': 'SXI_GPP', 
+                       'SXI_ESOIL': 'SXI_ESOIL',
+                       'SXI_Tr': 'SXI_Tr',
+                       'SXI_BTRAN': 'SXI_BTRAN',
+                       'SXI_Gs': 'SXI_Gs',
+                       'SXI_Runoff': 'SXI_Runoff',
+                       'SXI_SM': 'SXI_SM',
+                       'SXI_WTD': 'SXI_WTD',
+                       'SXI_VPD': 'SXI_VPD',
+                       'SXI_P': 'SXI_P'},
+    'variable_dimensions': {'SXI_GPP': ['time', 'lat', 'lon'], 
+                            'SXI_ESOIL': ['time', 'lat', 'lon'],
+                            'SXI_Tr': ['time', 'lat', 'lon'],  
+                            'SXI_BTRAN': ['time', 'lat', 'lon'],
+                            'SXI_Gs': ['time', 'lat', 'lon'],
+                            'SXI_Runoff': ['time', 'lat', 'lon'],
+                            'SXI_SM': ['time', 'layer', 'lat', 'lon'],
+                            'SXI_WTD': ['time', 'lat', 'lon'],
+                            'SXI_VPD': ['time', 'lat', 'lon'],
+                            'SXI_P': ['time', 'lat', 'lon']}, 
+    'variable_units': {'SXI_GPP': 'dimensionless',
+                       'SXI_ESOIL': 'dimensionless',
+                       'SXI_Tr': 'dimensionless',
+                       'SXI_BTRAN': 'dimensionless',
+                       'SXI_Gs': 'dimensionless',
+                       'SXI_Runoff': 'dimensionless',
+                       'SXI_SM': 'dimensionless',
+                       'SXI_WTD': 'dimensionless',
+                       'SXI_VPD': 'dimensionless',
+                       'SXI_P': 'dimensionless'},
+    'mask_value': None,
+
+    'agg_period': '31D',
     'grid_window': 3,
     'frac_points': 0.1,
     'weigh_mid': -1.4,

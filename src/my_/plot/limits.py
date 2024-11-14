@@ -183,7 +183,7 @@ def numeric_ticks_2(ax, nticks_y = 5, nticks_x = 5, fs_ticks = 10, integerx = Fa
 
     if time_x:
         
-        xlocator            = mdates.AutoDateLocator(minticks = nticks_x)
+        xlocator = mdates.AutoDateLocator(minticks = nticks_x)
         ax.xaxis.set_major_formatter(mdates.AutoDateFormatter(xlocator)) 
 
 
