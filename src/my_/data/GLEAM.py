@@ -38,6 +38,8 @@ def create_yearly_files(path_rawdata: os.PathLike,
     """
     Input directory should only contain the GLEAM rawdata files...
     """
+
+    print('\nConvert GLEAM files to yearly...\n')
     
     create_dirs(path_out)
 

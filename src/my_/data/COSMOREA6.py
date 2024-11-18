@@ -1,3 +1,7 @@
+import os
+from my_.files.handy import create_dirs, check_file_exists
+from glob import glob
+import xarray as xr
 
 EUCORDEX_3km_8daily = {
     'name': 'COSMOREA5_EUCORDEX_3km_8daily',
@@ -152,3 +156,29 @@ EUCORDEX_3km_6hourly = {
                       },
     'mask_value': None
 }
+
+
+def create_yearly_files(path_rawdata: os.PathLike,
+                        path_out: os.PathLike):
+    
+    """
+    Input directory should only contain the ERA5L rawdata files...
+    """
+    
+    create_dirs(path_out)
+
+    files = sorted(glob(f'{path_rawdata}/*.nc'))
+
+    for f in files:
+
+        file_year = f.split('/')[-1]
+
+        if check_file_exists(f'{path_out}/{file_year}'): continue
+
+        data_raw = xr.open_dataset(f)
+
+        print(f'Create yearly file for file {f}...\n')
+
+        data_raw.to_netcdf(f'{path_out}/{file_year}',
+                         format = 'NETCDF4_CLASSIC', 
+                         unlimited_dims = ['time'])

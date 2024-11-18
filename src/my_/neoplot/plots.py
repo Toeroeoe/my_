@@ -162,6 +162,12 @@ class time_series(base_001):
         
         else:
 
+            for id, date in enumerate(self.date_limits):
+
+                if isinstance(date, str):
+
+                    self.date_limits[id] = pd.to_datetime(date)
+
             self.ax.set_xlim(self.date_limits[0], 
                              self.date_limits[1])
 
@@ -219,8 +225,8 @@ class time_series(base_001):
             style = [style]
         
         if isinstance(marker, str):
-            marker = [marker]
-
+            marker = [marker] 
+            
         if isinstance(lw, int) or isinstance(lw, float):
             lw = [lw]
 

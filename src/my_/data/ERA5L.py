@@ -46,6 +46,8 @@ def create_yearly_files(path_rawdata: os.PathLike,
     """
     Input directory should only contain the ERA5L rawdata files...
     """
+
+    print('\nConvert ERA5L files to yearly...\n')
     
     create_dirs(path_out)
 
@@ -75,6 +77,8 @@ def merge_files(paths_rawdata: os.PathLike,
     """
     Input directory should only contain the ERA5L rawdata files...
     """
+
+    print('\nMerge ERA5L files...\n')
     
     create_dirs(path_out)
     

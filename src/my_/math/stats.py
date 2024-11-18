@@ -2,6 +2,10 @@
 import pandas as pd
 import numpy as np
 import scipy.stats as stats
+import uncertainties.unumpy as unp
+import uncertainties as unc
+from scipy.optimize import curve_fit
+from typing import Callable
     
 def mean(array, axis: int | tuple | None = None, std_error = False):
 
@@ -85,10 +89,10 @@ def std_error_kurtosis(array, axis: int | tuple | None = None):
     return array_std_error_krt
 
 
-def confidence_bands(x: np.ndarray,
-                     y: np.ndarray,
-                     level: float = 0.95,
-                     n_pts: None | int = None):
+def prediction_band(x: np.ndarray,
+                    y: np.ndarray,
+                    level: float = 0.95,
+                    n_pts: None | int = None):
     
     if n_pts is None: n_pts = len(x)
 
@@ -103,8 +107,6 @@ def confidence_bands(x: np.ndarray,
     tinv = lambda q, nu: abs(stats.t.ppf(q/2, nu))
     
     ts = tinv(1 - level, len(x_clean) - 2)
-    
-    yerr = 
 
     slopes = np.linspace(lr.slope + ts * lr.stderr, 
                          lr.slope - ts * lr.stderr,
@@ -126,3 +128,34 @@ def confidence_bands(x: np.ndarray,
     upper = np.max(lines, axis = 0)
 
     return x_clean, trend, lower, upper
+
+def confidence_band(x: np.ndarray,
+                    y: np.ndarray,
+                    level: float = 0.95,
+                    n_pts: None | int = None,
+                    sides: int = 2,
+                    f: Callable = lambda a, x, b: a * x + b):
+
+    if n_pts is None: n_pts = len(x)
+
+    mask = ~np.isnan(x) & ~np.isnan(y)
+    x_clean, y_clean = x[mask], y[mask]
+
+    popt, pcov = curve_fit(f, x_clean, y_clean)
+    
+    a, b = unc.correlated_values(popt, pcov)
+    
+    N, n = x_clean.size, len(popt)
+
+    q = stats.t.ppf(1 - ((1 - level) / sides), N - n)
+    
+    py = a * x_clean + b
+
+    nom = unp.nominal_values(py)
+    std = unp.std_devs(py)
+
+    lower = nom - q * std 
+    upper = nom + q * std
+
+    return x_clean, nom, lower, upper
+
