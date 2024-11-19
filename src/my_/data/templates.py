@@ -8,6 +8,7 @@ import xarray as xr
 import pint_xarray
 from glob import glob
 from my_.files.netcdf import nc_open, variables_to_array
+from my_.files.handy import check_file_exists
 
 @dataclass
 class gridded_data:
@@ -117,7 +118,8 @@ class gridded_data:
     def get_variables(self, 
                       load_variables: list[str] | None = None,
                       y0: int | None = None,
-                      y1: int | None = None):
+                      y1: int | None = None,
+                      rename: bool = False):
         
         if y0 is None: y0 = self.year_start
         elif y0 < self.year_start: y0 = self.year_start
@@ -140,13 +142,12 @@ class gridded_data:
         
         data = xr.open_mfdataset(files) if len(files) > 1 else xr.open_dataset(files[0])
 
-        name_dict = {v: k for k, v in self.variable_names.items() if k in present_vars} 
-    
-        data_s = data.rename(name_dict)
-                      
-        data_v = data_s[present_vars]
-                        
-        return data_v
+        name_dict = {v: k for k, v in self.variable_names.items() if k in present_vars}
+
+        if rename: 
+            data = data.rename(name_dict)[present_vars]
+                           
+        return data
     
     def apply_landmask(self,
                        variables: dict,
@@ -238,6 +239,17 @@ class gridded_data:
             out_ds = resample(dataset, dst_time_res, method, **kwargs)
     
         return out_ds
+    
+    def save(self,
+             dataset: xr.Dataset | xr.DataArray,
+             out_file: os.PathLike):
+        
+        if check_file_exists(f'{out_file}'): return
+        
+        dataset.to_netcdf(f'{out_file}',
+                         format = 'NETCDF4_CLASSIC', 
+                         unlimited_dims = ['time'])
+
 
 
 @dataclass
@@ -353,6 +365,7 @@ class station_data:
     variable_dimensions: dict
     variable_units: dict
     mask_value: None | float | int
+    stations: list[str] | None = None
 
     def index_time(self,
                    y0: int | None = None,

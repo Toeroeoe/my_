@@ -37,7 +37,7 @@ NOAH025_all_EUROCORDEX_monthly = {
                        'Runoff': 'm/day',
                        'SM': 'm^3/m^3'},
     'mask_value': None,
-    'leapyear': True,}
+    'leapday': True,}
 
 
 def create_yearly_files(path_rawdata: os.PathLike,
@@ -53,7 +53,7 @@ def create_yearly_files(path_rawdata: os.PathLike,
 
     files = glob(f'{path_rawdata}/*')
 
-    data_raw = xr.open_mfdataset(files)
+    data_raw = xr.open_mfdataset(files).load()
     
     years = np.unique(data_raw.time.dt.year.values)
 

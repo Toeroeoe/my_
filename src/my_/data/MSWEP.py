@@ -51,9 +51,9 @@ def create_yearly_files(path_rawdata: os.PathLike,
 
     create_dirs(path_out)
 
-    files = glob(f'{path_rawdata}/*')
+    files = glob(f'{path_rawdata}/*.nc')
 
-    data_raw = xr.open_mfdataset(files)
+    data_raw = xr.open_mfdataset(files).load()
     
     years = np.unique(data_raw.time.dt.year.values)
 
