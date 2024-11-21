@@ -4,6 +4,7 @@ from glob import glob
 import xarray as xr
 import numpy as np
 import os 
+from typing import Any
 
 from my_.files.handy import create_dirs, check_file_exists
 from my_.data.templates import gridded_data
@@ -227,7 +228,7 @@ SXI_183D_EU3_8daily = {
     'mask_value': None
 }
 
-SXI_92D_EU3_8daily = {
+SXI_92D_EU3_8daily: dict[str, Any] = {
     'name': 'HOLIDROUGHT_SXI_92D',
     'version': (0, 1, 0),
     'path': '/p/scratch/cjibg31/jibg3105/data/HOLIDROUGHT/SXI/92D/',

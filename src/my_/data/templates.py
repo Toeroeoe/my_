@@ -2,6 +2,7 @@ from dataclasses import dataclass
 import importlib
 import os
 import numpy as np
+from typing import Any
 import pandas as pd
 import pint
 import xarray as xr
@@ -15,7 +16,7 @@ class gridded_data:
     
     name: str
     version: tuple[int]
-    path: os.PathLike
+    path: os.PathLike[str]
     type_file: str
     year_start: int
     month_start: int
@@ -25,15 +26,15 @@ class gridded_data:
     leapday: bool
     grid: str
     variables: list[str]
-    variable_names: dict
-    variable_dimensions: dict
-    variable_units: dict
+    variable_names: dict[str, Any]
+    variable_dimensions: dict[str, Any]
+    variable_units: dict[str, Any]
     mask_value: None | float | int
     
 
     def index_time(self,
                    y0: int | None = None,
-                   y1: int | None = None):
+                   y1: int | None = None) -> pd. Series:
         
         from my_.series.time import index
         
@@ -81,7 +82,7 @@ class gridded_data:
         
     
     def get_values(self,
-                   variables_: str | list[str],
+                   variables_: str | list[str] | None,
                    y0: int | None = None,
                    y1: int | None = None,
                    dtype: str = 'float32'):
@@ -94,6 +95,8 @@ class gridded_data:
         
         if y1 is None: y1 = self.year_end
         elif y1 > self.year_end: y1 = self.year_end
+
+        if variables_ is None: variables_ = self.variables
 
         print(f'\nLoading value data for:')
         print(f'{variables_} from year {y0} to year {y1}...\n')
@@ -343,242 +346,6 @@ class grid:
         dataset.to_netcdf(f'{out_file}',
                          format = 'NETCDF4_CLASSIC', 
                          unlimited_dims = ['time'])
-
-
-
-
-@dataclass
-class station_data:
-    
-    name: str
-    version: tuple[int]
-    path: os.PathLike
-    type_file: str
-    year_start: int
-    month_start: int
-    year_end: int
-    month_end: int
-    resolution_time: str
-    leapday: bool
-    variables: list[str]
-    variable_names: dict
-    variable_dimensions: dict
-    variable_units: dict
-    mask_value: None | float | int
-    stations: list[str] | None = None
-
-    def index_time(self,
-                   y0: int | None = None,
-                   y1: int | None = None):
-        
-        from my_.series.time import index
-        
-        if y0 is None: y0 = self.year_start
-        elif y0 < self.year_start: y0 = self.year_start
-        
-        if y1 is None: y1 = self.year_end
-        elif y1 > self.year_end: y1 = self.year_end
-    
-        return index(y0 = y0, 
-                     y1 = y1, 
-                     t_res = self.resolution_time,
-                     leapday = self.leapday)
-    
-
-    def present_files(self,
-                      y0: int | None,
-                      y1: int | None):
-        
-        if y0 is None: y0 = self.year_start
-        elif y0 < self.year_start: y0 = self.year_start
-        
-        if y1 is None: y1 = self.year_end
-        elif y1 > self.year_end: y1 = self.year_end
-    
-        files = [f'{self.path}/{y}.nc' for y in np.arange(y0, y1 +1)]
-
-        return files
-
-    def present_variables(self, 
-                          load_variables: list[str]):
-        
-        variables_present = [v for v in load_variables if v in self.variables]
-
-        return variables_present
-    
-
-    def present_source_variables(self,
-                                 load_variables: list[str]):
-    
-        variables_present = self.present_variables(load_variables)
-            
-        source_variables = [self.variable_names[v] for v in variables_present]
-        
-        return source_variables
-        
-    
-    def get_values(self,
-                   variables_: str | list[str],
-                   y0: int | None = None,
-                   y1: int | None = None,
-                   dtype: str = 'float32'):
-        
-        if isinstance(variables_, str): 
-            variables_ = [variables_]
-
-        if y0 is None: y0 = self.year_start
-        elif y0 < self.year_start: y0 = self.year_start
-        
-        if y1 is None: y1 = self.year_end
-        elif y1 > self.year_end: y1 = self.year_end
-
-        print(f'\nLoading value data for:')
-        print(f'{variables_} from year {y0} to year {y1}...\n')
-
-        files = [f'{self.path}/{y}.nc'
-                for y in range(y0, y1 + 1)]
-
-        data = pd.read_csv(files, 
-                           na_values = ['-9999'], 
-                           index_col = 0)
-
-        present_vars = self.present_variables(variables_)
-
-        present_src_vars = self.present_source_variables(variables_)
-        
-        values = variables_to_array(data, 
-                                    present_src_vars,
-                                    dtype = dtype,
-                                    mask_value = self.mask_value)
-
-        return {v: values[i] for i, v in enumerate(present_vars)}
-    
-
-    def get_variables(self, 
-                      load_variables: None | list[str] = None,
-                      y0: int | None = None,
-                      y1: int | None = None):
-        
-        if y0 is None: y0 = self.year_start
-        elif y0 < self.year_start: y0 = self.year_start
-        
-        if y1 is None: y1 = self.year_end
-        elif y1 > self.year_end: y1 = self.year_end
-
-        if load_variables is None:
-            load_variables = self.variables
-
-        print(f'\nLoading data for:')
-        print(f'{load_variables} from year {y0} to year {y1}...\n')
-        
-        present_vars = self.present_variables(load_variables)
-
-        type_module = check_module_var('my_.files',
-                                        self.type_file)
-
-        files = [f'{self.path}/{y}.{type_module.file_ending}'
-                for y in range(y0, y1 + 1)]
-        
-        data = xr.open_mfdataset(files) if len(files) > 1 else xr.open_dataset(files[0])
-
-        name_dict = {v: k for k, v in self.variable_names.items() if k in present_vars} 
-    
-        data_s = data.rename(name_dict)
-                      
-        data_v = data_s[present_vars]
-                        
-        return data_v
-    
-    def apply_landmask(self,
-                       variables: dict,
-                       landmask: np.ndarray):
-
-        if isinstance(variables, xr.Dataset):
-            return variables.where(landmask)
-        
-        masked_dict = {k: np.where(landmask, 
-                                   v, 
-                                   np.nan) 
-                       for k, v in variables.items()}
-        
-        return masked_dict
-
-
-    def convert_units(self,
-                      values: dict | xr.Dataset | xr.DataArray,
-                      dst_units: dict,
-                      variables: None | dict = None):
-        
-        ureg = pint.UnitRegistry()
-
-        values_out = {} if isinstance(values, dict) else values.copy()
-
-        for i, (v, array) in enumerate(values.items()):
-
-            vi = variables[v] if variables is not None else v
-
-            src_unit = self.variable_units[vi]
-            dst_unit = dst_units[vi]
-        
-            print(f'\nConverting {vi} units from {src_unit} to {dst_unit}...\n')
-
-            if isinstance(array, np.ndarray):
-                
-                Q_ = ureg.Quantity
-                
-                values = Q_(array, src_unit)
-                
-                values_dst = values.to(dst_unit)
-
-                values_out[v] = values_dst.magnitude
-
-            elif isinstance(array, xr.DataArray):
-
-                array.lat.attrs['units'] = 'degree'
-                array.lon.attrs['units'] = 'degree'
-    
-                values = array.pint.quantify({f'{v}': src_unit})
-
-                values_dst = values.pint.to(dst_unit)
-
-                values_out[v] = values_dst.pint.dequantify()
-
-        return values_out
-
-
-    def regrid():
-        ...
-
-    def resample(self,
-                 dataset: xr.DataArray | xr.Dataset,
-                 dst_time_res: str,
-                 method: str | list,
-                 var_subset: list | None = None,
-                 **kwargs) -> xr.Dataset | xr.DataArray:
-
-        from my_.series.interpolate import resample
-        
-        if var_subset is not None: dataset = dataset[var_subset]
-
-        if isinstance(method, list):
-
-            out_ds = xr.Dataset()
-            
-            for m in method:
-
-                ds = resample(dataset, dst_time_res, m, **kwargs)
-    
-                new_names = {n: f'{n}_{m}' for n in ds.keys()}
-    
-                ds_new = ds.rename(new_names)
-        
-                out_ds.update(ds_new)
-
-        elif isinstance(method, str):
-
-            out_ds = resample(dataset, dst_time_res, method, **kwargs)
-    
-        return out_ds
 
 
 def check_module_var(module: str, 

@@ -1,9 +1,15 @@
 
+import os
+import pandas as pd
+from dataclasses import dataclass
+from my_.data.sites import from_network, information
+
 WARMWINTER_2020_daily = {
     'name': 'WARMWINTER_2020_daily',
     'version': (1, 0, 6),
     'path': '/p/scratch/cjibg31/jibg3105/data/ICOS/WARMWINTER2020/',
     'type_file': 'csv',
+    'time_request': 'D',
     'year_start': 1996,
     'month_start': 1,
     'year_end': 2020,
@@ -129,3 +135,73 @@ WARMWINTER_2020_daily = {
                              'VPD': ['H', 'D', '7D', 'M', 'Y'],},
     'mask_value': -9999,
     'leapday': False,}
+
+@dataclass
+class ONEFLUX:
+    
+    name: str
+    version: tuple[int, int, int]
+    path: os.PathLike
+    type_file: str
+    year_start: int
+    time_request: str
+    month_start: int
+    year_end: int
+    month_end: int
+    date_formats: dict
+    variables: dict
+    variable_names: dict
+    variable_QC: dict
+    variable_dimensions: dict
+    variable_units: dict
+    variable_resolutions: dict
+    mask_value: list | int | float | str | None
+    leapday: bool
+
+    def sites_info(self):
+
+        sites = from_network(network = 'ICOS',
+                             verified = False)
+        
+        names_short = [information(s)['attributes']['general']['shortName']
+                      for s in sites]
+        
+        self.ids = sites
+        self.names_short = names_short
+
+
+    def open_data(self):
+
+        order = ['H', 'D', '7D', 'M', 'Y']
+
+        request_time_available = [k for k, v in self.variable_resolutions.items()
+                                  if self.time_request in v]
+        
+        request_time_missing = [k for k in self.variables
+                                if k not in request_time_available]
+
+        
+        
+
+
+        
+        #data_ = pd.read_csv()
+
+
+    def quality_filter(self):
+        
+        ...
+
+
+    def le_2_et(self):
+        ...
+
+    
+
+if __name__ == '__main__':
+
+    data_ = ONEFLUX(**WARMWINTER_2020_daily)
+
+    data_.open_data()
+    
+    #print(information(data_.sites[0])['attributes']['general']['shortName'])

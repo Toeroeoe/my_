@@ -46,6 +46,35 @@ class fig_001:
         self.fig = fig_
         
         return self
+    
+    
+    def annotation(self, 
+                   x : float = 0.05, 
+                   y : float = 1.05, 
+                   fs: float = 12.0):
+
+        abc = string.ascii_lowercase
+    
+        list_abc = list(abc)
+
+        for iax, ax in enumerate(self.axs):
+
+            ax.text(x, y, list_abc[iax] + ')', 
+                    fontsize = fs,
+                    transform = ax.transAxes, 
+                    va = 'bottom', 
+                    ha = 'center')
+
+    def save(self, 
+             path: os.PathLike,
+             fformat: str = 'png'):
+
+        self.fig.savefig(f'{path}.{fformat}',
+                         dpi = self.dpi,
+                         bbox_inches = 'tight')
+        
+        plt.close()
+
         
 
 @dataclass(kw_only = True)
@@ -116,29 +145,61 @@ class single_001(fig_001):
 
     
 
-    def annotation(self, 
-                   x : float = 0.05, 
-                   y : float = 1.05, 
-                   fs: float = 12.0):
 
-        abc = string.ascii_lowercase
+@dataclass(kw_only = True)
+class triple_001(fig_001):
     
-        list_abc = list(abc)
+    color_bar: None | list[str] = None
+    projection: mtr.Transform | ccrs.Projection | None = None
+    frame: bool = False
+    aspect_factor: float = 12.0
+    cax_pad: float = 0.8
+    cax_size: str = '8%'
 
-        for iax, ax in enumerate(self.axs):
 
-            ax.text(x, y, list_abc[iax] + ')', 
-                    fontsize = fs,
-                    transform = ax.transAxes, 
-                    va = 'bottom', 
-                    ha = 'center')
+    def create(self):
 
-    def save(self, 
-             path: os.PathLike,
-             fformat: str = 'png'):
+        super().create()
 
-        self.fig.savefig(f'{path}.{fformat}',
-                         dpi = self.dpi,
-                         bbox_inches = 'tight')
+        nrows = 1
+        ncols = 3
+        width_ratios = None
+        height_ratios = None
+
+        axs = []
+        caxs = []
+
+        gs = GridSpec(figure = self.fig, 
+                      ncols = ncols, 
+                      nrows = nrows, 
+                      height_ratios = height_ratios,
+                      width_ratios = width_ratios)
+
+
+        for iax in range(ncols):
+
+            axs.append(self.fig.add_subplot(gs[0, iax], 
+                                            projection = self.projection, 
+                                            frameon = self.frame))
         
-        plt.close()
+
+        if not self.color_bar: 
+
+            self.caxs = None
+        
+        else:
+
+            if 'right' in self.color_bar: 
+                
+                divider = make_axes_locatable(axs[-1])
+
+                caxs.append(divider.append_axes('right', 
+                                                size = self.cax_size, 
+                                                pad = self.cax_pad, 
+                                                frameon = self.frame, 
+                                                axes_class = maxes.Axes))
+
+        self.axs = axs
+        self.caxs = caxs
+
+        return self                

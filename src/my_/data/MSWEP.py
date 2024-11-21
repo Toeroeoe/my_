@@ -1,70 +1,69 @@
 import os
-from my_.files.handy import create_dirs, check_file_exists
+
 from glob import glob
 import xarray as xr
 import numpy as np
 import pandas as pd
+import netCDF4 as nc
+import timeit
 
-NOAH025_all_EUROCORDEX_monthly = {
-    'name': 'GLDAS_NOAH025_M',
+from my_.data.templates import gridded_data
+from my_.files.handy import create_dirs, check_file_exists
+
+past_global_daily = {
+    'name': 'MSWEP_past_global_daily',
     'version': (1, 0, 6),
-    'path': '/p/scratch/cjibg31/jibg3105/data/GLDAS/NOAH025_M/',
+    'path': '/p/scratch/cjibg31/jibg3105/data/GLEAM/MSWEP/yearly/',
     'type_file': 'netcdf',
-    'year_start': 1980,
+    'year_start': 1979,
     'month_start': 1,
-    'year_end': 2014,
+    'year_end': 2020,
     'month_end': 12,
-    'resolution_time': 'MS',
-    'grid': 'GLDAS',
-    'variables': ['P',
-                  'ET',
-                  'PET',
-                  'Runoff',
-                  'SM'],
-    'variable_names': {'P': 'Rainf_f_tavg',
-                       'ET': 'Evap_tavg',
-                       'PET': 'PotEvap_tavg',
-                       'Runoff': 'ro',
-                       'SM': 'RootMoist_inst'},
-    'variable_dimensions': {'P': ['time', 'lat', 'lon'], 
-                            'ET': ['time', 'lat', 'lon'],
-                            'PET': ['time', 'lat', 'lon'],
-                            'Runoff': ['time', 'lat', 'lon'],
-                            'SM': ['time', 'layer', 'lat', 'lon']}, 
-    'variable_units': {'P': 'm/day',
-                       'ET': 'm/day',
-                       'PET': 'm/day',
-                       'Runoff': 'm/day',
-                       'SM': 'm^3/m^3'},
+    'resolution_time': 'D',
+    'grid': 'MSWEP',
+    'variables': ['P'],
+    'variable_names': {'P': 'precipitation'},
+    'variable_dimensions': {'P': ['time', 'lat', 'lon']}, 
+    'variable_units': {'P': 'mm/day'},
     'mask_value': None,
-    'leapyear': True,}
+    'leapday': True,}
 
 
-def create_yearly_files(path_rawdata: os.PathLike,
-                        path_out: os.PathLike):
-    
-    """
-    Input directory should only contain the GLEAM rawdata files...
-    """
+def create_yearly_files(path_rawdata: os.PathLike[str]):
     
     print('\nConvert MSWEP files to yearly...\n')
 
-    create_dirs(path_out)
+    data_ = gridded_data(**past_global_daily)
 
-    files = glob(f'{path_rawdata}/*.nc')
+    create_dirs(data_.path)
 
-    data_raw = xr.open_mfdataset(files).load()
+    time = data_.index_time()
     
-    years = np.unique(data_raw.time.dt.year.values)
+    years = np.unique(time.dt.year.to_numpy())
 
     for y in years:
 
+        start_time = timeit.default_timer()
+
+        files = sorted(glob(f'{path_rawdata}/{y}*.nc'))
+
+        data_y = xr.open_mfdataset(files, 
+                                   combine = 'by_coords',
+                                   chunks = {'time': len(files), 
+                                             'lat': 32, 
+                                             'lon': 32},
+                                    engine = 'netcdf4').load()
+        
         print(f'Create yearly file for year {y}...\n')
 
-        if check_file_exists(f'{path_out}/{y}.nc'): continue
+        if check_file_exists(f'{data_.path}/{y}.nc'): continue
 
-        data_y = data_raw.sel(time = data_raw.time.dt.year.isin([y]))
-
-        data_y.to_netcdf(f'{path_out}/{y}.nc',
+        data_y.to_netcdf(f'{data_.path}/{y}.nc',
                          format = 'NETCDF4_CLASSIC', 
                          unlimited_dims = ['time'])
+        
+        data_y.close()
+
+        print('Time for processing:')
+        print(timeit.default_timer() - start_time)  
+        print('Continue...')

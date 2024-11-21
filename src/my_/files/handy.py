@@ -1,4 +1,5 @@
 import pandas as pd
+import os
 
 def check_file_exists(str_file):
 
@@ -159,7 +160,7 @@ def aggregate_layer(df):
     return df_agg
 
     
-def create_dirs(dirs):
+def create_dirs(dirs: str | os.PathLike):
 
     from pathlib import Path
 
