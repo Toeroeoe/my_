@@ -266,6 +266,8 @@ class grid:
     name_latitude: str
     name_longitude: str
     name_landmask: str
+    lon_extents: list[float]
+    lat_extents: list[float]
 
     def load_coordinates(self):
         
@@ -302,7 +304,7 @@ class grid:
         values = type_module.variables_to_array(data, 
                                                 [self.name_landmask])
 
-        return values
+        return values[0]
 
 
     def points(self):

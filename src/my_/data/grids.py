@@ -8,6 +8,8 @@ EU3 = {
     'name_latitude': 'XLAT_M',
     'name_longitude': 'XLONG_M',
     'name_landmask': 'LANDMASK',
+    'lon_extents': [351.1, 57],
+    'lat_extents': [27, 65.7],
 }
 
 
@@ -19,6 +21,8 @@ GLEAM = {
     'type_file': 'netcdf',
     'name_latitude': 'lat',
     'name_longitude': 'lon',
+    'lon_extents': [351.1, 57],
+    'lat_extents': [27, 65.7],
 }
 
 
@@ -30,6 +34,8 @@ ERA5L_EUCORDEX = {
     'type_file': 'netcdf',
     'name_latitude': 'latitude',
     'name_longitude': 'longitude',
+    'lon_extents': [351.1, 57],
+    'lat_extents': [27, 65.7],
 }
 
 GLDAS_EUROCORDEX = {
@@ -40,4 +46,6 @@ GLDAS_EUROCORDEX = {
     'type_file': 'netcdf',
     'name_latitude': 'lat',
     'name_longitude': 'lon',
+    'lon_extents': [351.1, 57],
+    'lat_extents': [27, 65.7],
 }

@@ -5,9 +5,14 @@ from dataclasses import dataclass, field
 from matplotlib.ticker import MaxNLocator
 import matplotlib.dates as mdates
 import matplotlib.transforms as mtr
+import matplotlib.artist as mpla
 from cartopy.mpl.geoaxes import GeoAxes
+from cartopy.mpl.ticker import LongitudeLocator, LatitudeLocator
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
+
+from typing import List, Iterable
+
 
 from typing import Literal
 
@@ -254,8 +259,6 @@ class time_series(base_001):
 class amap(base_001):
     
     ax: GeoAxes
-    lon: np.ndarray
-    lat: np.ndarray
 
     grid: bool = False
 
@@ -267,11 +270,11 @@ class amap(base_001):
     semmj_axis: None | int = 6370000
     semmn_axis: None | int = 6370000 
 
-    fs_ticks: float = 10.0
+    fs_ticks: float = 7.0
     ticks_y: bool = True
     ticks_x: bool = True
-    nticks_y: int = 4
-    nticks_x: int = 4
+    nticks_y: int = 2
+    nticks_x: int = 2
     integery: bool = True
     integerx: bool = True
     
@@ -289,8 +292,8 @@ class amap(base_001):
     label_lines: list[str] = field(default_factory = 
                                         lambda: ['right', 
                                                  'bottom'])
-
-    projection: ccrs.Projection = ccrs.PlateCarree()
+    
+    plot_projection: ccrs.Projection = ccrs.PlateCarree()
 
     def features(self):
 
@@ -310,13 +313,18 @@ class amap(base_001):
             
     def limits(self):
 
-            self.ax.set_extent([*self.lon_extents,
-                                *self.lat_extents])
+        self.lon_extents, self.lat_extents, _ = self.ax.projection.transform_points(
+                                                        self.plot_projection,
+                                                        np.array(self.lon_extents),
+                                                        np.array(self.lat_extents)).T
+
+        self.ax.set_extent([*self.lon_extents,
+                            *self.lat_extents])
             
     
     def lines(self):
         
-        gl = self.ax.gridlines(crs = self.projection, 
+        gl = self.ax.gridlines(crs = self.plot_projection, 
                                linewidth = self.lw_lines,
                                color = self.color_lines, 
                                linestyle = self.ls_lines, 
@@ -326,27 +334,30 @@ class amap(base_001):
                                zorder = 5)
 
 
-        for side in ['right', 'left', 'bottom', 'top']:
-
-            if side not in self.label_lines:
-                
-                sideattr = getattr(gl, f'{side}_labels')
-                sideattr = False
+        if 'right' not in self.label_lines: 
+            gl.right_labels = False
+        if 'bottom' not in self.label_lines:
+            gl.bottom_labels = False
+        if 'top' not in self.label_lines:
+            gl.top_labels = False
+        if 'left' not in self.label_lines:
+            gl.left_labels = False
 
         self.grid_lines = gl
 
+
     def ticks(self):
 
-        ylocator = MaxNLocator(prune = 'both', 
-                               nbins = self.nticks_y, 
-                               integer = self.integery)
+        ylocator = LatitudeLocator(prune = 'both', 
+                                   nbins = self.nticks_y, 
+                                   integer = self.integery)
         
-        xlocator = MaxNLocator(prune = 'both', 
-                               nbins = self.nticks_x, 
-                               integer = self.integerx)
+        xlocator = LongitudeLocator(prune = 'both', 
+                                    nbins = self.nticks_x, 
+                                    integer = self.integerx)
         
-        self.ax.yaxis.set_major_locator(ylocator)
-        self.ax.xaxis.set_major_locator(xlocator)
+        self.grid_lines.ylocator = ylocator
+        self.grid_lines.xlocator = xlocator
 
         self.grid_lines.xlabel_style = {'size': self.fs_ticks}
         self.grid_lines.ylabel_style = {'size': self.fs_ticks}
@@ -358,36 +369,88 @@ class amap(base_001):
         
         self.features()
         self.limits()
-        self.ticks()
         self.lines()
+        self.ticks()
 
         return self
-
     
 
-@dataclass(kw_only = True)
-class EU_CORDEX(amap):
-
-    lon_extents: list[float] = field(default_factory =
-                                    lambda: [351.1, 57])
-    lat_extents: list[float] = field(default_factory =
-                                     lambda: [27, 65.7])
-    
-    rotnpole_lat: float = 39.25 
-    rotnpole_lon: float = -162.0
-
-    def __post_init__(self):
-
-        globe = ccrs.Globe(semimajor_axis = self.semmj_axis,
-                           semiminor_axis = self.semmn_axis)
-
-        self.rp = ccrs.RotatedPole(pole_longitude = self.rotnpole_lon,
-                                   pole_latitude = self.rotnpole_lat,
-                                   globe = globe)
+    def colormesh(self,
+                  lon: np.ndarray,
+                  lat: np.ndarray,
+                  array: np.ndarray,
+                  cmap: str = 'viridis',
+                  vmin: float | None = None,
+                  vmax: float | None = None,
+                  alpha: float = 1.0):
         
-        self.lon_extents, self.lat_extents, _ = \
-                        self.rp.transform_points(self.projection, 
-                                                 np.array(self.lon_extents), 
-                                                 np.array(self.lat_extents)).T
+        artist = self.ax.pcolormesh(lon, 
+                                    lat, 
+                                    array, 
+                                    cmap = cmap, 
+                                    vmin = vmin, 
+                                    vmax = vmax, 
+                                    transform = self.plot_projection, 
+                                    zorder = 0,
+                                    alpha = alpha)
+    
+        return artist
 
+    def colorbar(self,
+                 artist: mpla.Artist,
+                 ax: plt.Axes | Iterable[plt.Axes],
+                 label: str = '',
+                 pad: float = 20.0,
+                 shrink: float = 0.5,
+                 fraction: float = 0.05,
+                 fs_label: float = 7.0,
+                 tick_labels: list | None = None,
+                 orientation: Literal['vertical', 'horizontal'] = 'vertical',
+                 extend: Literal['both', 'neither', 'min', 'max'] = 'neither',
+                 label_rotation: float = 270.0):
+        
+        cbar = plt.colorbar(artist, 
+                            ax = ax, 
+                            extend = extend, 
+                            shrink = shrink, 
+                            fraction = fraction,
+                            orientation = orientation)
+
+        cbar.outline.set_visible(False)
+
+        len_tick_labels = len(tick_labels) if tick_labels is not None else 0
+
+        if orientation == 'vertical':
+
+            cbar.ax.set_ylabel(label, 
+                               labelpad = pad, 
+                               rotation = label_rotation, 
+                               fontsize = fs_label)
+
+        elif orientation == 'horizontal': 
+
+            cbar.ax.set_xlabel(label, 
+                               labelpad = pad, 
+                               rotation = label_rotation, 
+                               fontsize = fs_label)
+        
+        if len_tick_labels > 0:
+
+            positions = np.linspace(0.5, 
+                                    (len_tick_labels - 1) - 0.5, 
+                                    len_tick_labels)
+
+            if orientation == 'vertical':
+            
+                cbar.ax.set_yticks(positions, 
+                                   tick_labels, 
+                                   fontsize = fs_label)
+
+            if orientation == 'horizontal':
+
+                cbar.ax.set_xticks(positions, 
+                                   tick_labels, 
+                                   fontsize = fs_label)
+            
+        return cbar
         
