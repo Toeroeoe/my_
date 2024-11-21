@@ -282,7 +282,7 @@ class grid:
 
         values = type_module.variables_to_array(data, 
                                                 [self.name_latitude, 
-                                                self.name_longitude])
+                                                 self.name_longitude])
 
         return values
 

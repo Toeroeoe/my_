@@ -286,7 +286,9 @@ class amap(base_001):
     lw_lines: float = 0.8
     color_lines: str = 'grey'
     ls_lines: str = '--'
-    label_lines: list[str] = ['right', 'bottom']
+    label_lines: list[str] = field(default_factory = 
+                                        lambda: ['right', 
+                                                 'bottom'])
 
     projection: ccrs.Projection = ccrs.PlateCarree()
 
@@ -349,5 +351,43 @@ class amap(base_001):
         self.grid_lines.xlabel_style = {'size': self.fs_ticks}
         self.grid_lines.ylabel_style = {'size': self.fs_ticks}
 
+    
+    def create(self):
 
-def 
+        super().decoration()
+        
+        self.features()
+        self.limits()
+        self.ticks()
+        self.lines()
+
+        return self
+
+    
+
+@dataclass(kw_only = True)
+class EU_CORDEX(amap):
+
+    lon_extents: list[float] = field(default_factory =
+                                    lambda: [351.1, 57])
+    lat_extents: list[float] = field(default_factory =
+                                     lambda: [27, 65.7])
+    
+    rotnpole_lat: float = 39.25 
+    rotnpole_lon: float = -162.0
+
+    def __post_init__(self):
+
+        globe = ccrs.Globe(semimajor_axis = self.semmj_axis,
+                           semiminor_axis = self.semmn_axis)
+
+        self.rp = ccrs.RotatedPole(pole_longitude = self.rotnpole_lon,
+                                   pole_latitude = self.rotnpole_lat,
+                                   globe = globe)
+        
+        self.lon_extents, self.lat_extents, _ = \
+                        self.rp.transform_points(self.projection, 
+                                                 np.array(self.lon_extents), 
+                                                 np.array(self.lat_extents)).T
+
+        

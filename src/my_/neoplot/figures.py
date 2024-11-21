@@ -10,6 +10,8 @@ import matplotlib.axes as maxes
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import string
 import os
+from pathlib import Path, PosixPath
+
 
 
 @dataclass(kw_only = True)
@@ -20,10 +22,9 @@ class fig_001:
 
     dpi: int = 300
     font_color: str = 'dimgray'
-    font_dir: str = '/p/scratch/cjibg31/jibg3105/projects/my_py/src/my_/plot/fonts'
+    font_dir: Path = Path('/p/scratch/cjibg31/jibg3105/projects/my_py/src/my_/plot/fonts/')
     font: str = 'Montserrat-Medium'
     constrained: bool = True
-
 
     def create(self):
         
@@ -32,8 +33,8 @@ class fig_001:
         for font_file in font_files:
             fm.fontManager.addfont(font_file)
     
-        prop = fm.FontProperties(fname = self.font_dir + 
-                                         '/Montserrat-Medium.otf')
+        prop = fm.FontProperties(fname = PosixPath(str(self.font_dir) + 
+                                         str(Path('/Montserrat-Medium.otf'))))
 
         mpl.rcParams['font.family'] = prop.get_name()
         mpl.rcParams['xtick.color'] = self.font_color
@@ -46,24 +47,6 @@ class fig_001:
         self.fig = fig_
         
         return self
-    
-    
-    def annotation(self, 
-                   x : float = 0.05, 
-                   y : float = 1.05, 
-                   fs: float = 12.0):
-
-        abc = string.ascii_lowercase
-    
-        list_abc = list(abc)
-
-        for iax, ax in enumerate(self.axs):
-
-            ax.text(x, y, list_abc[iax] + ')', 
-                    fontsize = fs,
-                    transform = ax.transAxes, 
-                    va = 'bottom', 
-                    ha = 'center')
 
     def save(self, 
              path: os.PathLike,
@@ -94,17 +77,16 @@ class single_001(fig_001):
 
         nrows = 1
         ncols = 1
-        width_ratios = None
-        height_ratios = None
-
+        args = {'width_ratios': None,
+                'height_ratios': None}
         axs = []
         caxs = []
 
         gs = GridSpec(figure = self.fig, 
                       ncols = ncols, 
                       nrows = nrows, 
-                      height_ratios = height_ratios,
-                      width_ratios = width_ratios)
+                      **{k: v for k, v in args.items()
+                         if v is not None})
 
         axs.append(self.fig.add_subplot(gs[0, 0], 
                                         projection = self.projection, 
@@ -161,19 +143,20 @@ class triple_001(fig_001):
 
         super().create()
 
-        nrows = 1
-        ncols = 3
-        width_ratios = None
-        height_ratios = None
-
         axs = []
         caxs = []
 
+        nrows = 1
+        ncols = 3
+
+        args = {'width_ratios': None,
+                'height_ratios': None}
+
         gs = GridSpec(figure = self.fig, 
-                      ncols = ncols, 
-                      nrows = nrows, 
-                      height_ratios = height_ratios,
-                      width_ratios = width_ratios)
+                      nrows = nrows,
+                      ncols = ncols,
+                      **{k: v for k, v in args.items()
+                         if v is not None})
 
 
         for iax in range(ncols):
@@ -202,4 +185,22 @@ class triple_001(fig_001):
         self.axs = axs
         self.caxs = caxs
 
-        return self                
+        return self
+
+        
+    def annotation(self, 
+                   x : float = 0.05, 
+                   y : float = 1.05, 
+                   fs: float = 12.0):
+
+        abc = string.ascii_lowercase
+    
+        list_abc = list(abc)
+
+        for iax, ax in enumerate(self.axs):
+
+            ax.text(x, y, list_abc[iax] + ')', 
+                    fontsize = fs,
+                    transform = ax.transAxes, 
+                    va = 'bottom', 
+                    ha = 'center')         
