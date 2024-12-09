@@ -7,8 +7,8 @@ import pandas as pd
 import netCDF4 as nc
 import timeit
 
-from my_.data.templates import gridded_data
-from my_.files.handy import create_dirs, check_file_exists
+from datarie.templates import gridded_data
+from datarie.handy import create_dirs, check_file_exists
 
 past_global_daily = {
     'name': 'MSWEP_past_global_daily',

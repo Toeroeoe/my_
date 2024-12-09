@@ -8,8 +8,8 @@ import pint
 import xarray as xr
 import pint_xarray
 from glob import glob
-from my_.files.netcdf import nc_open, variables_to_array
-from my_.files.handy import check_file_exists
+from datarie.netcdf import nc_open, variables_to_array
+from datarie.handy import check_file_exists
 
 @dataclass
 class gridded_data:
@@ -37,7 +37,7 @@ class gridded_data:
                    y1: int | None = None,
                    month_start: int | None = None) -> pd. Series:
         
-        from my_.series.time import index
+        from datarie.time import index
         
         if y0 is None: y0 = self.year_start
         elif y0 < self.year_start: y0 = self.year_start
@@ -146,7 +146,7 @@ class gridded_data:
         type_module = check_module_var('my_.files',
                                         self.type_file)
 
-        files = [f'{self.path}/{y}.{type_module.file_ending}'
+        files = [f'{self.path}/{y}.{type_module}.nc'
                 for y in range(y0, y1 + 1)]
         
         data = xr.open_mfdataset(files) if len(files) > 1 else xr.open_dataset(files[0])
@@ -176,13 +176,13 @@ class gridded_data:
     def convert_units(self,
                       values: dict | xr.Dataset | xr.DataArray,
                       dst_units: dict,
-                      variables: None | dict = None):
+                      variables: dict[str, Any]):
         
         ureg = pint.UnitRegistry()
 
         values_out = {} if isinstance(values, dict) else values.copy()
 
-        for i, (v, array) in enumerate(values.items()):
+        for v, array in values.items():
 
             vi = variables[v] if variables is not None else v
 
@@ -215,7 +215,7 @@ class gridded_data:
         return values_out
 
 
-    def regrid():
+    def regrid(self):
         ...
 
     def resample(self,
@@ -223,9 +223,9 @@ class gridded_data:
                  dst_time_res: str,
                  method: str | list,
                  var_subset: list | None = None,
-                 **kwargs) -> xr.Dataset | xr.DataArray:
+                 **kwargs):
 
-        from my_.series.interpolate import resample
+        from datarie.time import resample
         
         if var_subset is not None: dataset = dataset[var_subset]
 
@@ -276,39 +276,25 @@ class grid:
     lat_extents: list[float]
 
     def load_coordinates(self) -> list[np.ndarray]:
-        
-        type_module = check_module_var('my_.files',
-                                        self.type_file)
-        
-        print(f'\nLoad lat and lon variables from grid {self.name}...\n')
-
-        if not type_module: NotImplementedError(f'{self.type_file} file module not available.')
 
         file = f'{self.path_file}/{self.name_file}'
 
-        data = type_module.nc_open(file)
+        data = nc_open(file)
 
-        values = type_module.variables_to_array(data, 
-                                                [self.name_latitude, 
-                                                 self.name_longitude])
+        values = variables_to_array(data, 
+                                    [self.name_latitude, 
+                                     self.name_longitude])
 
         return values
 
     def load_landmask(self) -> np.ndarray:
 
-        type_module = check_module_var('my_.files',
-                                        self.type_file)
-        
-        print(f'\nLoad lat and lon variables from grid {self.name}...\n')
-
-        if not type_module: NotImplementedError(f'{self.type_file} file module not available.')
-
         file = f'{self.path_file}/{self.name_file}'
 
-        data = type_module.nc_open(file)
+        data = nc_open(file)
 
-        values = type_module.variables_to_array(data, 
-                                                [self.name_landmask])
+        values = variables_to_array(data, 
+                                    [self.name_landmask])
 
         return values[0]
 
@@ -348,7 +334,8 @@ class grid:
         return shape
     
     
-    def save(dataset: xr.Dataset | xr.DataArray,
+    def save(self,
+             dataset: xr.Dataset | xr.DataArray,
              out_file: os.PathLike):
         
         dataset.to_netcdf(f'{out_file}',

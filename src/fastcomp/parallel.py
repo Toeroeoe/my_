@@ -2,11 +2,10 @@
 from mpi4py import MPI
 from typing import Callable, Any
 import numpy as np
-import os
 
-from my_.data.templates import gridded_data
-from my_.files.netcdf import nc_open, variables_to_dict
-from my_.files.handy import check_file_exists
+from datarie.templates import gridded_data
+from datarie.netcdf import nc_open, variables_to_dict
+from datarie.handy import check_file_exists
 
 def pixel_wise(func: Callable,
                variables: list[str],
@@ -19,9 +18,9 @@ def pixel_wise(func: Callable,
                year_end: int | None = None,
                return_shape: int | list[int] = 1,
                return_dims: str | list[str] = 'time',
-               *args, **kwargs) -> Any:
+               *args, **kwargs) -> dict[str, np.ndarray] | None:
     
-    if check_file_exists(file_out): return
+    if check_file_exists(file_out): return None
 
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
@@ -357,7 +356,7 @@ def along_dim(func: Callable,
                 r_n = (size - 1) * idx + (r - 1)
                 
                 slx = [slice(0, None)] * ndims
-                slx[dim] = r_n
+                slx[dim] = slice(r_n, r_n+1)
                 slx = tuple(slx)
 
                 arrays_yx = {v: arrays[v][slx] for v in variables}
@@ -378,7 +377,7 @@ def along_dim(func: Callable,
                 r_n = (size - 1) * idx + (r - 1)
 
                 slx = [slice(0, None)] * ndims
-                slx[dim] = r_n
+                slx[dim] = slice(r_n, r_n+1)
                 slx = tuple(slx)
 
                 print(f'Rank {rank} receiving func {func.__name__} output')
@@ -428,7 +427,7 @@ def along_dim(func: Callable,
             for r in range(1, resid + 1):
                 
                 slx = [slice(0, None)] * ndims
-                slx[dim] = -r
+                slx[dim] = slice(-r, -r +1)
                 slx = tuple(slx)
 
                 arrays_yx = {v: arrays[v][slx] for v in variables}
@@ -447,7 +446,7 @@ def along_dim(func: Callable,
             for r in range(1, resid + 1):
 
                 slx = [slice(0, None)] * ndims
-                slx[dim] = -r
+                slx[dim] = slice(-r, -r +1)
                 slx = tuple(slx)
 
                 print(f'Rank {rank} receiving func {func.__name__} output')
@@ -511,20 +510,3 @@ def along_dim(func: Callable,
             print('Script was successful! Bye bye!')
     
             return arrays_out
-
-
-
-
-if __name__ == '__main__':
-
-    from my_.science.anomalies import standard_index
-
-    pixel_wise(func = standard_index,
-               variables = ['QFLX_EVAP_GRND'],
-               variables_out = ['SXI_ET_GRND'],
-               files =  '/p/scratch/cjibg31/jibg3105/data/CLM5EU3/006/join_8d/*.nc',
-               file_out = 'SXI_ET_GRND.nc',
-               return_shape = 46*24,
-               return_dims = 'time',
-               year_start = 1995,
-               year_end = 1997)

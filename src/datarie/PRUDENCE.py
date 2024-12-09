@@ -1,8 +1,5 @@
 import numpy as np
 import xarray as xr
-from cartopy.crs import Projection
-from my_.plot.basic import plot
-           
 
 regions = {'BI': [(50, -10), (50, 2), (59, 2), (59, -10)],
            'IP': [(36, -10), (36, 3), (44, 3), (44, -10)],
@@ -12,28 +9,6 @@ regions = {'BI': [(50, -10), (50, 2), (59, 2), (59, -10)],
            'AL': [(44, 5), (44, 15), (48, 15), (48, 5)],
            'MD': [(36, 3), (36, 25), (44, 25), (44, 3)],
            'EA': [(44, 16), (44, 30), (55, 30), (55, 16)],}
-
-
-def plot_regions(ax, 
-                    color: str = 'k',
-                    lw: float = 1.3,
-                    projection: None | Projection = None,
-                    alpha: float = 0.8):
-    
-    for reg, points in regions.items():
-        
-        for i, v in enumerate(points):
-
-            next = i + 1 if i < 3 else 0
-        
-            lats = np.linspace(points[i][0], points[next][0], 1000)
-            lons = np.linspace(points[i][1], points[next][1], 1000)
-
-            plot(ax, lons, lats,
-                    colors = color,
-                    lw = lw,
-                    projection = projection,
-                    alpha = alpha)
 
 
 def mask_prudence(array: np.ndarray | xr.DataArray,

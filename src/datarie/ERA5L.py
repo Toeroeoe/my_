@@ -1,5 +1,5 @@
 import os
-from my_.files.handy import create_dirs, check_file_exists
+from datarie.handy import create_dirs, check_file_exists
 from glob import glob
 import xarray as xr
 import numpy as np
@@ -40,8 +40,8 @@ all_EUCORDEX_daily = {
 }
 
 
-def create_yearly_files(path_rawdata: os.PathLike,
-                        path_out: os.PathLike):
+def create_yearly_files(path_rawdata: str,
+                        path_out: str):
     
     """
     Input directory should only contain the ERA5L rawdata files...
@@ -71,8 +71,8 @@ def create_yearly_files(path_rawdata: os.PathLike,
                          unlimited_dims = ['time'])
         
 
-def merge_files(paths_rawdata: os.PathLike,
-                path_out: os.PathLike):
+def merge_files(paths_rawdata: list[str],
+                path_out: str):
     
     """
     Input directory should only contain the ERA5L rawdata files...

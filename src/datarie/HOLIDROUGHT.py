@@ -6,8 +6,8 @@ import numpy as np
 import os 
 from typing import Any
 
-from my_.files.handy import create_dirs, check_file_exists
-from my_.data.templates import gridded_data
+from datarie.handy import create_dirs, check_file_exists
+from datarie.templates import gridded_data
 
 @dataclass
 class cluster_data(gridded_data):

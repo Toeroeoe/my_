@@ -1,4 +1,4 @@
-from my_.files.handy import create_dirs, check_file_exists
+from datarie.handy import create_dirs, check_file_exists
 import os
 from glob import glob
 import xarray as xr
@@ -32,8 +32,8 @@ v381_yearly = {
 }
 
 
-def create_yearly_files(path_rawdata: os.PathLike,
-                        path_out: os.PathLike):
+def create_yearly_files(path_rawdata: str,
+                        path_out: str):
     
     """
     Input directory should only contain the GLEAM rawdata files...

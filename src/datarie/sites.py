@@ -1,8 +1,8 @@
 
 import deims
 import pandas as pd
-from my_.files.handy import create_dirs, check_file_exists, save_df
-from my_.files.csv import open_csv
+from datarie.handy import create_dirs, check_file_exists, save_df
+from datarie.csv import open_csv
 
 
 def from_network(network: str = 'eLTER',

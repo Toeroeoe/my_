@@ -1,6 +1,5 @@
-import numpy as np
-import os
-from my_.files.handy import create_dirs, check_file_exists
+
+from datarie.handy import create_dirs, check_file_exists
 from glob import glob
 import xarray as xr
 

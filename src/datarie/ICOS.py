@@ -2,7 +2,7 @@
 import os
 import pandas as pd
 from dataclasses import dataclass
-from my_.data.sites import from_network, information
+from datarie.sites import from_network, information
 
 WARMWINTER_2020_daily = {
     'name': 'WARMWINTER_2020_daily',
