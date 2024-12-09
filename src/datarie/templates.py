@@ -225,7 +225,7 @@ class gridded_data:
                  var_subset: list | None = None,
                  **kwargs):
 
-        from datarie.time import resample
+        from datarie.time import xr_resample
         
         if var_subset is not None: dataset = dataset[var_subset]
 
@@ -235,17 +235,17 @@ class gridded_data:
             
             for m in method:
 
-                ds = resample(dataset, dst_time_res, m, **kwargs)
+                ds = xr_resample(dataset, dst_time_res, m, **kwargs)
     
                 new_names = {n: f'{n}_{m}' for n in ds.keys()}
     
                 ds_new = ds.rename(new_names)
         
-                out_ds.update(ds_new)
+                out_ds.merge(ds_new)
 
         elif isinstance(method, str):
 
-            out_ds = resample(dataset, dst_time_res, method, **kwargs)
+            out_ds = xr_resample(dataset, dst_time_res, method, **kwargs)
     
         return out_ds
     

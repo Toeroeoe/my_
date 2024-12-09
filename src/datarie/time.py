@@ -27,9 +27,6 @@ def index(y0: int,
 
     t_res_comp = re.split('(\d+)', t_res)
 
-    if t_res_comp[0].isdigit(): t_res_num = t_res_comp[0]
-    else: t_res_num = None
-
     t_res_str = t_res_comp[-1]
 
     time_raw = pd.date_range(y0_time, 
@@ -68,36 +65,34 @@ def drop_leapday(series):
 
     return series_out
 
-def resample(df: pd.DataFrame | pd.Series | xr.Dataset | xr.DataArray,
-            offset_str: str, 
-            method: str = 'mean',
-            yearly_agg: bool = True,
-            **kwargs) -> pd.DataFrame | pd.Series | xr.Dataset | xr.DataArray:
+
+def xr_resample(df: xr.Dataset | xr.DataArray,
+                offset_str: str, 
+                method: str = 'mean',
+                **kwargs) -> xr.Dataset | xr.DataArray:
+    
+    func_ = getattr(xr.DataArray, method)
+        
+    df_resampler = df.resample(time = offset_str)
+
+    df_resampled = func_(df_resampler, **kwargs)
+
+    return df_resampled
+
+
+def pd_resample(df: pd.DataFrame | pd.Series,
+                offset_str: str, 
+                method: str = 'mean',
+                yearly_agg: bool = True) -> pd.DataFrame | pd.Series:
     
     print(f'\nResampling dataframe by {method} to {offset_str} time frequency...\n')
-
-    if isinstance(df, xr.Dataset) | isinstance(df, xr.DataArray):
-
-        func_ = getattr(xr.DataArray, method)
     
-        index = 'time.year'
-        
-        offset_str_ = {'time': offset_str}
-        
-        df_resampler = df.resample(indexer = offset_str_)
+    index = pd.to_datetime(df.index).year
 
-        df_resampled = func_(df_resampler, **kwargs)
+    if yearly_agg: df_n = df.groupby(index, group_keys = False)
 
-    elif isinstance(df, pd.DataFrame) | isinstance(df, pd.Series):
-    
-        index = df.index.year
+    df_resampler = df_n.resample(offset_str)
 
-        if yearly_agg: df = df.groupby(index, group_keys = False)
-
-        df_resampler = df.resample(offset_str)
-
-        df_resampled = df_resampler.agg(method)
-
-    else: NotImplementedError('')
+    df_resampled = df_resampler.agg(method)
 
     return df_resampled
