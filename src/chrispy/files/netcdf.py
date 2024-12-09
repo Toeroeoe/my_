@@ -31,7 +31,7 @@ def nc_open(str_files: str | list,
 def variable_to_array(data: nc.Dataset, 
                       variable: str, 
                       stack_axis: int = 1,
-                      dtype: str = 'float64',
+                      dtype: str = 'float32',
                       mask_value: None | float | int = None):
 
     print(f'\nLoad netcdf variable {variable} to memory.')

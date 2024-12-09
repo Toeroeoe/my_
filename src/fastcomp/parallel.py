@@ -10,13 +10,14 @@ from my_.files.handy import check_file_exists
 
 def pixel_wise(func: Callable,
                variables: list[str],
-               data: gridded_data,
                variables_out: list[str],
+               data: dict | None = None,
+               files: None | str = None,
                file_out: None | str = None,
                dtype: str = 'float32',
                year_start: int | None = None,
                year_end: int | None = None,
-               return_shape: int | list[int] | None = None,
+               return_shape: int | list[int] = 1,
                return_dims: str | list[str] = 'time',
                *args, **kwargs) -> Any:
     
@@ -34,11 +35,25 @@ def pixel_wise(func: Callable,
 
         print(f'Rank {rank} is loading the data...')
         
-        data_ = gridded_data(**data)
+        if (data is None) and (files is None):
+            NotImplementedError('No dataset supplied...')
+        
+        if data is not None:
 
-        arrays = data_.get_values(variables_ = variables,
-                                  y0 = year_start,
-                                  y1 = year_end)
+            data_ = gridded_data(**data)
+
+            arrays = data_.get_values(variables_ = variables,
+                                      y0 = year_start,
+                                      y1 = year_end,
+                                      dtype = dtype)
+            
+        if files is not None:
+
+            data_ = nc_open(files)
+
+            arrays = variables_to_dict(data = data_,
+                                       variables = variables,
+                                       dtype = dtype)
 
         shapes = {v: arrays[v].shape for v in variables}
 
@@ -77,7 +92,7 @@ def pixel_wise(func: Callable,
     range_y = np.arange(shapes[variables[0]][-2])
     range_x = np.arange(shapes[variables[0]][-1])
     grid = np.array(np.meshgrid(range_y, range_x))
-    cells = grid.T.reshape(-1, 2)#[:5, :]
+    cells = grid.T.reshape(-1, 2)
     length = len(cells)
     perrank = length // (size - 1)
     resid = length - perrank * (size - 1)
@@ -251,8 +266,8 @@ def along_dim(func: Callable,
               dim: int,
               variables: list[str],
               variables_out: list[str],
-              data: gridded_data | None = None,
-              files: os.PathLike | None = None,
+              data: dict | None = None,
+              files: str | None = None,
               file_out: None | str = None,
               dtype: str = 'float32',
               year_start: int | None = None,
@@ -275,8 +290,7 @@ def along_dim(func: Callable,
         print(f'Rank {rank} is loading the data...')
         
         if (data is None) and (files is None):
-            print('No dataset supplied...')
-            NotImplementedError
+            NotImplementedError('No dataset supplied...')
         
         if data is not None:
 
@@ -505,12 +519,12 @@ if __name__ == '__main__':
 
     from my_.science.anomalies import standard_index
 
-    pixel_wise(func = standard_index, 
-                    variables = ['QFLX_EVAP_GRND'],
-                    variables_out = ['SXI_ET_GRND'],
-                    files =  '/p/scratch/cjibg31/jibg3105/data/CLM5EU3/006/join_8d/*.nc',
-                    file_out = 'SXI_ET_GRND.nc',
-                    return_shape = 46*24,
-                    return_dims = 'time',
-                    year_start = 1995,
-                    year_end = 1997)
+    pixel_wise(func = standard_index,
+               variables = ['QFLX_EVAP_GRND'],
+               variables_out = ['SXI_ET_GRND'],
+               files =  '/p/scratch/cjibg31/jibg3105/data/CLM5EU3/006/join_8d/*.nc',
+               file_out = 'SXI_ET_GRND.nc',
+               return_shape = 46*24,
+               return_dims = 'time',
+               year_start = 1995,
+               year_end = 1997)

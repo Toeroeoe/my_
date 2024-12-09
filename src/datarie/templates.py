@@ -16,7 +16,7 @@ class gridded_data:
     
     name: str
     version: tuple[int]
-    path: os.PathLike[str]
+    path: str
     type_file: str
     year_start: int
     month_start: int
@@ -34,7 +34,8 @@ class gridded_data:
 
     def index_time(self,
                    y0: int | None = None,
-                   y1: int | None = None) -> pd. Series:
+                   y1: int | None = None,
+                   month_start: int | None = None) -> pd. Series:
         
         from my_.series.time import index
         
@@ -43,12 +44,17 @@ class gridded_data:
         
         if y1 is None: y1 = self.year_end
         elif y1 > self.year_end: y1 = self.year_end
+
+        if month_start is None: month_start = self.month_start
+
+        time_index = index(y0 = y0, 
+                           y1 = y1, 
+                           t_res = self.resolution_time,
+                           leapday = self.leapday)
     
-        return index(y0 = y0, 
-                     y1 = y1, 
-                     t_res = self.resolution_time,
-                     leapday = self.leapday)
+        return time_index.loc[f'{y0}-{month_start}-01':]
     
+
     def present_files(self,
                       y0: int | None,
                       y1: int | None):
@@ -153,7 +159,7 @@ class gridded_data:
         return data
     
     def apply_landmask(self,
-                       variables: dict,
+                       variables: dict | xr.Dataset,
                        landmask: np.ndarray):
 
         if isinstance(variables, xr.Dataset):
@@ -269,14 +275,14 @@ class grid:
     lon_extents: list[float]
     lat_extents: list[float]
 
-    def load_coordinates(self):
+    def load_coordinates(self) -> list[np.ndarray]:
         
         type_module = check_module_var('my_.files',
                                         self.type_file)
         
         print(f'\nLoad lat and lon variables from grid {self.name}...\n')
 
-        if not type_module: return
+        if not type_module: NotImplementedError(f'{self.type_file} file module not available.')
 
         file = f'{self.path_file}/{self.name_file}'
 
@@ -288,14 +294,14 @@ class grid:
 
         return values
 
-    def load_landmask(self):
+    def load_landmask(self) -> np.ndarray:
 
         type_module = check_module_var('my_.files',
                                         self.type_file)
         
         print(f'\nLoad lat and lon variables from grid {self.name}...\n')
 
-        if not type_module: return
+        if not type_module: NotImplementedError(f'{self.type_file} file module not available.')
 
         file = f'{self.path_file}/{self.name_file}'
 
@@ -351,7 +357,7 @@ class grid:
 
 
 def check_module_var(module: str, 
-                     var: str):
+                     var: str) -> dict:
 
     try:
     
@@ -364,5 +370,5 @@ def check_module_var(module: str,
     except ModuleNotFoundError: 
         
         print(f'\nModule {module} is not yet supported. Continue...\n')
-        
-        return False
+
+        return dict()

@@ -160,14 +160,20 @@ def aggregate_layer(df):
     return df_agg
 
     
-def create_dirs(dirs: str | os.PathLike):
+def create_dirs(dirs: str):
 
     from pathlib import Path
 
-    if isinstance(dirs, str): dirs = [dirs]
+    if isinstance(dirs, str): 
         
-    for dir in dirs:
-            
-            Path(dir).mkdir(parents = True, exist_ok = True)
+        dirs_= [dirs]
+
+    else: 
+
+        dirs_ = dirs
+        
+    for dir in dirs_:
+
+        Path(dir).mkdir(parents = True, exist_ok = True)
 
 

@@ -16,9 +16,9 @@ def resample(df: pd.DataFrame | pd.Series | xr.Dataset | xr.DataArray,
     
         index = 'time.year'
         
-        offset_str = {'time': offset_str}
+        offset_str_ = {'time': offset_str}
         
-        df_resampler = df.resample(offset_str)
+        df_resampler = df.resample(indexer = offset_str_)
 
         df_resampled = func_(df_resampler, **kwargs)
 
@@ -32,14 +32,14 @@ def resample(df: pd.DataFrame | pd.Series | xr.Dataset | xr.DataArray,
 
         df_resampled = df_resampler.agg(method)
 
-    else: NotImplementedError
+    else: NotImplementedError('')
 
     return df_resampled
 
 
 def reindex(df, timeseries, method =  None):
 
-    df_new_time                 = df.reindex(timeseries, method = method)
+    df_new_time = df.reindex(timeseries, method = method)
 
     return df_new_time
 

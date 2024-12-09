@@ -4,14 +4,14 @@ from my_.files.handy import create_dirs, check_file_exists
 from glob import glob
 import xarray as xr
 
-spinup_forcing_EU3_3h = {
+forcing_EU3_3h = {
     'name': 'ERA5_forcing_EU3_3h',
     'version': (1, 0, 6),
     'path': '/p/data1/jibg31/FORCINGS/ERA5/',
     'type_file': 'netcdf',
     'year_start': 1950,
     'month_start': 1,
-    'year_end': 1959,
+    'year_end': 2022,
     'month_end': 12,
     'resolution_time': '3H',
     'grid': 'EU3',
@@ -49,25 +49,18 @@ spinup_forcing_EU3_3h = {
 
 
 
-def create_yearly_files(path_rawdata: os.PathLike,
-                        path_out: os.PathLike):
+def create_yearly_files(path_rawdata: str,
+                        path_out: str,
+                        year: int):
     
     create_dirs(path_out)
 
-    files = sorted(glob(f'{path_rawdata}/*.nc'))
+    files = sorted(glob(f'{path_rawdata}*.nc'))
+
+    if check_file_exists(f'{path_out}/{year}.nc'): print('File is there. Continue...'); return
     
     data_raw = xr.open_mfdataset(files)
 
-    years = np.unique(data_raw.time.dt.year.values)
-
-    for y in years:
-
-        print(f'Create yearly file for year {y}...\n')
-
-        if check_file_exists(f'{path_out}/{y}.nc'): continue
-
-        data_y = data_raw.sel(time = data_raw.time.dt.year.isin([y]))
-
-        data_y.to_netcdf(f'{path_out}/{y}.nc',
-                         format = 'NETCDF4_CLASSIC', 
-                         unlimited_dims = ['time'])
+    data_raw.to_netcdf(f'{path_out}/{year}.nc',
+                       format = 'NETCDF4_CLASSIC', 
+                       unlimited_dims = ['time'])
