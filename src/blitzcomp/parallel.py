@@ -1,6 +1,6 @@
 
 from mpi4py import MPI
-from typing import Callable, Any
+from typing import Callable
 import numpy as np
 
 from datarie.templates import gridded_data
@@ -237,7 +237,6 @@ def pixel_wise(func: Callable,
 
     if rank == 0:
 
-
         if file_out is not None:
 
             import xarray as xr
@@ -272,7 +271,7 @@ def along_dim(func: Callable,
               year_start: int | None = None,
               year_end: int | None = None,
               return_dims: str | list[str] = 'time',
-              *args, **kwargs) -> Any:
+              *args, **kwargs) -> dict[str, np.ndarray] | None:
 
     if check_file_exists(file_out): return
 

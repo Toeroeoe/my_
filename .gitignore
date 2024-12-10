@@ -5,3 +5,4 @@
 *.parquet
 *.pyc
 *egg-info/
+dist/
