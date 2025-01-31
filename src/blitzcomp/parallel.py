@@ -10,6 +10,7 @@ from datarie.handy import check_file_exists
 def pixel_wise(func: Callable,
                variables: list[str],
                variables_out: list[str],
+               units: dict[str, str],
                data: dict | None = None,
                files: None | str = None,
                file_out: None | str = None,
@@ -58,7 +59,9 @@ def pixel_wise(func: Callable,
 
         if isinstance(return_shape, int): return_shape = [return_shape]
 
-        arrays_out = {v: np.empty([*return_shape, *shapes[variables[0]][-2:]],
+        shape_out = [*return_shape, *shapes[variables[0]][-2:]]
+
+        arrays_out = {v: np.empty([s for s in shape_out if s > 0],
                                    dtype = dtype) 
                                    for v in variables_out}
         
@@ -243,7 +246,10 @@ def pixel_wise(func: Callable,
 
             if isinstance(return_dims, str): return_dims = [return_dims]
 
-            out_vars = {v: ([*return_dims, 'lat', 'lon'], arrays_out[v]) for v in variables_out}
+            out_vars = {v: ([*return_dims, 'lat', 'lon'], 
+                            arrays_out[v],
+                            {'units': units[v]}) 
+                        for v in variables_out}
 
             DS_out = xr.Dataset(data_vars = out_vars)
 

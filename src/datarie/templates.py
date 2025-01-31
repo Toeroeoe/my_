@@ -174,7 +174,7 @@ class gridded_data:
 
 
     def convert_units(self,
-                      values: dict | xr.Dataset | xr.DataArray,
+                      values: dict[str, np.ndarray] | xr.Dataset | xr.DataArray,
                       dst_units: dict,
                       variables: dict[str, Any]):
         

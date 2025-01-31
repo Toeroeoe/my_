@@ -26,7 +26,7 @@ class fig_001:
 
     dpi: int = 300
     font_color: str = 'dimgray'
-    font_dir: Path = Path('/p/scratch/cjibg31/jibg3105/projects/my_py/src/my_/plot/fonts/')
+    font_dir: Path = Path('/p/scratch/cjibg31/jibg3105/projects/crusty/src/neoplot/fonts/')
     font: str = 'Montserrat-Medium'
     constrained: bool = True
 

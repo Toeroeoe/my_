@@ -13,7 +13,7 @@ from cartopy.mpl.geoaxes import GeoAxes
 from cartopy.mpl.ticker import LongitudeLocator, LatitudeLocator
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
-from matplotlib.colors import LogNorm, PowerNorm
+from matplotlib.colors import LogNorm, PowerNorm, Colormap, ListedColormap
 from typing import List, Iterable, Sequence
 
 from typing import Literal
@@ -404,7 +404,8 @@ class amap(base_001):
                   lon: np.ndarray,
                   lat: np.ndarray,
                   array: np.ndarray,
-                  cmap: str = 'viridis',
+                  cmap: str | Colormap | ListedColormap = 'viridis',
+                  cmap_n: int = 1000,
                   vmin: float | None = None,
                   vmax: float | None = None,
                   norm: Literal['log'] | None = None,
@@ -431,11 +432,19 @@ class amap(base_001):
             norm_a = norm
             vmin_a = vmin
             vmax_a = vmax
+
+        if isinstance(cmap, str):
+            
+            cmapn = plt.get_cmap(cmap, cmap_n)
+
+        elif isinstance(cmap, ListedColormap):
+
+            cmapn = cmap
         
         artist = self.ax.pcolormesh(lon, 
                                     lat, 
                                     array, 
-                                    cmap = cmap, 
+                                    cmap = cmapn, 
                                     vmin = vmin_a, 
                                     vmax = vmax_a, 
                                     transform = self.plot_projection, 
@@ -475,14 +484,15 @@ class amap(base_001):
                  artist: mpla.Artist,
                  ax: mplax.Axes | Iterable[mplax.Axes],
                  label: str = '',
-                 pad: float = 0.01,
+                 pad: float = 0.05,
                  label_pad: float = 10.0,
                  shrink: float = 1.0,
                  fraction: float = 0.5,
-                 fs_label: float = 7.0,
+                 fs_label: float = 9.0,
                  aspect: float = 10.0,
                  tick_labels: list | None = None,
                  orientation: Literal['vertical', 'horizontal'] = 'vertical',
+                 location: Literal['left', 'right', 'top', 'bottom'] = 'right',
                  extend: Literal['both', 'neither', 'min', 'max'] = 'both',
                  label_rotation: float = 270.0):
         
@@ -493,6 +503,7 @@ class amap(base_001):
                             fraction = fraction,
                             aspect = aspect,
                             orientation = orientation,
+                            location = location,
                             pad = pad)
         
         cbar.ax.tick_params(labelsize = fs_label)
@@ -507,6 +518,8 @@ class amap(base_001):
                                labelpad = label_pad, 
                                rotation = label_rotation, 
                                fontsize = fs_label)
+            
+            cbar.ax.yaxis.set_ticks_position('right')
 
         elif orientation == 'horizontal': 
 
@@ -514,6 +527,8 @@ class amap(base_001):
                                labelpad = label_pad, 
                                rotation = label_rotation, 
                                fontsize = fs_label)
+            
+            cbar.ax.xaxis.set_ticks_position('bottom')
         
         if len_tick_labels > 0:
 

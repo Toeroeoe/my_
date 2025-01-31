@@ -35,7 +35,7 @@ def index(y0: int,
                              **range_kwargs).to_series()
 
     # Make yearly groups for resample
-    time_groups = time_raw.groupby(time_raw.year, 
+    time_groups = time_raw.groupby(time_raw.dt.year, 
                                    group_keys=False)
 
     # Resample. Not always needed (but e.g. for multiples 
