@@ -129,6 +129,7 @@ def prediction_band(x: np.ndarray,
 
     return x_clean, trend, lower, upper
 
+
 def confidence_band(x: np.ndarray,
                     y: np.ndarray,
                     level: float = 0.95,
@@ -143,13 +144,13 @@ def confidence_band(x: np.ndarray,
 
     popt, pcov = curve_fit(f, x_clean, y_clean)
     
-    a, b = unc.correlated_values(popt, pcov)
+    parameter = unc.correlated_values(popt, pcov)
     
     N, n = x_clean.size, len(popt)
 
     q = stats.t.ppf(1 - ((1 - level) / sides), N - n)
     
-    py = a * x_clean + b
+    py = f(x_clean, *parameter)
 
     nom = unp.nominal_values(py)
     std = unp.std_devs(py)
@@ -157,5 +158,5 @@ def confidence_band(x: np.ndarray,
     lower = nom - q * std 
     upper = nom + q * std
 
-    return x_clean, nom, lower, upper
+    return x_clean, nom, lower, upper, parameter
 

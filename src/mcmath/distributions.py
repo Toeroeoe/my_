@@ -56,7 +56,9 @@ def gauss_kde_cdf(data: np.ndarray | pd.Series | pd.DataFrame,
     return xs, ys
 
 
-def distribution_pdf(distribution: str = 'norm', parameter: int | list = [0, 1], n = 100000):
+def distribution_pdf(distribution: str = 'norm', 
+                     parameter: int | list | np.ndarray = [0, 1], 
+                     n = 100000):
 
     import scipy.stats as stats
     import numpy as np
@@ -75,7 +77,7 @@ def distribution_pdf(distribution: str = 'norm', parameter: int | list = [0, 1],
 
 
 def distribution_cdf(distribution: str = 'norm', 
-                     parameter: int | list = [0, 1], 
+                     parameter: int | list | np.ndarray = [0, 1], 
                      n = 100000):
 
     import scipy.stats as stats
@@ -94,15 +96,17 @@ def distribution_cdf(distribution: str = 'norm',
 
     return xs, ys
 
-def distribution_fit(array, distribution: str = 'gamma'):
+
+def distribution_fit(array: np.ndarray, 
+                     distribution: str = 'gamma'):
 
     import scipy.stats as stats
 
     if distribution == 'gaussian_kde': return array
 
-    func_dist                       = getattr(stats, distribution)
+    func_dist = getattr(stats, distribution)
 
-    parameters                      = func_dist.fit(array)
+    parameters = func_dist.fit(array)
 
     return parameters
 

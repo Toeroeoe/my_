@@ -9,7 +9,7 @@ from typing import Any
 from datarie.handy import create_dirs, check_file_exists
 from datarie.templates import gridded_data
 
-@dataclass
+@dataclass(kw_only = True)
 class cluster_data(gridded_data):
     
     agg_period: str
@@ -49,7 +49,8 @@ class cluster_data(gridded_data):
         
         return str_f
     
-    def get_properties(self, variable):
+    def get_properties(self, 
+                       variable: str):
 
         dir_file = '/p/scratch/cjibg31/jibg3105/projects/papers/CLM5EU3_Droughts/out/cluster_properties'
 
@@ -64,7 +65,7 @@ class cluster_data(gridded_data):
 variables_EU3_8daily = {
     'name': 'HOLIDROUGHT_BGC_EU3_variables',
     'version': (0, 1, 0),
-    'path': '/p/data1/jibg31/DROUGHT_INDICES/variables/',
+    'path': '/p/data1/jibg31/poppe1/HOLIDROUGHT/variables/',
     'type_file': 'netcdf',
     'year_start': 1995,
     'month_start': 1,
@@ -120,7 +121,7 @@ variables_EU3_8daily = {
 SXI_365D_EU3_8daily = {
     'name': 'HOLIDROUGHT_SXI_365D',
     'version': (0, 1, 0),
-    'path': '/p/scratch/cjibg31/jibg3105/data/HOLIDROUGHT/SXI/365D/',
+    'path': '/p/data1/jibg31/poppe1/HOLIDROUGHT/SXI/365D/',
     'type_file': 'netcdf',
     'year_start': 1996,
     'month_start': 1,
@@ -256,7 +257,7 @@ SXI_365D_EU3_8daily = {
 SXI_183D_EU3_8daily = {
     'name': 'HOLIDROUGHT_SXI_183D',
     'version': (0, 1, 0),
-    'path': '/p/scratch/cjibg31/jibg3105/data/HOLIDROUGHT/SXI/183D/',
+    'path': '/p/data1/jibg31/poppe1/HOLIDROUGHT/SXI/183D/',
     'type_file': 'netcdf',
     'year_start': 1995,
     'month_start': 7,
@@ -391,7 +392,7 @@ SXI_183D_EU3_8daily = {
 SXI_92D_EU3_8daily: dict[str, Any] = {
     'name': 'HOLIDROUGHT_SXI_92D',
     'version': (0, 1, 0),
-    'path': '/p/scratch/cjibg31/jibg3105/data/HOLIDROUGHT/SXI/92D/',
+    'path': '/p/data1/jibg31/poppe1/HOLIDROUGHT/SXI/92D/',
     'type_file': 'netcdf',
     'year_start': 1995,
     'month_start': 4,
@@ -527,7 +528,7 @@ SXI_92D_EU3_8daily: dict[str, Any] = {
 SXI_31D_EU3_8daily = {
     'name': 'HOLIDROUGHT_SXI_31D',
     'version': (0, 1, 0),
-    'path': '/p/scratch/cjibg31/jibg3105/data/HOLIDROUGHT/SXI/31D/',
+    'path': '/p/data1/jibg31/poppe1/HOLIDROUGHT/SXI/31D/',
     'type_file': 'netcdf',
     'year_start': 1995,
     'month_start': 2,
@@ -663,7 +664,7 @@ SXI_31D_EU3_8daily = {
 cluster_365D_EU3_8daily = {
     'name': 'HOLIDROUGHT_clusters_365D',
     'version': (0, 1, 0),
-    'path': '/p/scratch/cjibg31/jibg3105/data/HOLIDROUGHT/cluster/',
+    'path': '/p/data1/jibg31/poppe1/HOLIDROUGHT/cluster/',
     'type_file': 'netcdf',
     'year_start': 1996,
     'month_start': 1,
@@ -730,7 +731,7 @@ cluster_365D_EU3_8daily = {
 cluster_183D_EU3_8daily = {
     'name': 'HOLIDROUGHT_clusters_183D',
     'version': (0, 1, 0),
-    'path': '/p/scratch/cjibg31/jibg3105/data/HOLIDROUGHT/cluster/',
+    'path': '/p/data1/jibg31/poppe1/HOLIDROUGHT/cluster/',
     'type_file': 'netcdf',
     'year_start': 1995,
     'month_start': 7,
@@ -796,7 +797,7 @@ cluster_183D_EU3_8daily = {
 cluster_92D_EU3_8daily = {
     'name': 'HOLIDROUGHT_clusters_92D',
     'version': (0, 1, 0),
-    'path': '/p/scratch/cjibg31/jibg3105/data/HOLIDROUGHT/cluster/',
+    'path': '/p/data1/jibg31/poppe1/HOLIDROUGHT/cluster/',
     'type_file': 'netcdf',
     'year_start': 1995,
     'month_start': 4,
@@ -862,7 +863,7 @@ cluster_92D_EU3_8daily = {
 cluster_31D_EU3_8daily = {
     'name': 'HOLIDROUGHT_clusters_31D',
     'version': (0, 1, 0),
-    'path': '/p/scratch/cjibg31/jibg3105/data/HOLIDROUGHT/cluster/',
+    'path': '/p/data1/jibg31/poppe1/HOLIDROUGHT/cluster/',
     'type_file': 'netcdf',
     'year_start': 1995,
     'month_start': 2,

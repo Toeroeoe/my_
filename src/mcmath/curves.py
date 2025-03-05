@@ -16,7 +16,7 @@ def peaks(data: pd.Series | np.ndarray,
     if isinstance(peaks_[0], np.ndarray):
         return peaks_[0]
     elif not peaks_[0]: 
-        return np.nan
+        return [np.nan]
     elif isinstance(data, pd.Series):
         return peaks_[0][0]
     elif isinstance(data, np.ndarray):

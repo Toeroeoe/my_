@@ -29,7 +29,7 @@ class gridded_data:
     variable_names: dict[str, Any]
     variable_dimensions: dict[str, Any]
     variable_units: dict[str, Any]
-    mask_value: None | float | int
+    mask_value: None | float | int = None
     
 
     def index_time(self,
@@ -174,9 +174,8 @@ class gridded_data:
 
 
     def convert_units(self,
-                      values: dict[str, np.ndarray] | xr.Dataset | xr.DataArray,
-                      dst_units: dict,
-                      variables: dict[str, Any]):
+                      values: dict[str, np.ndarray],
+                      dst_units: dict):
         
         ureg = pint.UnitRegistry()
 
@@ -184,33 +183,31 @@ class gridded_data:
 
         for v, array in values.items():
 
-            vi = variables[v] if variables is not None else v
-
-            src_unit = self.variable_units[vi]
-            dst_unit = dst_units[vi]
+            src_unit = self.variable_units[v]
+            dst_unit = dst_units[v]
         
-            print(f'\nConverting {vi} units from {src_unit} to {dst_unit}...\n')
+            print(f'\nConverting {v} units from {src_unit} to {dst_unit}...\n')
 
             if isinstance(array, np.ndarray):
                 
                 Q_ = ureg.Quantity
                 
-                values = Q_(array, src_unit)
+                values_ = Q_(array, src_unit)
                 
-                values_dst = values.to(dst_unit)
+                values_dst = values_.to(dst_unit)
 
                 values_out[v] = values_dst.magnitude
 
-            elif isinstance(array, xr.DataArray):
+            #elif isinstance(array, xr.DataArray):
 
-                array.lat.attrs['units'] = 'degree'
-                array.lon.attrs['units'] = 'degree'
-    
-                values = array.pint.quantify({f'{v}': src_unit})
+            #    array.lat.attrs['units'] = 'degree'
+            #    array.lon.attrs['units'] = 'degree'
 
-                values_dst = values.pint.to(dst_unit)
+            #    values = array.pint.quantify({f'{v}': src_unit})
 
-                values_out[v] = values_dst.pint.dequantify()
+            #    values_dst = values.pint.to(dst_unit)
+
+            #    values_out[v] = values_dst.pint.dequantify()
 
         return values_out
 
