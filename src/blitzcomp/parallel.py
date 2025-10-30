@@ -1,25 +1,23 @@
 
+import os
+import glob
 from mpi4py import MPI
 from typing import Callable
 import numpy as np
+import netCDF4 as nc
 import xarray as xr
 
 #from datarie.templates import gridded_data
-from datarie.netcdf import nc_open, variables_to_dict
-from datarie.handy import check_file_exists
+#from datarie.netcdf import nc_open, variables_to_dict
+#from datarie.handy import check_file_exists
 
 def pixel_wise(func: Callable,
                variables: list[str],
                variables_out: list[str],
                units: dict[str, str],
-               #data: dict | None = None,
-               files: None | str = None,
+               files: str,
                file_out: None | str = None,
                dtype: str = 'float32',
-               year_start: int | None = None,
-               year_end: int | None = None,
-               month_start: int | None = None,
-               month_end: int | None = None,
                return_shape: int | list[int] = 1,
                return_dims: str | list[str] = 'time',
                delete_dims: dict[str, list] | None = None,
@@ -27,7 +25,8 @@ def pixel_wise(func: Callable,
                test_pixel_wise_n: int = 10,
                *args, **kwargs) -> dict[str, np.ndarray] | None:
     
-    if check_file_exists(file_out): return None
+    if file_out is not None:
+        if os.path.isfile(file_out): print('Output file exists, skipping calculation.'); return
 
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
@@ -41,44 +40,33 @@ def pixel_wise(func: Callable,
 
         print(f'Rank {rank} is loading the data...')
         
-        if (data is None) and (files is None):
+        if (files is None):
             NotImplementedError('No dataset supplied...')
 
-        if (data is not None) and (files is not None):
-            KeyError('Please supply only files OR a gridded_data dataset...')
+        files_list = sorted(glob.glob(files))
+
+        if files_list == []: 
+            raise FileNotFoundError(f'No files found for {files}...')
         
-        if data is not None:
+        if len(files_list) == 1:
+            data_ = nc.Dataset(files_list[0])
+        
+        if len(files_list) > 1:
+            data_ = nc.MFDataset(files_list)
 
-            data_ = gridded_data(**data)
-
-            arrays = data_.get_values(variables_ = variables,
-                                      y0 = year_start,
-                                      y1 = year_end,
-                                      m0 = month_start,
-                                      m1 = month_end,
-                                      dtype = dtype)
-            
-        if files is not None:
-
-            data_ = nc_open(files)
-
-            arrays = variables_to_dict(data = data_,
-                                       variables = variables,
-                                       dtype = dtype)
-            
+        arrays = {v: data_.variables[v][:].astype(dtype)
+                  for v in variables}         
 
         shapes = {v: arrays[v].shape for v in variables}
 
         if isinstance(return_shape, int): return_shape = [return_shape]
 
         if delete_dims is not None:
-            
             shapes_out = {v: [ss for iss, ss in enumerate(s)
                              if iss not in delete_dims[v]] 
                           for v, s in shapes.items()}
             
         else:
-
             shapes_out = shapes
 
         shape_out = [*return_shape, 
@@ -301,16 +289,16 @@ def along_dim(func: Callable,
               dim: int,
               variables: list[str],
               variables_out: list[str],
-              data: dict | None = None,
-              files: str | None = None,
+              files: str,
               file_out: None | str = None,
               dtype: str = 'float32',
               year_start: int | None = None,
               year_end: int | None = None,
               return_dims: str | list[str] = 'time',
               *args, **kwargs) -> dict[str, np.ndarray] | None:
-
-    if check_file_exists(file_out): return
+    
+    if file_out is not None:
+        if os.path.isfile(file_out): print('Output file exists, skipping calculation.'); return
 
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
@@ -324,25 +312,22 @@ def along_dim(func: Callable,
 
         print(f'Rank {rank} is loading the data...')
         
-        if (data is None) and (files is None):
+        if (files is None):
             NotImplementedError('No dataset supplied...')
+
+        files_list = sorted(glob.glob(files))
+
+        if files_list == []: 
+            raise FileNotFoundError(f'No files found for {files}...')
         
-        if data is not None:
+        if len(files_list) == 1:
+            data_ = nc.Dataset(files_list[0])
+        
+        if len(files_list) > 1:
+            data_ = nc.MFDataset(files_list)
 
-            data_ = gridded_data(**data)
-
-            arrays = data_.get_values(variables_ = variables,
-                                      y0 = year_start,
-                                      y1 = year_end,
-                                      dtype = dtype)
-            
-        if files is not None:
-
-            data_ = nc_open(files)
-
-            arrays = variables_to_dict(data = data_,
-                                       variables = variables,
-                                       dtype = dtype)
+        arrays = {v: data_.variables[v][:].astype(dtype)
+                  for v in variables}
 
         shapes = {v: arrays[v].shape for v in variables}
 
