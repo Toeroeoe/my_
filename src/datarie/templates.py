@@ -35,7 +35,8 @@ class gridded_data:
     def index_time(self,
                    y0: int | None = None,
                    y1: int | None = None,
-                   month_start: int | None = None) -> pd. Series:
+                   m0: int | None = None,
+                   m1: int | None = None) -> pd. Series:
         
         from datarie.time import index
         
@@ -45,14 +46,15 @@ class gridded_data:
         if y1 is None: y1 = self.year_end
         elif y1 > self.year_end: y1 = self.year_end
 
-        if month_start is None: month_start = self.month_start
+        if m0 is None: m0 = self.month_start
+        if m1 is None: m1 = self.month_end
 
         time_index = index(y0 = y0, 
                            y1 = y1, 
                            t_res = self.resolution_time,
                            leapday = self.leapday)
     
-        return time_index.loc[f'{y0}-{month_start}-01':]
+        return time_index.loc[f'{y0}-{m0}-01': f'{y1}-{m1}-31']
     
 
     def present_files(self,
@@ -91,6 +93,8 @@ class gridded_data:
                    variables_: str | list[str] | None,
                    y0: int | None = None,
                    y1: int | None = None,
+                   m0: int | None = None,
+                   m1: int | None = None,
                    dtype: str = 'float32'):
         
         if isinstance(variables_, str): 
@@ -102,6 +106,9 @@ class gridded_data:
         if y1 is None: y1 = self.year_end
         elif y1 > self.year_end: y1 = self.year_end
 
+        if m0 is None: m0 = self.month_start
+        if m1 is None: m1 = self.month_end
+        
         if variables_ is None: variables_ = self.variables
 
         print(f'\nLoading value data for:')
@@ -120,6 +127,24 @@ class gridded_data:
                                     present_src_vars,
                                     dtype = dtype,
                                     mask_value = self.mask_value)
+        
+        if self.month_start != m0 or \
+           self.month_end != m1:
+        
+            timesx = self.index_time(y0 = y0,
+                                     y1 = y1)
+
+            timesm = self.index_time(y0 = y0,
+                                     y1 = y1,
+                                     m0 = m0,
+                                     m1 = m1)
+
+            tmask = np.array([True
+                              if t in timesm else False
+                              for t in timesx])
+
+            values = [v[tmask]
+                      for v in values]
 
         return {v: values[i] for i, v in enumerate(present_vars)}
     
@@ -146,7 +171,7 @@ class gridded_data:
         type_module = check_module_var('my_.files',
                                         self.type_file)
 
-        files = [f'{self.path}/{y}.{type_module}.nc'
+        files = [f'{self.path}/{y}.nc'
                 for y in range(y0, y1 + 1)]
         
         data = xr.open_mfdataset(files) if len(files) > 1 else xr.open_dataset(files[0])
@@ -221,6 +246,10 @@ class gridded_data:
                  method: str | list,
                  var_subset: list | None = None,
                  **kwargs):
+        
+        print('resampling')
+        print(method)
+        print(var_subset)
 
         from datarie.time import xr_resample
         
@@ -231,6 +260,8 @@ class gridded_data:
             out_ds = xr.Dataset()
             
             for m in method:
+                print(m)
+                print('...')
 
                 ds = xr_resample(dataset, dst_time_res, m, **kwargs)
     
@@ -238,7 +269,8 @@ class gridded_data:
     
                 ds_new = ds.rename(new_names)
         
-                out_ds.merge(ds_new)
+                out_ds = out_ds.merge(ds_new)
+            print(out_ds)
 
         elif isinstance(method, str):
 

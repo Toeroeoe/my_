@@ -88,8 +88,6 @@ def optics(data: list[np.ndarray],
            **kwargs):
     
     from joblib import effective_n_jobs, parallel_config
-    from dask_jobqueue import SLURMCluster
-    from dask.distributed import Client
     
     #cluster = SLURMCluster(processes = 1, cores = 128, memory = '1GB')
     #client = Client(cluster)

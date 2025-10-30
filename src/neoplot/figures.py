@@ -243,6 +243,63 @@ class double_001(fig_001):
         self.axs = axs
 
         return self
+
+@dataclass(kw_only = True)      
+class double_001_vert(fig_001):
+    
+    projection: List[Union[mtr.Transform, ccrs.Projection, Literal['EU3'], None]] | \
+                    mtr.Transform | ccrs.Projection | Literal['EU3'] | None = None
+    frame: bool = False
+
+    def create(self):
+
+        super().create()
+
+        axs = []
+
+        nrows = 2
+        ncols = 1
+
+        if not isinstance(self.projection, list): 
+            
+            self.projection = [self.projection for i in range(nrows)]
+
+        if 'EU3' in self.projection:
+    
+            rotnpole_lat: float = 39.25 
+            rotnpole_lon: float = -162.0
+
+            semmj_axis: None | int = 6370000
+            semmn_axis: None | int = 6370000 
+
+            globe = ccrs.Globe(semimajor_axis = semmj_axis,
+                               semiminor_axis = semmn_axis)
+
+            self.rp = ccrs.RotatedPole(pole_longitude = rotnpole_lon,
+                                       pole_latitude = rotnpole_lat,
+                                       globe = globe)
+
+        
+            self.active_proj = [self.rp if p == 'EU3' else p 
+                                for p in self.projection]
+            
+        else:
+            self.active_proj = self.projection
+
+        gs = GridSpec(figure = self.fig, 
+                      nrows = nrows,
+                      ncols = ncols,
+                      hspace = 0.2)
+
+        for iax in range(nrows):
+
+            axs.append(self.fig.add_subplot(gs[iax, 0], 
+                                            projection = self.active_proj[iax], 
+                                            frameon = self.frame))
+
+        self.axs = axs
+
+        return self
        
             
 @dataclass(kw_only = True)
@@ -371,6 +428,134 @@ class twoxfour(fig_001):
 
         return self
 
+@dataclass(kw_only = True)
+class threexthree(fig_001):
+
+    projection: List[Union[mtr.Transform, ccrs.Projection, Literal['EU3'], None]] | \
+                    mtr.Transform | ccrs.Projection | Literal['EU3'] | None = None
+    frame: bool = False
+
+    wspace: float = 0.1
+    hspace: float = 0.05
+
+    def create(self):
+
+        super().create()
+
+        nrows = 3
+        ncols = 4
+
+        if not isinstance(self.projection, list): 
+            
+            self.projection = [self.projection for i in range(ncols*nrows)]
+
+        if 'EU3' in self.projection:
+    
+            rotnpole_lat: float = 39.25 
+            rotnpole_lon: float = -162.0
+
+            semmj_axis: None | int = 6370000
+            semmn_axis: None | int = 6370000 
+
+            globe = ccrs.Globe(semimajor_axis = semmj_axis,
+                               semiminor_axis = semmn_axis)
+
+            self.rp = ccrs.RotatedPole(pole_longitude = rotnpole_lon,
+                                       pole_latitude = rotnpole_lat,
+                                       globe = globe)
+
+        
+            self.active_proj = [self.rp if p == 'EU3' else p 
+                                for p in self.projection]
+            
+        else:
+            self.active_proj = self.projection
+
+        gs = GridSpec(figure = self.fig, 
+                      nrows = nrows,
+                      ncols = ncols,
+                      wspace = self.wspace,
+                      hspace = self.hspace)
+        
+        positions = [gs[0, 0], gs[0, 1], gs[0, 2],
+                     gs[1, 0], gs[1, 1], gs[1, 2],
+                     gs[2, 0], gs[2, 1], gs[2, 2],]
+        
+        self.positions = positions
+
+        for iax, ax in enumerate(positions):
+
+            self.axs.append(self.fig.add_subplot(ax, 
+                                        projection = self.active_proj[iax], 
+                                        frameon = self.frame))
+
+        return self
+    
+
+
+@dataclass(kw_only = True)
+class threexfour(fig_001):
+
+    projection: List[Union[mtr.Transform, ccrs.Projection, Literal['EU3'], None]] | \
+                    mtr.Transform | ccrs.Projection | Literal['EU3'] | None = None
+    frame: bool = False
+
+    wspace: float = 0.1
+    hspace: float = 0.05
+
+    def create(self):
+
+        super().create()
+
+        nrows = 3
+        ncols = 4
+
+        if not isinstance(self.projection, list): 
+            
+            self.projection = [self.projection for i in range(ncols*nrows)]
+
+        if 'EU3' in self.projection:
+    
+            rotnpole_lat: float = 39.25 
+            rotnpole_lon: float = -162.0
+
+            semmj_axis: None | int = 6370000
+            semmn_axis: None | int = 6370000 
+
+            globe = ccrs.Globe(semimajor_axis = semmj_axis,
+                               semiminor_axis = semmn_axis)
+
+            self.rp = ccrs.RotatedPole(pole_longitude = rotnpole_lon,
+                                       pole_latitude = rotnpole_lat,
+                                       globe = globe)
+
+        
+            self.active_proj = [self.rp if p == 'EU3' else p 
+                                for p in self.projection]
+            
+        else:
+            self.active_proj = self.projection
+
+        gs = GridSpec(figure = self.fig, 
+                      nrows = nrows,
+                      ncols = ncols,
+                      wspace = self.wspace,
+                      hspace = self.hspace)
+        
+        positions = [gs[0, 0], gs[0, 1], gs[0, 2], gs[0, 3],
+                     gs[1, 0], gs[1, 1], gs[1, 2], gs[1, 3],
+                     gs[2, 0], gs[2, 1], gs[2, 2], gs[2, 3],]
+        
+        self.positions = positions
+
+        for iax, ax in enumerate(positions):
+
+            self.axs.append(self.fig.add_subplot(ax, 
+                                        projection = self.active_proj[iax], 
+                                        frameon = self.frame))
+
+        return self
+    
 
 @dataclass(kw_only = True)
 class fourxtwo(fig_001):

@@ -1,15 +1,16 @@
 import pandas as pd
 import pint
 import numpy as np
+import xarray as xr
 
-def convert_units(data: pd. Series | pd.DataFrame | np.ndarray,
+def convert_units(data: np.ndarray | pd.Series | xr.DataArray,
                   src_unit: str,
-                  dst_unit: str):
+                  dst_unit: str) -> np.ndarray | pd.Series | xr.DataArray:
         
         data_out = data.copy()
         
-        if isinstance(data, pd.DataFrame): data = data.values
-        if isinstance(data, pd.Series): data = data.values
+        if isinstance(data, pd.Series): data = data.to_numpy()
+        if isinstance(data, xr.DataArray): data = data.values
         
         ureg = pint.UnitRegistry()
         Q_ = ureg.Quantity

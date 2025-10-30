@@ -17,6 +17,8 @@ def mask_prudence(array: np.ndarray | xr.DataArray,
                   sel_regions: str | list[str] | None):
 
     if sel_regions is None: return array
+    
+    if isinstance(sel_regions, str): sel_regions = [sel_regions]
 
     shape = array.shape[-2:]
 
@@ -34,8 +36,11 @@ def mask_prudence(array: np.ndarray | xr.DataArray,
                         (lon <= lon_max) &
                         (lon >= lon_min)), 1, mask)
         
-    if isinstance(array, xr.DataArray): 
 
-        array_out = array.where(mask)
+    if isinstance(array, np.ndarray):
+        
+        array_out = np.where(mask,
+                             array,
+                             np.nan)
 
     return array_out

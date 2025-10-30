@@ -2,8 +2,9 @@
 from mpi4py import MPI
 from typing import Callable
 import numpy as np
+import xarray as xr
 
-from datarie.templates import gridded_data
+#from datarie.templates import gridded_data
 from datarie.netcdf import nc_open, variables_to_dict
 from datarie.handy import check_file_exists
 
@@ -11,14 +12,19 @@ def pixel_wise(func: Callable,
                variables: list[str],
                variables_out: list[str],
                units: dict[str, str],
-               data: dict | None = None,
+               #data: dict | None = None,
                files: None | str = None,
                file_out: None | str = None,
                dtype: str = 'float32',
                year_start: int | None = None,
                year_end: int | None = None,
+               month_start: int | None = None,
+               month_end: int | None = None,
                return_shape: int | list[int] = 1,
                return_dims: str | list[str] = 'time',
+               delete_dims: dict[str, list] | None = None,
+               test_pixel_wise: bool = False,
+               test_pixel_wise_n: int = 10,
                *args, **kwargs) -> dict[str, np.ndarray] | None:
     
     if check_file_exists(file_out): return None
@@ -37,6 +43,9 @@ def pixel_wise(func: Callable,
         
         if (data is None) and (files is None):
             NotImplementedError('No dataset supplied...')
+
+        if (data is not None) and (files is not None):
+            KeyError('Please supply only files OR a gridded_data dataset...')
         
         if data is not None:
 
@@ -45,6 +54,8 @@ def pixel_wise(func: Callable,
             arrays = data_.get_values(variables_ = variables,
                                       y0 = year_start,
                                       y1 = year_end,
+                                      m0 = month_start,
+                                      m1 = month_end,
                                       dtype = dtype)
             
         if files is not None:
@@ -54,12 +65,24 @@ def pixel_wise(func: Callable,
             arrays = variables_to_dict(data = data_,
                                        variables = variables,
                                        dtype = dtype)
+            
 
         shapes = {v: arrays[v].shape for v in variables}
 
         if isinstance(return_shape, int): return_shape = [return_shape]
 
-        shape_out = [*return_shape, *shapes[variables[0]][-2:]]
+        if delete_dims is not None:
+            
+            shapes_out = {v: [ss for iss, ss in enumerate(s)
+                             if iss not in delete_dims[v]] 
+                          for v, s in shapes.items()}
+            
+        else:
+
+            shapes_out = shapes
+
+        shape_out = [*return_shape, 
+                     *shapes_out[variables[0]][-2:]]
 
         arrays_out = {v: np.empty([s for s in shape_out if s > 0],
                                    dtype = dtype) 
@@ -75,19 +98,13 @@ def pixel_wise(func: Callable,
 
     shapes = comm.bcast(shapes, root = 0)
                                    
-
     if rank != 0:
 
         print(f'I am rank {rank} and I know the shapes: {shapes}.')
         print('Creating empty arrays...')
 
-        arrays_recv = {v: np.empty(shapes[v][:-2], 
-                                   dtype = dtype) 
-                                   for v in variables}
 
-                                   
     comm.Barrier()
-
 
     print(f'I am rank {rank}. Ready for sending / receiving and calculations.')
 
@@ -95,6 +112,7 @@ def pixel_wise(func: Callable,
     range_x = np.arange(shapes[variables[0]][-1])
     grid = np.array(np.meshgrid(range_y, range_x))
     cells = grid.T.reshape(-1, 2)
+    if test_pixel_wise: cells = cells[:test_pixel_wise_n]
     length = len(cells)
     perrank = length // (size - 1)
     resid = length - perrank * (size - 1)
@@ -121,6 +139,7 @@ def pixel_wise(func: Callable,
                               tag = yx)
 
                 print(f'Rank {rank} succesfully sent data to rank {r}.')
+
             
             for r in range(1, size):
 
@@ -139,7 +158,6 @@ def pixel_wise(func: Callable,
                 for v in variables_out:
 
                     arrays_out[v][..., y, x] = return_object[v]
-
                     
         if rank != 0:
 
@@ -150,10 +168,19 @@ def pixel_wise(func: Callable,
             print(f'Rank {rank} receiving cell {r_m} corresponding to')
             print(f'grid indices {x}, {y} from rank 0.')
 
-            for v in variables: comm.Recv(arrays_recv[v], source = 0, tag = yx)
+            arrays_recv = {v: np.empty(shapes[v][:-2], 
+                                       dtype = dtype) 
+                           for v in variables}
+
+            for v in variables: comm.Recv(arrays_recv[v], 
+                                          source = 0, 
+                                          tag = yx)
 
             print(f'Rank {rank} received cell {r_m}.')
             print(f'Now executing function {func.__name__}...')
+
+            if ((x == 23) & (y == 423)):
+                print(arrays_recv)
 
             out_func = func(arrays_recv, *args, **kwargs)
 
@@ -216,6 +243,10 @@ def pixel_wise(func: Callable,
             y = cells[-rank][0]
             x = cells[-rank][1]
 
+            arrays_recv = {v: np.empty(shapes[v][:-2], 
+                                       dtype = dtype) 
+                           for v in variables}
+
             print(f'Rank {rank} receiving cell {-rank} corresponding to')
             print(f'grid indices {x}, {y} from rank 0.')
             
@@ -242,8 +273,6 @@ def pixel_wise(func: Callable,
 
         if file_out is not None:
 
-            import xarray as xr
-
             if isinstance(return_dims, str): return_dims = [return_dims]
 
             out_vars = {v: ([*return_dims, 'lat', 'lon'], 
@@ -255,7 +284,9 @@ def pixel_wise(func: Callable,
 
             print('Now wrinting DS to netcdf...')
 
-            DS_out.to_netcdf(path = file_out, mode='w')
+            DS_out.to_netcdf(path = file_out, 
+                             mode = 'w',
+                             format = 'NETCDF4_CLASSIC')
 
             print('Script was successful! Bye bye!')
     
@@ -495,8 +526,6 @@ def along_dim(func: Callable,
 
 
         if file_out is not None:
-
-            import xarray as xr
 
             if isinstance(return_dims, str): return_dims = [return_dims]
 

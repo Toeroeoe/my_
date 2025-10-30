@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "crusty"
-version = "0.9.5"
+version = "0.9.6"
 description="A convinience python package for HPC computation, large dataset handling and plotting."
 dependencies = [
 	"requests",
@@ -16,29 +16,19 @@ dependencies = [
 	"matplotlib",
 	"cartopy",
 	"mpi4py",
-	"fastparquet",
 	"pyarrow",
 	"netCDF4",
-	"dask",
-	"distributed",
 	"xarray",
 	"scipy",
-	"cdsapi",
-	"deims",
 	"pint",
 	"pint-pandas",
 	"pint-xarray",
-	"datalad",
-	"statsmodels",
 	"psutil",
 	"scikit-learn",
-	"swig",
-	"joblib",
 	"uncertainties",
 	"openpyxl",
 	"pymannkendall",
     "plottable",
-    "simple-slurm",
 ]
 
 [tool.setuptools]

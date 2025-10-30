@@ -17,6 +17,16 @@ def index(y0: int,
     Create time index from beginning of year 0
     to end of year 0;
     To use for pandas time series;
+    y0: starting year (int);
+    y1: ending year (int);
+    t_res: time resolution string (e.g. '6H', '1D', '8D', '1M', '1Y');
+    month0: starting month (int, default 1);
+    month1: ending month (int, default 12);
+    day0: starting day (int, default 1);
+    day1: ending day (int, default 31);
+    leapday: whether to keep leapdays (bool, default True);
+    range_kwargs: additional keyword arguments for pd.date_range();
+    resample_kwargs: additional keyword arguments for resample().
     """
     
     if t_res[-1] == 'H': end_time = str(24 - int(t_res[:-1]))
@@ -25,7 +35,7 @@ def index(y0: int,
     y0_time = f'{y0}-{month0:02}-{day0:02} 00:00:00'
     y1_time = f'{y1}-{month1:02}-{day1:02} {end_time}'
 
-    t_res_comp = re.split('(\d+)', t_res)
+    t_res_comp = re.split(r'(\d+)', t_res)
 
     t_res_str = t_res_comp[-1]
 
@@ -71,11 +81,16 @@ def xr_resample(df: xr.Dataset | xr.DataArray,
                 method: str = 'mean',
                 **kwargs) -> xr.Dataset | xr.DataArray:
     
+    print('res func')
+    print(df)
+    
     func_ = getattr(xr.DataArray, method)
         
     df_resampler = df.resample(time = offset_str)
 
     df_resampled = func_(df_resampler, **kwargs)
+
+    print(df_resampled)
 
     return df_resampled
 

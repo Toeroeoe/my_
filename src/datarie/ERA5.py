@@ -6,11 +6,11 @@ import xarray as xr
 forcing_EU3_3h = {
     'name': 'ERA5_forcing_EU3_3h',
     'version': (1, 0, 6),
-    'path': '/p/data1/jibg31/FORCINGS/ERA5/',
+    'path': '/p/data1/jibg31/poppe1/FORCINGS/ERA5/yearly/',
     'type_file': 'netcdf',
     'year_start': 1950,
     'month_start': 1,
-    'year_end': 2022,
+    'year_end': 2024,
     'month_end': 12,
     'resolution_time': '3H',
     'grid': 'EU3',
@@ -52,7 +52,7 @@ def create_yearly_files(path_rawdata: str,
                         path_out: str,
                         year: int):
     
-    create_dirs(path_out)
+    #create_dirs(path_out)
 
     files = sorted(glob(f'{path_rawdata}*.nc'))
 
@@ -63,3 +63,5 @@ def create_yearly_files(path_rawdata: str,
     data_raw.to_netcdf(f'{path_out}/{year}.nc',
                        format = 'NETCDF4_CLASSIC', 
                        unlimited_dims = ['time'])
+    
+    print(f'Created file {path_out}/{year}.nc')

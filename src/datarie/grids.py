@@ -12,6 +12,19 @@ EU3 = {
     'lat_extents': [27, 65.7],
 }
 
+EU12 = {
+    'name': 'EUCORDEX12km',
+    'version': (1, 0, 0),
+    'path_file': '/p/scratch/cjibg31/jibg3105/CESMDataRoot/InputData/share/domains/EUR-011/',
+    'name_file': 'domain.lnd.EUR-11_EUR-11.230216_n.nc',
+    'type_file': 'netcdf',
+    'name_latitude': 'yc',
+    'name_longitude': 'xc',
+    'name_landmask': 'mask',
+    'lon_extents': [351.1, 57],
+    'lat_extents': [27, 65.7],
+}
+
 
 GLEAM = {
     'name': 'GLEAM',

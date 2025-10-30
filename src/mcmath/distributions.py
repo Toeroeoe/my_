@@ -18,6 +18,7 @@ def gauss_kde_pdf(data: pd.DataFrame | pd.Series | np.ndarray ,
 
     maxs = np.max(data_clean)
 
+    #xs = np.logspace(np.log10(mins), np.log10(maxs), n)
     xs = np.linspace(mins, maxs, n)
 
     kde_sp = gaussian_kde(data_clean)
@@ -27,7 +28,7 @@ def gauss_kde_pdf(data: pd.DataFrame | pd.Series | np.ndarray ,
     if return_dict:     
         return pd.DataFrame({'xs': xs, 'ys': ys})
     else:
-        return xs, ys
+        return np.array(xs), np.array(ys)
 
 
 def gauss_kde_cdf(data: np.ndarray | pd.Series | pd.DataFrame, 
@@ -63,6 +64,8 @@ def distribution_pdf(distribution: str = 'norm',
     import scipy.stats as stats
     import numpy as np
 
+    if isinstance(parameter, int): parameter = [parameter]
+
     func_dist = getattr(stats, distribution)
 
     mins = func_dist.ppf(1/n, *parameter)
@@ -82,9 +85,10 @@ def distribution_cdf(distribution: str = 'norm',
 
     import scipy.stats as stats
     import numpy as np
+    
+    if isinstance(parameter, int): parameter = [parameter]
 
     func_dist = getattr(stats, distribution)
-
 
     mins = func_dist.ppf(1/n, *parameter)
 

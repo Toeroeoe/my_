@@ -129,6 +129,8 @@ class base:
                      bbox = props,
                      zorder = 8)
 
+
+
 @dataclass(kw_only = True)
 class base_001(base):
 
@@ -225,6 +227,7 @@ class base_001(base):
                                   vmax = vmax,
                                   transform = self.plot_projection,
                                   alpha = alpha,
+                                  antialiased = True,
                                   zorder = zorder)
         
         return artist
@@ -430,13 +433,15 @@ class base_001(base):
                                marker = marker,
                                linewidth = lw)
 
-        self.ax.plot(xs, 
-                     ys,
-                     transform = projection, 
-                     markersize = markersize,
-                     fillstyle = fillstyle,
-                     alpha = alpha, 
-                     zorder = zorder)
+        artist = self.ax.plot(xs, 
+                              ys,
+                              transform = projection, 
+                              markersize = markersize,
+                              fillstyle = fillstyle,
+                              alpha = alpha, 
+                              zorder = zorder)
+        
+        return artist
         
 
     def error(self,
@@ -464,13 +469,15 @@ class base_001(base):
         self.ax.set_prop_cycle(color = colors,
                                linewidth = lw)
 
-        self.ax.errorbar(xs, 
-                         ys,
-                         xerr = x_err,
-                         yerr = y_err,
-                         transform = projection,
-                         alpha = alpha, 
-                         zorder = zorder)
+        artist = self.ax.errorbar(xs, 
+                                  ys,
+                                  xerr = x_err,
+                                  yerr = y_err,
+                                  transform = projection,
+                                  alpha = alpha, 
+                                  zorder = zorder)
+        
+        return artist
         
         
     def fillb(self,
@@ -485,11 +492,13 @@ class base_001(base):
         if projection is None: 
             projection = self.ax.transData
             
-        self.ax.fill_between(xs, lower, upper, 
-                             color = color, 
-                             transform = projection,
-                             alpha = alpha,
-                             zorder = zorder)
+        artist = self.ax.fill_between(xs, lower, upper, 
+                                      color = color, 
+                                      transform = projection,
+                                      alpha = alpha,
+                                      zorder = zorder)
+        
+        return artist
         
     def table(self,
               data: pd.DataFrame,
@@ -501,13 +510,15 @@ class base_001(base):
         textprops = {'fontsize': fontsize,
                      'ha': ha}
         
-        Table(data,
-              ax = self.ax,
-              textprops = textprops,
-              index_col = index_col,
-              column_definitions = column_definitions)
+        tab = Table(data,
+                    ax = self.ax,
+                    textprops = textprops,
+                    index_col = index_col,
+                    column_definitions = column_definitions)
         
         self.ax.set_title(self.title)
+
+        return tab
 
 
     def boxplot(self,
@@ -561,6 +572,78 @@ class base_001(base):
                      facecolor = color,
                      alpha = alpha)
 
+        return boxp
+    
+
+    def violins(self,
+                data: Sequence[np.ndarray | pd.Series],
+                tick_labels: list[str], 
+                colors: str | list[str] = 'k',
+                edgecolors: str | list[str] = 'k',
+                side: Literal['low', 'high', 'both'] = 'both',
+                ls: str = '-',
+                lw: float = 2.0,
+                widths: float | list[float] = 0.56,
+                annotate_max: bool = False,
+                annotate_vals: None | list[str] = None,
+                annotate_x_offset: float = 0,
+                annotate_y_offset: float = 10,
+                annotate_fs: float = 7.0,
+                alpha_bodies: float = 0.8,
+                alpha_lines: float = 1.0,
+                zorder: int = 5):
+        
+        if isinstance(colors, str): colors = [colors] * len(data)
+        if isinstance(edgecolors, str): edgecolors = [edgecolors] * len(data)
+
+        vios = self.ax.violinplot(data,
+                                  widths = widths,
+                                  showextrema = True,
+                                  showmedians = True,
+                                  showmeans = False,
+                                  side = side)
+
+        for ip in range(len(data)):
+
+            vios['bodies'][ip].set_facecolor(colors[ip])
+            vios['bodies'][ip].set_edgecolors(edgecolors[ip])
+            vios['bodies'][ip].set_alpha(alpha_bodies)
+            vios['bodies'][ip].set_zorder(zorder)
+
+        for element in ['cmedians',
+                        'cmaxes',
+                        'cmins',
+                        'cbars']:
+            
+            vios[element].set_edgecolor(edgecolors[ip])
+            vios[element].set_linestyle(ls)
+            vios[element].set_linewidth(lw)
+            vios[element].set_alpha(alpha_lines)
+            vios[element].set_zorder(zorder + 1)
+
+        self.ax.set_xticks(np.arange(1, len(data) + 1), 
+                           labels = tick_labels)
+
+
+        if annotate_max and annotate_vals is not None:
+
+            annotate_params = {'xytext': (annotate_x_offset, annotate_y_offset), 
+                               'textcoords': 'offset points',
+                               'arrowprops': {'arrowstyle': '->'},
+                               'ha': 'center',
+                               'va': 'center',
+                               'size': annotate_fs}
+
+            for id, d in enumerate(data):
+            
+                max_date = annotate_vals[id].iloc[np.nanargmax(d)]
+                
+                self.ax.annotate(max_date[:4],
+                                 (id + 1, 
+                                  np.nanmax(d)),
+                                  **annotate_params)
+
+        return vios
     
 
 @dataclass(kw_only = True)
@@ -573,17 +656,25 @@ class time_series(base_001):
     ticks_y: bool = True
     ticks_x: bool = True
     nticks_y: int = 5
-    nticks_x: int = 5
+    nticks_x: None | int = 5
     integery: bool = False
 
     date_limits: None | list[np.datetime64] = None
     y_limits: None | list[float] = None
     y_ticks_rel_b: float = 0.1
-    x_ticks_rel_b: float = 0.1
+    x_ticks_rel_b: float = 0.075
 
     def ticks(self):
 
-        xlocator = mdates.AutoDateLocator(maxticks = self.nticks_x)
+        if self.nticks_x is None:
+
+            xlocator = mdates.AutoDateLocator(interval_multiples = True)
+
+        else:
+
+            xlocator = mdates.AutoDateLocator(maxticks = self.nticks_x,
+                                              interval_multiples = True)
+        
         ylocator = MaxNLocator(prune = 'both', 
                                nbins = self.nticks_y, 
                                integer = self.integery)
@@ -614,7 +705,7 @@ class time_series(base_001):
             rel_dd = pd.Timedelta(rel_d, 'D')
 
             self.ax.set_xlim(tsmin - rel_dd, tsmax + rel_dd)
-        
+
         else:
 
             for id, date in enumerate(self.date_limits):
@@ -650,7 +741,7 @@ class time_series(base_001):
         super().decoration()
         
         self.ticks()
-        #self.limits()
+        self.limits()
 
         return self
 
@@ -780,15 +871,20 @@ class amap(base_001):
 
         return self
     
-
+from typing import Optional
 @dataclass(kw_only = True)
 class boxplot(base_001):
 
     fs_ticks: float = 9
+    ylimits: None | tuple[float, float] = None
+    ys: np.ndarray
+    y_ticks_rel_b: float = 0.1
     
     def create(self):
 
         super().decoration()
+
+        self.limits()
 
         self.ax.tick_params(axis = 'both',
                             which = 'major',
@@ -797,7 +893,25 @@ class boxplot(base_001):
         self.ax.yaxis.get_offset_text().set_fontsize(self.fs_ticks)
 
         return self
-            
+    
+    def limits(self):
+
+        if self.ylimits is None:
+
+            tsmax = np.max(self.ys)
+            tsmin = np.min(self.ys)
+
+            rel_d = (tsmax - tsmin).days * self.y_ticks_rel_b
+
+            rel_dd = pd.Timedelta(rel_d, 'D')
+
+            self.ax.set_xlim(tsmin - rel_dd, tsmax + rel_dd)
+
+        else:
+
+            self.ax.set_ylim(self.ylimits[0], 
+                             self.ylimits[1])
+
 
 @dataclass(kw_only = True)
 class xy_numeric(base_001):

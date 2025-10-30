@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
-from datarie.handy import create_dirs
-from neoplot.figures import single_001
-from datarie import time
+#from datarie.handy import create_dirs
+#from neoplot.figures import single_001
+#from datarie import time
 from mcmath.distributions import distribution_fit, distribution_pdf, distribution_cdf
 
 def index_weight(sxi: np.ndarray,
@@ -117,54 +117,54 @@ def standard_index(array: np.ndarray,
                          f'{agg_method}',
                          f'{str_deseasonalize}'])
 
-    if plot_distributions: 
+    # if plot_distributions: 
 
-        create_dirs(plot_out_dir)
+    #     create_dirs(plot_out_dir)
         
-        fig, ax = square(4, 4)
-        init_dist(ax,pdf_xs, pdf_ys, xlabel = f'{window} {agg_method} {variable} [{unit}]', ylabel = 'Probability density')
-        plot(ax, xs = pdf_xs, ys = pdf_ys, lw = plot_lw, zorder = 2)
-        hist(ax, series_roll, bins = plot_hist_bins, zorder = 1)
-        save_png(fig, f'{plot_out_dir}/PDF_{file_out}.png')
+    #     fig, ax = square(4, 4)
+    #     init_dist(ax,pdf_xs, pdf_ys, xlabel = f'{window} {agg_method} {variable} [{unit}]', ylabel = 'Probability density')
+    #     plot(ax, xs = pdf_xs, ys = pdf_ys, lw = plot_lw, zorder = 2)
+    #     hist(ax, series_roll, bins = plot_hist_bins, zorder = 1)
+    #     save_png(fig, f'{plot_out_dir}/PDF_{file_out}.png')
 
-        fig, ax = square(4, 4)
-        init_dist(ax, cdf_xs, cdf_ys, xlabel = f'{window} {agg_method} {variable} [{unit}]', ylabel = 'Cummulative probability density')
-        plot(ax, xs = cdf_xs, ys = cdf_ys, lw = plot_lw, zorder = 2)
-        save_png(fig, f'{plot_out_dir}/CDF_{file_out}.png')
+    #     fig, ax = square(4, 4)
+    #     init_dist(ax, cdf_xs, cdf_ys, xlabel = f'{window} {agg_method} {variable} [{unit}]', ylabel = 'Cummulative probability density')
+    #     plot(ax, xs = cdf_xs, ys = cdf_ys, lw = plot_lw, zorder = 2)
+    #     save_png(fig, f'{plot_out_dir}/CDF_{file_out}.png')
     
-        fig, ax = square(4, 4)
-        init_dist(ax, pdf_normal_xs, pdf_normal_ys, xlabel = 'SXI', ylabel = 'Probability density')
-        plot(ax, xs = pdf_normal_xs, ys = pdf_normal_ys, lw = plot_lw, zorder = 2)
-        save_png(fig, f'{plot_out_dir}/pdf_norm.png')    
+    #     fig, ax = square(4, 4)
+    #     init_dist(ax, pdf_normal_xs, pdf_normal_ys, xlabel = 'SXI', ylabel = 'Probability density')
+    #     plot(ax, xs = pdf_normal_xs, ys = pdf_normal_ys, lw = plot_lw, zorder = 2)
+    #     save_png(fig, f'{plot_out_dir}/pdf_norm.png')    
 
-        fig, ax = square(4, 4)
-        init_dist(ax, cdf_normal_xs, cdf_normal_ys, xlabel = 'SXI', ylabel = 'Cummulative probability density')
-        plot(ax, xs = cdf_normal_xs, ys = cdf_normal_ys, lw = plot_lw, zorder = 2)
-        save_png(fig, f'{plot_out_dir}/cdf_norm.png')
+    #     fig, ax = square(4, 4)
+    #     init_dist(ax, cdf_normal_xs, cdf_normal_ys, xlabel = 'SXI', ylabel = 'Cummulative probability density')
+    #     plot(ax, xs = cdf_normal_xs, ys = cdf_normal_ys, lw = plot_lw, zorder = 2)
+    #     save_png(fig, f'{plot_out_dir}/cdf_norm.png')
 
-    if plot_sxi_ts:
+    # if plot_sxi_ts:
         
-        create_dirs(plot_out_dir)
+    #     create_dirs(plot_out_dir)
 
-        fig, ax, cax = square_top_cax(fy = 4)
-        init_ts_2(ax, time_index, array, xlabel = 'Time', ylabel = f'{variable} [{unit}]')
-        plot(ax, xs = time_index, ys = array, colors = 'k', lw = plot_lw, zorder = 2)
-        color_legend(cax, {variable: 0}, ['k', 'firebrick'])        
-        save_png(fig, f'{plot_out_dir}/TS_{file_out}.png')
+    #     fig, ax, cax = square_top_cax(fy = 4)
+    #     init_ts_2(ax, time_index, array, xlabel = 'Time', ylabel = f'{variable} [{unit}]')
+    #     plot(ax, xs = time_index, ys = array, colors = 'k', lw = plot_lw, zorder = 2)
+    #     color_legend(cax, {variable: 0}, ['k', 'firebrick'])        
+    #     save_png(fig, f'{plot_out_dir}/TS_{file_out}.png')
 
-        if deseasonalize:
+    #     if deseasonalize:
 
-            fig, ax, cax = square_top_cax(fy = 4)
-            init_ts_2(ax, time_index, series_deseasonalized, xlabel = 'Time', ylabel = f'{variable} [{unit}]')
-            plot(ax, xs = time_index, ys = series_deseasonalized, colors = 'k', lw = plot_lw, zorder = 2)
-            color_legend(cax, {variable: 0}, ['k', 'firebrick'])        
-            save_png(fig, f'{plot_out_dir}/TS_ds_{file_out}.png')
+    #         fig, ax, cax = square_top_cax(fy = 4)
+    #         init_ts_2(ax, time_index, series_deseasonalized, xlabel = 'Time', ylabel = f'{variable} [{unit}]')
+    #         plot(ax, xs = time_index, ys = series_deseasonalized, colors = 'k', lw = plot_lw, zorder = 2)
+    #         color_legend(cax, {variable: 0}, ['k', 'firebrick'])        
+    #         save_png(fig, f'{plot_out_dir}/TS_ds_{file_out}.png')
 
 
-        fig, ax, cax = square_top_cax(fy = 4)
-        init_ts_2(ax, time_index, series_roll_sxi, xlabel = 'Time', ylabel = 'SXI [-]')
-        plot(ax, xs = time_index_valid, ys = series_roll_sxi, lw = plot_lw, colors = 'firebrick', zorder = 2)
-        color_legend(cax, {f'{variable} Standardized Index': 1}, ['k', 'firebrick'])        
-        save_png(fig, f'{plot_out_dir}/SXI_{file_out}.png')
+    #     fig, ax, cax = square_top_cax(fy = 4)
+    #     init_ts_2(ax, time_index, series_roll_sxi, xlabel = 'Time', ylabel = 'SXI [-]')
+    #     plot(ax, xs = time_index_valid, ys = series_roll_sxi, lw = plot_lw, colors = 'firebrick', zorder = 2)
+    #     color_legend(cax, {f'{variable} Standardized Index': 1}, ['k', 'firebrick'])        
+    #     save_png(fig, f'{plot_out_dir}/SXI_{file_out}.png')
 
     return series_roll_sxi
