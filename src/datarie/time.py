@@ -1,6 +1,7 @@
 import pandas as pd
 import re
 import xarray as xr
+from pandera.typing import Series
 
 def index(y0: int, 
           y1: int, 

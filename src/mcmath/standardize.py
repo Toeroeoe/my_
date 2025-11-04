@@ -1,8 +1,6 @@
 import numpy as np
 import pandas as pd
-#from datarie.handy import create_dirs
-#from neoplot.figures import single_001
-#from datarie import time
+from pandera.typing import Series
 from mcmath.distributions import distribution_fit, distribution_pdf, distribution_cdf
 
 def index_weight(sxi: np.ndarray,
@@ -20,13 +18,13 @@ def index_weight(sxi: np.ndarray,
     return w
 
 def standard_index(array: np.ndarray, 
-                   time_index: pd.Series[pd.Timestamp],
+                   time_index: pd.Series,
                    variable: str = 'var',
-                   unit: str = 'unit',
                    distribution: str = 'gamma',
                    rolling: bool = True,
+                   reftime: tuple[pd.Timestamp, pd.Timestamp] | None = None,
                    deseasonalize: bool = True,
-                   window: str = '360D', 
+                   window: str = '365D', 
                    agg_method: str = 'sum',
                    plot_distributions: bool = False,
                    plot_out_dir: str = 'png/',
@@ -45,58 +43,62 @@ def standard_index(array: np.ndarray,
 
     valid_start = time_index.iloc[0] + pd.Timedelta(window)
 
-    time_index_valid = time_index.loc[valid_start:]
-
     series = pd.Series(array,
-                       index = time_index)
+                       index=time_index)
+    
+    series.index = pd.DatetimeIndex(series.index)
 
     if deseasonalize:
 
-        series_mean_year = series.groupby(series.dayofyear, 
-                                          group_keys = False) \
+        series_mean_year = series.groupby(series.index.dayofyear, 
+                                          group_keys=False) \
                                           .mean().values
         
         mean_year_sub = lambda x: x - series_mean_year
 
-        series_deseasonalized = series.groupby(series.year, 
-                                               group_keys = False) \
+        series_deseasonalized = series.groupby(series.index.year, 
+                                               group_keys=False) \
                                                .apply(mean_year_sub)
 
         series = series_deseasonalized
 
     series_roll = series.rolling(window).agg(agg_method) if rolling else series
 
-    series_roll_valid = series_roll.loc[valid_start:]
+    ref_slice = slice(valid_start, None) if reftime is None else slice(reftime[0], reftime[1])
 
-    dummy_out = np.array([np.nan] * len(series_roll_valid)) 
+    series_roll_ref = series_roll.loc[ref_slice]
+    
+    series_roll_valid = series.loc[valid_start:]
+
+    dummy_out = np.array([np.nan] * len(series_roll_ref)) 
 
     if ((distribution == 'gamma') and 
-        (np.any(series_roll_valid < 0) or 
-         np.all(series_roll_valid == 0))): return dummy_out
+        (np.any(series_roll_ref < 0) or 
+         np.all(series_roll_ref == 0))): return dummy_out
 
-    if np.all(np.isnan(series_roll_valid)): return dummy_out
+    if np.all(np.isnan(series_roll_ref)): return dummy_out
 
-    if np.all(series_roll_valid == series_roll_valid.iloc[0]): return dummy_out
+    if np.all(series_roll_ref == series_roll_ref.iloc[0]): return dummy_out
 
     if distribution == 'gaussian_kde':
 
         from mcmath.distributions import gauss_kde_pdf, gauss_kde_cdf
 
-        pdf_xs, pdf_ys = gauss_kde_pdf(series_roll_valid)
+        pdf_xs, pdf_ys = gauss_kde_pdf(series_roll_ref)
 
-        cdf_xs, cdf_ys = gauss_kde_cdf(series_roll_valid)
+        cdf_xs, cdf_ys = gauss_kde_cdf(series_roll_ref)
 
     else:
 
-        parameter = distribution_fit(series_roll_valid.to_numpy(), 
-                                     distribution = distribution)
+        parameter = distribution_fit(series_roll_ref.to_numpy(), 
+                                     distribution=distribution)
 
-        pdf_xs, pdf_ys = distribution_pdf(distribution = distribution,
-                                          parameter = parameter)
-    
-        cdf_xs, cdf_ys = distribution_cdf(distribution = distribution,
-                                          parameter = parameter)
-    
+        pdf_xs, pdf_ys = distribution_pdf(distribution=distribution,
+                                          parameter=parameter)
+
+        cdf_xs, cdf_ys = distribution_cdf(distribution=distribution,
+                                          parameter=parameter)
+
     pdf_normal_xs, pdf_normal_ys = distribution_pdf()
 
     cdf_normal_xs, cdf_normal_ys = distribution_cdf()
@@ -117,9 +119,9 @@ def standard_index(array: np.ndarray,
                          f'{agg_method}',
                          f'{str_deseasonalize}'])
 
-    # if plot_distributions: 
+    #if plot_distributions: 
 
-    #     create_dirs(plot_out_dir)
+        #create_dirs(plot_out_dir)
         
     #     fig, ax = square(4, 4)
     #     init_dist(ax,pdf_xs, pdf_ys, xlabel = f'{window} {agg_method} {variable} [{unit}]', ylabel = 'Probability density')

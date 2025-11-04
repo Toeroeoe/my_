@@ -6,6 +6,7 @@ from typing import Callable
 import numpy as np
 import netCDF4 as nc
 import xarray as xr
+import psutil
 
 #from datarie.templates import gridded_data
 #from datarie.netcdf import nc_open, variables_to_dict
@@ -54,8 +55,13 @@ def pixel_wise(func: Callable,
         if len(files_list) > 1:
             data_ = nc.MFDataset(files_list)
 
-        arrays = {v: data_.variables[v][:].astype(dtype)
-                  for v in variables}         
+        def load_variable(v: str, 
+                          dtype: str) -> np.ndarray:
+            print(f'\nLoad netcdf variable {v} to memory.')
+            print(f'Available memory [GB]: {psutil.virtual_memory()[4] / 10**9}...')
+            return data_.variables[v][:].astype(dtype)
+
+        arrays = {v: load_variable(v, dtype) for v in variables}
 
         shapes = {v: arrays[v].shape for v in variables}
 
@@ -73,7 +79,7 @@ def pixel_wise(func: Callable,
                      *shapes_out[variables[0]][-2:]]
 
         arrays_out = {v: np.empty([s for s in shape_out if s > 0],
-                                   dtype = dtype) 
+                                   dtype=dtype) 
                                    for v in variables_out}
         
         for v in variables_out: arrays_out[v][:] = np.nan     
@@ -84,7 +90,7 @@ def pixel_wise(func: Callable,
 
         shapes = None
 
-    shapes = comm.bcast(shapes, root = 0)
+    shapes = comm.bcast(shapes, root=0)
                                    
     if rank != 0:
 
@@ -123,8 +129,8 @@ def pixel_wise(func: Callable,
                 for v, array in arrays_yx.items(): 
 
                     comm.Send(np.ascontiguousarray(array), 
-                              dest = r, 
-                              tag = yx)
+                              dest=r, 
+                              tag=yx)
 
                 print(f'Rank {rank} succesfully sent data to rank {r}.')
 
@@ -138,7 +144,7 @@ def pixel_wise(func: Callable,
                 print(f'Rank {rank} receiving func {func.__name__} output')
                 print(f'from grid indices {x}, {y} to rank {r}.')
 
-                return_object = comm.recv(source = r, tag = yx)
+                return_object = comm.recv(source=r, tag=yx)
 
                 print(f'Rank {rank} received function output from rank {r},')
                 print(f'from grid indices {x}, {y} to rank {r}.')
@@ -157,12 +163,12 @@ def pixel_wise(func: Callable,
             print(f'grid indices {x}, {y} from rank 0.')
 
             arrays_recv = {v: np.empty(shapes[v][:-2], 
-                                       dtype = dtype) 
+                                       dtype=dtype)
                            for v in variables}
 
             for v in variables: comm.Recv(arrays_recv[v], 
-                                          source = 0, 
-                                          tag = yx)
+                                          source=0, 
+                                          tag=yx)
 
             print(f'Rank {rank} received cell {r_m}.')
             print(f'Now executing function {func.__name__}...')
@@ -175,7 +181,7 @@ def pixel_wise(func: Callable,
             print(f'Rank {rank} executed function for grid indices {x}, {y}.')
             print(f'Sending back the output to rank 0...')
 
-            comm.send(out_func, dest = 0, tag = yx)
+            comm.send(out_func, dest=0, tag=yx)
             
             print(f'Rank {rank} succesfully sent function output')
             print(f'for grid indices {x}, {y} to rank 0.')
@@ -203,8 +209,8 @@ def pixel_wise(func: Callable,
                 for v, array in arrays_yx.items(): 
 
                     comm.Send(np.ascontiguousarray(array),
-                              dest = r, 
-                              tag = yx)
+                              dest=r,
+                              tag=yx)
 
                 print(f'Rank {rank} succesfully sent data to rank {r}.')
 
@@ -216,7 +222,7 @@ def pixel_wise(func: Callable,
                 print(f'Rank {rank} receiving func {func.__name__} output')
                 print(f'from grid indices {x}, {y} to rank {r}.')
 
-                return_object = comm.recv(source = r, tag = yx)
+                return_object = comm.recv(source=r, tag=yx)
 
                 print(f'Rank {rank} received function output from rank {r},')
                 print(f'from grid indices {x}, {y} to rank {r}.')
@@ -232,13 +238,13 @@ def pixel_wise(func: Callable,
             x = cells[-rank][1]
 
             arrays_recv = {v: np.empty(shapes[v][:-2], 
-                                       dtype = dtype) 
+                                       dtype=dtype) 
                            for v in variables}
 
             print(f'Rank {rank} receiving cell {-rank} corresponding to')
             print(f'grid indices {x}, {y} from rank 0.')
-            
-            for v in variables: comm.Recv(arrays_recv[v], source = 0, tag = yx)
+
+            for v in variables: comm.Recv(arrays_recv[v], source=0, tag=yx)
 
             print(f'Rank {rank} received cell {-rank}.')
             print(f'Now executing function {func.__name__}...')
@@ -248,7 +254,7 @@ def pixel_wise(func: Callable,
             print(f'Rank {rank} executed function for grid indices {x}, {y}.')
             print(f'Sending back the output to rank 0...')
 
-            comm.send(out_func, dest = 0, tag = yx)
+            comm.send(out_func, dest=0, tag=yx)
             
             print(f'Rank {rank} succesfully sent function output')
             print(f'for grid indices {x}, {y} to rank 0.')
@@ -272,9 +278,9 @@ def pixel_wise(func: Callable,
 
             print('Now wrinting DS to netcdf...')
 
-            DS_out.to_netcdf(path = file_out, 
-                             mode = 'w',
-                             format = 'NETCDF4_CLASSIC')
+            DS_out.to_netcdf(path=file_out, 
+                             mode='w',
+                             format='NETCDF4_CLASSIC')
 
             print('Script was successful! Bye bye!')
     
