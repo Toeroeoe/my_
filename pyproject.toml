@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "crusty"
-version = "0.9.6"
-description="A convinience python package for HPC computation, large dataset handling and plotting."
+version = "0.10.6"
+description="A convinience python package for HPC computation, science and plotting."
 dependencies = [
 	"requests",
    	'importlib-metadata; python_version=="3.11"',
@@ -32,5 +32,5 @@ dependencies = [
 ]
 
 [tool.setuptools]
-packages = ["neoplot", "datarie", "blitzcomp"]
+packages = ["neoplot", "datarie", "blitzcomp", "sciency"]
 package-dir = {"" = "src"}
