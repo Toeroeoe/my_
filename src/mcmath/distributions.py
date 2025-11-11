@@ -2,8 +2,8 @@ import pandas as pd
 import numpy as np
 
 def gauss_kde_pdf(data: pd.DataFrame | pd.Series | np.ndarray , 
-                    n: int = 1000, 
-                    return_dict: bool = False):
+                  n: int = 1000, 
+                  extrapolate: float = 3.0):
     
     import pandas as pd
     import numpy as np
@@ -18,21 +18,18 @@ def gauss_kde_pdf(data: pd.DataFrame | pd.Series | np.ndarray ,
 
     maxs = np.max(data_clean)
 
-    #xs = np.logspace(np.log10(mins), np.log10(maxs), n)
-    xs = np.linspace(mins, maxs, n)
+    xs = np.linspace(mins*extrapolate, maxs*extrapolate, n)
 
     kde_sp = gaussian_kde(data_clean)
 
     ys = kde_sp.pdf(xs)
-
-    if return_dict:     
-        return pd.DataFrame({'xs': xs, 'ys': ys})
-    else:
-        return np.array(xs), np.array(ys)
+    
+    return np.array(xs), np.array(ys)
 
 
 def gauss_kde_cdf(data: np.ndarray | pd.Series | pd.DataFrame, 
-                  n = 1000):
+                  n = 1000,
+                  extrapolate: float = 3.0):
 
     import pandas as pd
     import numpy as np
@@ -48,7 +45,7 @@ def gauss_kde_cdf(data: np.ndarray | pd.Series | pd.DataFrame,
 
     maxs = np.max(data_clean)
 
-    xs = np.linspace(mins, maxs, n)
+    xs = np.linspace(mins*extrapolate, maxs*extrapolate, n)
 
     kde_sp = gaussian_kde(data_clean)
 
@@ -59,7 +56,8 @@ def gauss_kde_cdf(data: np.ndarray | pd.Series | pd.DataFrame,
 
 def distribution_pdf(distribution: str = 'norm', 
                      parameter: int | list | np.ndarray = [0, 1], 
-                     n = 100000):
+                     n = 100000,
+                     extrapolate: float = 3.0):
 
     import scipy.stats as stats
     import numpy as np
@@ -72,7 +70,7 @@ def distribution_pdf(distribution: str = 'norm',
 
     maxs = func_dist.ppf(1 - 1/n, *parameter)
 
-    xs = np.linspace(mins, maxs, n)
+    xs = np.linspace(mins*extrapolate, maxs*extrapolate, n)
 
     ys = func_dist.pdf(xs, *parameter)
 
@@ -81,7 +79,8 @@ def distribution_pdf(distribution: str = 'norm',
 
 def distribution_cdf(distribution: str = 'norm', 
                      parameter: int | list | np.ndarray = [0, 1], 
-                     n = 100000):
+                     n = 100000,
+                     extrapolate: float = 3.0):
 
     import scipy.stats as stats
     import numpy as np
@@ -94,7 +93,7 @@ def distribution_cdf(distribution: str = 'norm',
 
     maxs = func_dist.ppf(1 - 1/n, *parameter)
 
-    xs = np.linspace(mins, maxs, n)
+    xs = np.linspace(mins*extrapolate, maxs*extrapolate, n)
 
     ys = func_dist.cdf(xs, *parameter)
 

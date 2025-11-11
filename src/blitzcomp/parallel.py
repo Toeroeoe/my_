@@ -3,14 +3,11 @@ import os
 import glob
 from mpi4py import MPI
 from typing import Callable
+from types import EllipsisType
 import numpy as np
 import netCDF4 as nc
 import xarray as xr
 import psutil
-
-#from datarie.templates import gridded_data
-#from datarie.netcdf import nc_open, variables_to_dict
-#from datarie.handy import check_file_exists
 
 def pixel_wise(func: Callable,
                variables: list[str],
@@ -19,6 +16,7 @@ def pixel_wise(func: Callable,
                files: str,
                file_out: None | str = None,
                dtype: str = 'float32',
+               load_slice: dict[str, list[int | slice | EllipsisType]] | None = None,
                return_shape: int | list[int] = 1,
                return_dims: str | list[str] = 'time',
                delete_dims: dict[str, list] | None = None,
@@ -26,8 +24,12 @@ def pixel_wise(func: Callable,
                test_pixel_wise_n: int = 10,
                *args, **kwargs) -> dict[str, np.ndarray] | None:
     
+    mode = 'w'
+
     if file_out is not None:
-        if os.path.isfile(file_out): print('Output file exists, skipping calculation.'); return
+        if os.path.isfile(file_out): 
+            print('Output file exists! Append mode.')
+            mode = 'a'
 
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
@@ -56,12 +58,21 @@ def pixel_wise(func: Callable,
             data_ = nc.MFDataset(files_list)
 
         def load_variable(v: str, 
-                          dtype: str) -> np.ndarray:
+                          dtype: str,
+                          load_slice: dict[str, list[int | slice | EllipsisType]] | None) -> np.ndarray:
+            
             print(f'\nLoad netcdf variable {v} to memory.')
             print(f'Available memory [GB]: {psutil.virtual_memory()[4] / 10**9}...')
-            return data_.variables[v][:].astype(dtype)
+            
+            ndims = data_.variables[v].ndim
 
-        arrays = {v: load_variable(v, dtype) for v in variables}
+            if load_slice is None or v not in load_slice.keys():              
+                load_slice_var = tuple([slice(0, None)] * ndims)
+            else: 
+                load_slice_var = load_slice[v]
+            return data_.variables[v][load_slice_var].astype(dtype)
+
+        arrays = {v: load_variable(v, dtype, load_slice) for v in variables}
 
         shapes = {v: arrays[v].shape for v in variables}
 
@@ -77,6 +88,8 @@ def pixel_wise(func: Callable,
 
         shape_out = [*return_shape, 
                      *shapes_out[variables[0]][-2:]]
+        
+        print(f'Output shape will be {shape_out}.')
 
         arrays_out = {v: np.empty([s for s in shape_out if s > 0],
                                    dtype=dtype) 
@@ -172,9 +185,6 @@ def pixel_wise(func: Callable,
 
             print(f'Rank {rank} received cell {r_m}.')
             print(f'Now executing function {func.__name__}...')
-
-            if ((x == 23) & (y == 423)):
-                print(arrays_recv)
 
             out_func = func(arrays_recv, *args, **kwargs)
 
@@ -279,7 +289,7 @@ def pixel_wise(func: Callable,
             print('Now wrinting DS to netcdf...')
 
             DS_out.to_netcdf(path=file_out, 
-                             mode='w',
+                             mode=mode,
                              format='NETCDF4_CLASSIC')
 
             print('Script was successful! Bye bye!')

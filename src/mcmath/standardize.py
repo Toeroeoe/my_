@@ -1,6 +1,9 @@
+import os
 import numpy as np
 import pandas as pd
-from pandera.typing import Series
+import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
+from mcmath.distributions import gauss_kde_pdf, gauss_kde_cdf
 from mcmath.distributions import distribution_fit, distribution_pdf, distribution_cdf
 
 def index_weight(sxi: np.ndarray,
@@ -17,6 +20,91 @@ def index_weight(sxi: np.ndarray,
 
     return w
 
+
+def plot_dist(xs: np.ndarray | pd.Series, 
+              ys: np.ndarray | pd.Series, 
+              ys_hist: np.ndarray | pd.Series, 
+              xlabel: str, 
+              ylabel: str,
+              plot_out_dir: str = 'png/') -> None:
+
+    fig = plt.figure(figsize=(6.7, 6.7), dpi=300)
+        
+    ax = fig.add_subplot(1, 1, 1, frameon=False)
+
+    ax.spines.right.set_visible(False)
+    ax.spines.top.set_visible(False)
+    ax.spines.bottom.set_visible(False)
+    ax.spines.left.set_visible(False)
+
+    ax.grid(which='major',
+            color='dimgray',
+            linestyle='--',
+            visible=True,
+            linewidth=0.9,
+            alpha=0.45,
+            zorder=0)
+            
+    ax.set_xlabel(xlabel, labelpad=10)
+    ax.set_ylabel(ylabel, labelpad=10)
+
+    ax.tick_params(axis='both', 
+                   which='major', 
+                   pad=10)
+            
+    ax.axhline(0, color='k', ls='--', lw = 2, alpha = 0.8, dashes = (4, 4), zorder = 0)
+    ax.axvline(0, color='k', ls='--', lw = 2, alpha = 0.8, dashes = (4, 4), zorder = 0)
+
+    ax.hist(ys_hist, bins=30, density=True, histtype='stepfilled', color='dimgray', alpha=0.8, zorder=1)
+    ax.plot(xs, ys, color='k', lw = 2.0, zorder = 2)
+
+    fig.savefig(f'{plot_out_dir}/pdf_hist.png', bbox_inches='tight', dpi=300)
+
+def plot_sxi(time_index: pd.Series,
+             time_valid: pd.Series,
+             array: np.ndarray, 
+             series_roll_sxi: np.ndarray, 
+             ylabel: str,
+             plot_out_dir: str = 'png/') -> None:
+
+    fig = plt.figure(figsize=(6.7, 5), dpi=300)
+    gs = GridSpec(ncols=1, nrows=2, figure=fig)
+    ax1 = fig.add_subplot(gs[0, 0])
+    ax2 = fig.add_subplot(gs[1, 0], sharex=ax1)
+
+    for i, ax in enumerate([ax1, ax2]):
+
+        ax.spines.right.set_visible(False)
+        ax.spines.top.set_visible(False)
+        ax.spines.bottom.set_visible(False)
+        ax.spines.left.set_visible(False)
+
+        ax.grid(which='major',
+                color='dimgray',
+                linestyle='--',
+                visible=True,
+                linewidth=0.9,
+                alpha=0.45,
+                zorder=0)
+            
+        ylabel = ylabel if i == 0 else 'Standardized Index [-]'
+
+        ax.set_ylabel(ylabel=ylabel, labelpad=10)
+        ax.set_xlabel('Time', labelpad=10)
+        ax.tick_params(axis='both', which='major', pad=10)
+        ax.axhline(0, 
+                   color='k', 
+                   ls='--', 
+                   lw=2, 
+                   alpha=0.8, 
+                   dashes = (4, 4),
+                   zorder = 0)
+            
+    ax1.plot(time_index, array, 'k', lw=2, zorder=2)
+    ax2.plot(time_valid, series_roll_sxi, 'firebrick', lw=2, zorder=2)
+    fig.savefig(f'{plot_out_dir}/array_sxi.png', bbox_inches='tight', dpi=300)
+
+
 def standard_index(array: np.ndarray, 
                    time_index: pd.Series,
                    variable: str = 'var',
@@ -27,10 +115,9 @@ def standard_index(array: np.ndarray,
                    window: str = '365D', 
                    agg_method: str = 'sum',
                    plot_distributions: bool = False,
+                   unit: None | str = None,
                    plot_out_dir: str = 'png/',
-                   plot_sxi_ts: bool = False,
-                   plot_hist_bins: int = 30,
-                   plot_lw: float = 2.0) -> np.ndarray:
+                   plot_sxi_ts: bool = False) -> np.ndarray:
 
     if isinstance(array, list): array = array[0]
 
@@ -68,21 +155,19 @@ def standard_index(array: np.ndarray,
 
     series_roll_ref = series_roll.loc[ref_slice]
     
-    series_roll_valid = series.loc[valid_start:]
+    series_roll_valid = series_roll.loc[valid_start:]
 
-    dummy_out = np.array([np.nan] * len(series_roll_ref)) 
+    dummy_out = np.array([np.nan] * len(series_roll_valid)) 
 
     if ((distribution == 'gamma') and 
         (np.any(series_roll_ref < 0) or 
-         np.all(series_roll_ref == 0))): return dummy_out
+         np.all(series_roll_ref == 0))): print('dummy out'); return dummy_out
 
-    if np.all(np.isnan(series_roll_ref)): return dummy_out
+    if np.all(np.isnan(series_roll_ref)): print('dummy out'); return dummy_out
 
-    if np.all(series_roll_ref == series_roll_ref.iloc[0]): return dummy_out
+    if np.all(series_roll_ref == series_roll_ref.iloc[0]): print('dummy out'); return dummy_out
 
     if distribution == 'gaussian_kde':
-
-        from mcmath.distributions import gauss_kde_pdf, gauss_kde_cdf
 
         pdf_xs, pdf_ys = gauss_kde_pdf(series_roll_ref)
 
@@ -112,61 +197,31 @@ def standard_index(array: np.ndarray,
                                 cdf_normal_xs)
 
     str_deseasonalize = 'deseasonalized' if deseasonalize else ''
+    xunit = '' if unit is None else f'[{unit}]'
 
-    file_out = '_'.join([f'{variable}',
-                         f'{distribution}',
-                         f'{window}',
-                         f'{agg_method}',
-                         f'{str_deseasonalize}'])
+    if plot_distributions: 
 
-    #if plot_distributions: 
+        os.makedirs(plot_out_dir, exist_ok=True)
 
-        #create_dirs(plot_out_dir)
+        plot_dist(pdf_xs, 
+                  pdf_ys, 
+                  series_roll_ref, 
+                  xlabel=' '.join([f'{window}', 
+                                   f'{agg_method}', 
+                                   f'{str_deseasonalize}', 
+                                   f'{variable}', 
+                                   f'{xunit}']), 
+                  ylabel='Probability density')
         
-    #     fig, ax = square(4, 4)
-    #     init_dist(ax,pdf_xs, pdf_ys, xlabel = f'{window} {agg_method} {variable} [{unit}]', ylabel = 'Probability density')
-    #     plot(ax, xs = pdf_xs, ys = pdf_ys, lw = plot_lw, zorder = 2)
-    #     hist(ax, series_roll, bins = plot_hist_bins, zorder = 1)
-    #     save_png(fig, f'{plot_out_dir}/PDF_{file_out}.png')
+    if plot_sxi_ts:
+         
+        os.makedirs(plot_out_dir, exist_ok=True)
 
-    #     fig, ax = square(4, 4)
-    #     init_dist(ax, cdf_xs, cdf_ys, xlabel = f'{window} {agg_method} {variable} [{unit}]', ylabel = 'Cummulative probability density')
-    #     plot(ax, xs = cdf_xs, ys = cdf_ys, lw = plot_lw, zorder = 2)
-    #     save_png(fig, f'{plot_out_dir}/CDF_{file_out}.png')
-    
-    #     fig, ax = square(4, 4)
-    #     init_dist(ax, pdf_normal_xs, pdf_normal_ys, xlabel = 'SXI', ylabel = 'Probability density')
-    #     plot(ax, xs = pdf_normal_xs, ys = pdf_normal_ys, lw = plot_lw, zorder = 2)
-    #     save_png(fig, f'{plot_out_dir}/pdf_norm.png')    
-
-    #     fig, ax = square(4, 4)
-    #     init_dist(ax, cdf_normal_xs, cdf_normal_ys, xlabel = 'SXI', ylabel = 'Cummulative probability density')
-    #     plot(ax, xs = cdf_normal_xs, ys = cdf_normal_ys, lw = plot_lw, zorder = 2)
-    #     save_png(fig, f'{plot_out_dir}/cdf_norm.png')
-
-    # if plot_sxi_ts:
-        
-    #     create_dirs(plot_out_dir)
-
-    #     fig, ax, cax = square_top_cax(fy = 4)
-    #     init_ts_2(ax, time_index, array, xlabel = 'Time', ylabel = f'{variable} [{unit}]')
-    #     plot(ax, xs = time_index, ys = array, colors = 'k', lw = plot_lw, zorder = 2)
-    #     color_legend(cax, {variable: 0}, ['k', 'firebrick'])        
-    #     save_png(fig, f'{plot_out_dir}/TS_{file_out}.png')
-
-    #     if deseasonalize:
-
-    #         fig, ax, cax = square_top_cax(fy = 4)
-    #         init_ts_2(ax, time_index, series_deseasonalized, xlabel = 'Time', ylabel = f'{variable} [{unit}]')
-    #         plot(ax, xs = time_index, ys = series_deseasonalized, colors = 'k', lw = plot_lw, zorder = 2)
-    #         color_legend(cax, {variable: 0}, ['k', 'firebrick'])        
-    #         save_png(fig, f'{plot_out_dir}/TS_ds_{file_out}.png')
-
-
-    #     fig, ax, cax = square_top_cax(fy = 4)
-    #     init_ts_2(ax, time_index, series_roll_sxi, xlabel = 'Time', ylabel = 'SXI [-]')
-    #     plot(ax, xs = time_index_valid, ys = series_roll_sxi, lw = plot_lw, colors = 'firebrick', zorder = 2)
-    #     color_legend(cax, {f'{variable} Standardized Index': 1}, ['k', 'firebrick'])        
-    #     save_png(fig, f'{plot_out_dir}/SXI_{file_out}.png')
+        plot_sxi(time_index,
+                 pd.Series(series_roll_valid.index),
+                 array,
+                 series_roll_sxi,
+                 ylabel=f'{variable} {xunit}',
+                 plot_out_dir=plot_out_dir)
 
     return series_roll_sxi
